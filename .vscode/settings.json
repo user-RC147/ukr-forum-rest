@@ -1,0 +1,90 @@
+{
+    // ================= Python =================
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/../venvUkrForum/bin/python",
+    "python.languageServer": "Pylance",
+    // Підказуємо VS Code, де шукати код бекенду
+    "python.analysis.extraPaths": ["${workspaceFolder}/backend"],
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.importFormat": "absolute",
+    "python.analysis.enablePytestSupport": true,
+    "python.analysis.indexing": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+
+    // ================= Git/Breadcrumbs =================
+    "git.autoRepositoryDetection": "subFolders",
+    "breadcrumbs.enabled": true,   
+
+    // ================= HTML =================
+    "html.format.indentInnerHtml": true,
+    "html.format.extraLiners": "head, body, /html",
+    "html.format.wrapLineLength": 0,
+    "html.format.wrapAttributes": "preserve",
+    "html.format.unformatted": "a, abbr, b, code, em, i, img, span, strong",
+    "html.format.contentUnformatted": "pre, code, textarea",
+    "html.format.preserveNewLines": true,
+    "html.format.maxPreserveNewLines": 2,
+    "html.format.wrapAttributesIndentSize": 4,
+
+
+    // ================= Prettier =================
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "prettier.printWidth": 120,
+    "prettier.tabWidth": 4,
+    "prettier.useTabs": false,
+    "prettier.singleQuote": true,
+    "prettier.bracketSpacing": true,
+    "prettier.htmlWhitespaceSensitivity": "ignore", 
+    "prettier.endOfLine": "lf",
+    "prettier.semi": true,
+    "prettier.trailingComma": "es5",
+    "prettier.vueIndentScriptAndStyle": true, 
+
+   
+    // ================= Django/Jinja =================
+    "[django-html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode", // Prettier буде форматером
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": true,
+            "strings": true
+        },
+        "breadcrumbs.showClasses": true
+    },
+
+    // ================= Emmet для Django =================
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+
+    // ================= Файлові асоціації =================
+    // Об'єднуємо асоціації файлів
+    "files.associations": {
+        "**/templates/**/*.html": "django-html",
+        "*.vue": "vue"
+    },
+    // Налаштування для Tailwind 4 (щоб підказки працювали всюди)
+    "tailwindCSS.experimental.classRegex": [
+        ["[:class]=\"([^'\"]*)\"", "'([^']*)'"]
+    ],
+
+    // ================= Django Snippets =================
+    "django.snippets.exclude": [
+        "cms",
+        "wagtail"
+    ]
+}

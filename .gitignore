@@ -10,99 +10,102 @@ db.sqlite3
 db.sqlite3-journal
 *.log
 *.pot
+*.coverage
+.coverage
 
-# Media files (user uploads)
+# Django media & static (згенеровані)
 media/
 mediafiles/
-
-# Collected static files
 staticfiles/
+static/
 
-# Local Django settings / env
+# Local settings and environment
 .env
 .env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 local_settings.py
 settings_local.py
 local.py
 
-# Migrations (optional)
-# migrations/
-
-# ========================================
 # Virtual environments
-# ========================================
 venv/
 env/
 .venv/
-.ENV/
-
-
-.env.production
+ENV/
+env.bak/
+venv.bak/
 
 # ========================================
-# Node / Tailwind
+# Node.js / Vite / Vue / Frontend
 # ========================================
 node_modules/
-.prettierrc.json
-backup.json
+dist/
+dist-ssr/
+*.local
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # ========================================
-# IDEs / Editors
+# IDEs and Editors
 # ========================================
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# VS Code shared configs
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/snippets/
 
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
 # ========================================
-# OS files
+# OS generated files
 # ========================================
 .DS_Store
+.DS_Store?
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # ========================================
-# Docker
-# ========================================
-*.docker
-docker-compose.override.yml
-docker-compose.dev.yml
-docker-compose.prod.yml
-docker-compose.yml
-Dockerfile
-Dockerfile_base
-.dockerignore
-
-
-# ========================================
-# Testing / Coverage / Build
+# Testing and coverage
 # ========================================
 .pytest_cache/
-.coverage
-htmlcov/
 .tox/
 .nox/
+htmlcov/
+.coverage
+coverage.xml
 *.egg-info/
 *.egg
-develop-eggs/
 build/
 dist/
-downloads/
-lib/
-lib64/
-parts/
-sdist/
 wheels/
-.installed.cfg
+sdist/
 MANIFEST
-celerybeat-schedule
-celerybeat.pid
-test_*.py
-.pylintrc
-.hypothesis/
+
+# ========================================
+# Docker / Production (якщо не хочеш комітити)
+# ========================================
+Dockerfile
+.dockerignore
+docker-compose*.yml
+docker-compose.override.yml
+
+# ========================================
+# Other
+# ========================================
+*.bak
+backup.json
+.prettierrc.json   # якщо це персональний файл

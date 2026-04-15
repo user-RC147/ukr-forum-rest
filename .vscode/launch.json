@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django: Backend",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": ["runserver", "--noreload"],
+            "django": true,
+            "python": "${workspaceFolder}/../venvUkrForum/bin/python",   // залишай, якщо venv саме там
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONUNBUFFERED": "1"
+            }
+        },
+        {
+            "name": "Vue: Frontend",
+            "type": "node-terminal",          // ← це найкращий тип для npm run dev
+            "request": "launch",
+            "command": "npm run dev",
+            "cwd": "${workspaceFolder}/frontend",
+            "console": "integratedTerminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Fullstack (F5)",
+            "configurations": ["Django: Backend", "Vue: Frontend"],
+            "stopAll": true,                  // при зупинці одного — зупиняє всі
+            "presentation": {
+                "hidden": false,
+                "group": "fullstack",
+                "order": 1
+            }
+        }
+    ]
+}
