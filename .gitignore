@@ -38,6 +38,10 @@ ENV/
 env.bak/
 venv.bak/
 
+#logging
+logs/
+my_notes.md
+
 # ========================================
 # Node.js / Vite / Vue / Frontend
 # ========================================

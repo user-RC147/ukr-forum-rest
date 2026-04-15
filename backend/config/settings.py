@@ -14,9 +14,17 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ========================
+# LOGGING (винесено в окремий файл)
+# ========================
+
+#from .loggings import LOGGING   # ← це головний рядок
 
 # Завантажуємо .env
 load_dotenv(BASE_DIR / '.env')
@@ -54,6 +62,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -62,6 +71,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+# CORS_ORIGIN_ALLOW = all
+# CORS_ORIGIN_WHITELIST = [
+#     ’https://www.bboard.ru’,
+#     ]
 
 TEMPLATES = [
     {
