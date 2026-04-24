@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
     # Third party
     'rest_framework',
+    'corsheaders', 
 
     #Local
     'apps.users',
@@ -72,6 +73,18 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+
+# JWT
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# CORS — Vue dev server
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 # CORS_ORIGIN_ALLOW = all
 # CORS_ORIGIN_WHITELIST = [
 #     ’https://www.bboard.ru’,

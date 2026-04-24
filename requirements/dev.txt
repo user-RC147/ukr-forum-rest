@@ -1,0 +1,14 @@
+-r base.txt
+
+# Debug
+django-debug-toolbar
+
+
+# Testing
+pytest
+pytest-django
+factory-boy  # фейкові дані
+
+# Code quality
+ruff  # linter
+ipython  # зручна консоль

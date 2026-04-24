@@ -1,0 +1,13 @@
+# Django core
+Django==6.0.4
+djangorestframework==3.17.1
+django-cors-headers==4.9.0
+drf-spectacular  # додай — OpenAPI docs
+djangorestframework-simplejwt
+
+# Database
+psycopg[binary]==3.3.3
+
+# Utils
+python-dotenv==1.2.2
+Pillow  # для зображень пізніше

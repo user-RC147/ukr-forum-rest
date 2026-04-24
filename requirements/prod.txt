@@ -1,0 +1,10 @@
+-r base.txt
+
+# Server
+gunicorn
+
+# Monitoring
+sentry-sdk  # помилки
+
+# Security
+django-storages  # S3
