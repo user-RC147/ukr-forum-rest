@@ -98,6 +98,7 @@ SPECTACULAR_SETTINGS = {
 # --- CORS ---
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vue dev server
+    "http://localhost:5174",
 ]
 
 # --- Паролі ---
