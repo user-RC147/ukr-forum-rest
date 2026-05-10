@@ -1,0 +1,30 @@
+/* src/assets/css/my_style.css */
+
+
+
+body {
+    color: #33332E;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Кращий варіант — псевдоелемент ::before */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/base/overhead-view-abstract-paper-background.jpg');
+     
+    background-size: cover;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.2;
+    /* від 0.05 до 0.2 — чим менше, тим прозоріше */
+    z-index: -1;
+}

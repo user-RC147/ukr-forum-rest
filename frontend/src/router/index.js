@@ -17,6 +17,13 @@ const routes = [
                 name: 'profile',
                 component: () => import('../modules/users/views/ProfileView.vue'),
                 meta: { requiresAuth: true },
+                
+            },            
+            {
+                path: 'geo/location',
+                name: 'location',
+                component: () => import('../modules/geo/views/LocationView.vue'),
+                meta: { requiresAuth: true },
             },
             {
                 path: 'shop',

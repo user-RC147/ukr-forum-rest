@@ -75,9 +75,12 @@
     // Об'єднуємо асоціації файлів
     "files.associations": {
         "**/templates/**/*.html": "django-html",
-        "*.vue": "vue"
+        "*.vue": "vue",
+        "*.css": "tailwindcss"  // ← додай це
     },
+    
     // Налаштування для Tailwind 4 (щоб підказки працювали всюди)
+    "tailwindCSS.experimental.configFile": "${workspaceFolder}/frontend/src/assets/css/style.css",
     "tailwindCSS.experimental.classRegex": [
         ["[:class]=\"([^'\"]*)\"", "'([^']*)'"]
     ],

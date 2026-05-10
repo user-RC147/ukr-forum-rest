@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 w-full m-0 p-0">
+  <div class="app-bg w-full m-0 p-0">    
 
     <!-- НАВІГАЦІЯ -->
     <header class="sticky top-0 shadow-md z-50 w-full">

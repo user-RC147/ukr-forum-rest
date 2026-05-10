@@ -1,23 +1,40 @@
+# apps/users/urls.py
 from django.urls import path
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,   # POST /login/ → повертає access + refresh токени
-    TokenRefreshView,      # POST /token/refresh/ → оновлює access токен
+    TokenObtainPairView,  # POST /login/ → повертає access + refresh токени
+    TokenRefreshView,     # POST /token/refresh/ → оновлює access токен
 )
 from apps.users import views
 
-# app_name — простір імен, щоб не плутати з іншими модулями
 app_name = 'users'
 
 urlpatterns = [
-    # Реєстрація
-    path('register/', views.RegisterView.as_view(), name='register'),
-
-    # Логін — JWT повертає два токени: access (короткий) і refresh (довгий)
+    # -------------------------------------------------------
+    # Авторизація (JWT)
+    # -------------------------------------------------------
     path('login/', TokenObtainPairView.as_view(), name='login'),
-
-    # Оновлення access токена через refresh токен
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # Профіль поточного користувача
+    # -------------------------------------------------------
+    # Акаунт
+    # -------------------------------------------------------
+    path('register/', views.RegisterView.as_view(), name='register'),
+    path('delete/', views.DeleteAccountView.as_view(), name='delete'),
+
+    # -------------------------------------------------------
+    # Профіль
+    # -------------------------------------------------------
     path('profile/', views.ProfileView.as_view(), name='profile'),
+
+    # -------------------------------------------------------
+    # Паролі
+    # -------------------------------------------------------
+    path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
+    path('password-reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
+    # apps/users/urls.py — додати в urlpatterns
+    path('location/', views.LocationUpdateView.as_view(), name='location'),
+
+
 ]

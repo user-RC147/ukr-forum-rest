@@ -4,6 +4,7 @@ djangorestframework==3.17.1
 django-cors-headers==4.9.0
 drf-spectacular  # додай — OpenAPI docs
 djangorestframework-simplejwt
+requests==2.33.1
 
 # Database
 psycopg[binary]==3.3.3

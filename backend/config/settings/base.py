@@ -14,6 +14,10 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+# Geo API
+GEO_API_URL   = os.getenv('GEO_API_URL')
+GEO_API_TOKEN = os.getenv('GEO_API_TOKEN')
+
 ALLOWED_HOSTS = []
 
 # --- Додатки ---
@@ -33,6 +37,7 @@ INSTALLED_APPS = [
 
     # Local
     'apps.users',
+    'apps.geo',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +85,7 @@ DATABASES = {
 # --- Кастомна модель користувача ---
 # Django повинен знати що замість вбудованого User використовуємо свій
 AUTH_USER_MODEL = 'users.CustomUser'
+#AUTH_USER_MODEL = 'apps_users.CustomUser'
 
 # --- DRF + JWT ---
 REST_FRAMEWORK = {
@@ -119,3 +125,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# --- Email ---
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # в dev — виводить email в термінал
+DEFAULT_FROM_EMAIL = 'noreply@ukr-forum.com'
+
+# --- Frontend URL (для посилань в email) ---
+FRONTEND_URL = 'http://localhost:5173'
