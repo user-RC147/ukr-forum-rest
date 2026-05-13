@@ -1,25 +1,9 @@
 # apps/users/services/profile_service.py
 from apps.users.models import CustomUser
 from apps.users.dto import ProfileUpdateDTO, LocationUpdateDTO
-from apps.geo.services.geo_db_service import (
-    get_or_create_country,
-    get_or_create_region,
-    get_or_create_city,
-)
+from apps.users.repositories import user_repository
+from apps.geo.repositories import geo_repository
 from apps.geo.services.geo_service import geo_service
-
-
-def get_profile(user: CustomUser) -> CustomUser:
-    """
-    Повертає профіль користувача.
-    
-    Поки просто повертає об'єкт — але в майбутньому тут може бути:
-    - перевірка чи не заблокований акаунт
-    - підрахунок статистики
-    - кешування
-    Тому виносимо в сервіс вже зараз, а не в view.
-    """
-    return user
 
 
 def update_profile(user: CustomUser, dto: ProfileUpdateDTO) -> CustomUser:
@@ -34,9 +18,8 @@ def update_profile(user: CustomUser, dto: ProfileUpdateDTO) -> CustomUser:
     for field, value in vars(dto).items():
         if value is not None:           # пропускаємо поля які не передали
             setattr(user, field, value) # user.display_name = "Іван"
+    return user_repository.save(user)
 
-    user.save()
-    return user
 
 def update_location(user: CustomUser, dto: LocationUpdateDTO) -> CustomUser:
     user.country = None
@@ -51,7 +34,7 @@ def update_location(user: CustomUser, dto: LocationUpdateDTO) -> CustomUser:
             None
         )
         if country_data:
-            user.country = get_or_create_country(country_data)
+            user.country = geo_repository.get_or_create_country(country_data)
 
     if dto.region_id and user.country:
         regions     = geo_service.get_regions(country_code=user.country.code)
@@ -60,7 +43,7 @@ def update_location(user: CustomUser, dto: LocationUpdateDTO) -> CustomUser:
             None
         )
         if region_data:
-            user.region = get_or_create_region(region_data, user.country)
+            user.region = geo_repository.get_or_create_region(region_data, user.country)
 
     if dto.city_id and user.region:
         cities    = geo_service.get_cities(region_id=dto.region_id)
@@ -69,7 +52,6 @@ def update_location(user: CustomUser, dto: LocationUpdateDTO) -> CustomUser:
             None
         )
         if city_data:
-            user.city = get_or_create_city(city_data, user.country, user.region)
+            user.city = geo_repository.get_or_create_city(city_data, user.country, user.region)
 
-    user.save()
-    return user
+    return user_repository.save(user)

@@ -15,10 +15,10 @@ urlpatterns = [
 
     # Всі ендпоінти users під префіксом /api/users/
     #Users
-    path('api/users/', include('apps.users.urls')),
+    path('api/users/', include('apps.users.api.urls')),
 
     #Geo
-    path('api/geo/',include('apps.geo.urls')),
+    path('api/geo/',include('apps.geo.api.urls')),
 
     # OpenAPI документація — відкрий http://localhost:8000/api/docs/
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

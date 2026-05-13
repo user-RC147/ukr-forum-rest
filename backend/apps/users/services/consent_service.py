@@ -1,7 +1,8 @@
 # apps/users/services/consent_service.py
 from django.utils import timezone
 
-from apps.users.models import CustomUser, ConsentText
+from apps.users.models import CustomUser
+from apps.users.repositories import consent_repository
 
 
 def give_consent(user: CustomUser) -> CustomUser:
@@ -10,11 +11,10 @@ def give_consent(user: CustomUser) -> CustomUser:
     Записує дату і актуальну версію тексту згоди.
     """
     # беремо найновішу версію тексту згоди
-    latest_consent = ConsentText.objects.order_by('-created_at').first()
-
-    user.consent_given   = True
-    user.consent_date    = timezone.now()
-    user.consent_version = latest_consent  # може бути None якщо текстів ще немає
+    latest_consent = consent_repository.get_latest()
+    user.consent_given =True
+    user.consent_date=timezone.now()
+    user.consent_version-latest_consent
     user.save()
     return user
 
