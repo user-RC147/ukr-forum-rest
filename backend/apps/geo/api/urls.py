@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.geo import views
+from apps.geo.api import views
 
 app_name = 'geo'
 

@@ -1,4 +1,3 @@
-# apps/users/serializers.py
 from rest_framework import serializers
 
 from apps.users.dto import (
@@ -6,8 +5,8 @@ from apps.users.dto import (
     ProfileUpdateDTO,
     PasswordResetConfirmDTO,
     ChangePasswordDTO,
+    LocationUpdateDTO
 )
-from apps.users.dto import LocationUpdateDTO
 
 
 class UserRegisterSerializer(serializers.Serializer):

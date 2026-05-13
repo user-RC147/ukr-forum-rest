@@ -1,0 +1,20 @@
+from pyexpat import model
+from tabnanny import verbose
+from django.db import models
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Назва країни")
+    name_ua = models.CharField(max_length=100, blank=True, default="", verbose_name="Назва українською")
+    code = models.CharField(max_length=5, unique=True, verbose_name="Код країни")
+    flag_emoji = models.CharField(max_length=10, blank=True, verbose_name="Прапор")
+    currency = models.CharField(max_length=10, blank=True, null=True, verbose_name="Валюта")
+
+    class Meta:
+        db_table='geo_country'
+        verbose_name="Країна"
+        verbose_name_plural="Країни"
+        ordering=["name"]
+
+    def __str__(self):
+        return f"{self.flag_emoji} {self.name}".strip()

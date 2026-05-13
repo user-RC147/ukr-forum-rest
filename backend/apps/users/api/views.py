@@ -1,9 +1,8 @@
-# apps/users/views.py
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.users.serializers import (
+from apps.users.api.serializers import (
     UserRegisterSerializer,
     UserProfileSerializer,
     PasswordResetRequestSerializer,
@@ -13,10 +12,12 @@ from apps.users.serializers import (
 )
 from apps.users.services import (
     auth_service,
-    get_profile,
     update_profile,
     update_location,
 )
+
+from apps.users.selectors import get_profile
+from apps.users.exceptions import InvalidPasswordError,InvalidTokenError
 
 
 class RegisterView(APIView):
@@ -110,9 +111,9 @@ class ChangePasswordView(APIView):
         # 3. сервіс — може викинути ValueError якщо старий пароль невірний
         try:
             auth_service.change_password(request.user, dto)
-        except ValueError as e:
+        except InvalidPasswordError as e:
             return Response(
-                {"detail": str(e)},
+                {"detail": e.message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -166,9 +167,9 @@ class PasswordResetConfirmView(APIView):
         # 3. сервіс — може викинути ValueError якщо токен невалідний
         try:
             auth_service.confirm_password_reset(dto)
-        except ValueError as e:
+        except InvalidTokenError as e:
             return Response(
-                {"detail": str(e)},
+                {"detail": e.message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

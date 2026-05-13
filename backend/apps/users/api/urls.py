@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,  # POST /login/ → повертає access + refresh токени
     TokenRefreshView,     # POST /token/refresh/ → оновлює access токен
 )
-from apps.users import views
+from apps.users.api import views
 
 app_name = 'users'
 
