@@ -28,7 +28,7 @@ class GeoService:
 
     def get_cities(self, region_id: str | None = None, search: str | None = None) -> dict:
         """Повертає міста, опціонально фільтровані по регіону або пошуку."""
-        params = {"page_size": 100}
+        params = {"page_size": 500}
         if region_id:
             params["region"] = region_id
         if search:

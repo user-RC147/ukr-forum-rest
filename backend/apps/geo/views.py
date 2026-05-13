@@ -8,7 +8,7 @@ from apps.geo.services import geo_service
 
 
 class CountryListView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated] #AllowAny
 
     def get(self, request):
         try:
@@ -19,7 +19,7 @@ class CountryListView(APIView):
 
 
 class RegionListView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         country_code = request.query_params.get("country_code")
@@ -31,7 +31,7 @@ class RegionListView(APIView):
 
 
 class CityListView(APIView):
-    permission_classes = [AllowAny] #IsAuthenticated
+    permission_classes = [IsAuthenticated] #IsAuthenticated
 
     def get(self, request):
         region_id = request.query_params.get("region")
