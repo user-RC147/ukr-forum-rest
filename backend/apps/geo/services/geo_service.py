@@ -1,6 +1,7 @@
 # apps/geo/services/geo_service.py
 import requests
 from django.conf import settings
+from apps.geo.exceptions import GeoApiTimeoutError,GeoApiError
 
 
 class GeoService:
@@ -52,9 +53,9 @@ class GeoService:
             response.raise_for_status()  # викидає помилку якщо статус 4xx/5xx
             return response.json()
         except requests.Timeout:
-            raise RuntimeError("Geo API не відповідає (timeout).")
+            raise GeoApiTimeoutError()
         except requests.RequestException as e:
-            raise RuntimeError(f"Помилка Geo API: {e}")
+            raise GeoApiError(f"Помилка Geo API: {e}")
 
 
 # Один екземпляр на весь проект

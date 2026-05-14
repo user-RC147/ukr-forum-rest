@@ -61,11 +61,11 @@ pnpm-debug.log*
 # IDEs and Editors
 # ========================================
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/snippets/
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
+# !.vscode/snippets/
 
 .idea/
 *.sublime-project

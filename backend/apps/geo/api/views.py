@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework import status
 
 from apps.geo.services import geo_service
+from apps.geo.exceptions import GeoApiTimeoutError,GeoApiError
 
 
 class CountryListView(APIView):
@@ -12,8 +13,8 @@ class CountryListView(APIView):
     def get(self, request):
         try:
             data = geo_service.get_countries()
-        except RuntimeError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except (GeoApiTimeoutError,GeoApiError) as e:
+            return Response({"detail": e.message}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(data)
 
 
@@ -24,8 +25,8 @@ class RegionListView(APIView):
         country_code = request.query_params.get("country_code")
         try:
             data = geo_service.get_regions(country_code=country_code)
-        except RuntimeError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except (GeoApiTimeoutError,GeoApiError) as e:
+            return Response({"detail": e.message}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(data)
 
 
@@ -37,6 +38,6 @@ class CityListView(APIView):
         search    = request.query_params.get("search")
         try:
             data = geo_service.get_cities(region_id=region_id, search=search)
-        except RuntimeError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except (GeoApiTimeoutError,GeoApiError) as e:
+            return Response({"detail": e.message}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(data)
