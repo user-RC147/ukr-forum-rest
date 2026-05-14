@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class ShopConfig(AppConfig):
-    name = 'shop'
+    name = 'apps.shop'
+    verbose_name="Барахолка"
