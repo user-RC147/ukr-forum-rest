@@ -135,3 +135,10 @@ DEFAULT_FROM_EMAIL = 'noreply@ukr-forum.com'
 
 # --- Frontend URL (для посилань в email) ---
 FRONTEND_URL = 'http://localhost:5173'
+
+
+from config.logging import merge_logging_configs
+
+from apps.shop.logging import LOGGING as SHOP_LOGGING
+
+LOGGING = merge_logging_configs(SHOP_LOGGING)
