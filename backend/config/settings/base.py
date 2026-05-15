@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Local
     'apps.users',
     'apps.geo',
+    'apps.household',
 ]
 
 MIDDLEWARE = [
