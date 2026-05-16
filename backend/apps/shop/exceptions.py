@@ -8,3 +8,7 @@ class ProductNotFound(ShopException):
 
 class ProductOutOfStock(ShopException):
     pass
+
+
+class UnauthorizedException(Exception):
+    pass
