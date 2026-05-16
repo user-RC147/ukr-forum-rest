@@ -1,19 +1,27 @@
 from .dto import ProductDTO
 from .service import ProductService
+from dataclasses import fields
 
 
 class ProductContract:
     def __init__(self):
         self.service = ProductService()
+        self.dto_class = ProductDTO
 
-    def all_products_contract(self) -> list[ProductDTO]:
-        data = self.service.get_all()
+    # set user_id value(with int type) for return owned products
+    def all_products_contract(self, user_id=None) -> list[ProductDTO]:
+        if user_id:
+            data = self.service.get_all(int(user_id))
+        else:
+            data = self.service.get_all()
         return [self._to_dto(d) for d in data]
 
-    def _to_dto(self, product) -> ProductDTO:
-        return ProductDTO(
-            id=product.id,
-            title=product.title,
-            description=product.description,
-            price=product.price,
-        )
+    # user_id for validation user==owner
+    def delete_product(self, id: int, user_id: int):
+        self.service.delete(id, user_id)
+        return None
+
+    def _to_dto(self, data) -> ProductDTO:
+        dto_fields = {f.name for f in fields(self.dto_class)}
+        result = {field: getattr(data, field) for field in dto_fields}
+        return self.dto_class(**result)

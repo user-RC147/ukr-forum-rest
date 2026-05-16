@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -7,3 +8,4 @@ class ProductDTO:
     title: str
     description: str
     price: int
+    vizible: Optional[bool]

@@ -12,7 +12,10 @@ class ProductService(BaseService[ProductModel]):
     def __init__(self, model=ProductModel):
         super().__init__(model)
 
-    def get_all(self):
+    def get_all(self, user_id=None):
+        if user_id:
+            return self.model.objects.all().filter(owner_id=user_id)
+
         return self.model.objects.all()
 
     def create(self, user_id: int, data: dict) -> ProductModel:
