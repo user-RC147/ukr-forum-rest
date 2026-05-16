@@ -12,7 +12,14 @@ class CustomUserAdmin(UserAdmin):
         "get_location_display",
         "is_staff",
     )
-    list_filter = ("is_staff", "is_superuser", "country", "region", "city")
+    list_filter = (
+        "is_staff",
+        "is_superuser",
+        "country_id",
+        "region_id",
+        "city_id"
+        )
+    
 
     # Налаштовуємо сторінку редагування користувача
     fieldsets = UserAdmin.fieldsets + (
@@ -34,6 +41,9 @@ class CustomUserAdmin(UserAdmin):
 
     # Додаємо можливість бачити локацію текстом прямо в списку
     def get_location_display(self, obj):
-        return obj.get_location_display()
+        # Перевірка, чи метод існує в моделі, щоб не "покласти" адмінку
+        if hasattr(obj, 'get_location_display'):
+            return obj.get_location_display()
+        return "Не вказано"
 
     get_location_display.short_description = "Локація"

@@ -34,8 +34,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     # Local
-    "apps.users",
-    "apps.geo",
+    'apps.users',
+    'apps.geo',
+    'apps.household',
     "apps.shop",
 ]
 
