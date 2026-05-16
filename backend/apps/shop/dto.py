@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass(frozen=True)
-class AllProductsDTO:
+class ProductDTO:
     id: int
     title: str
     description: str
