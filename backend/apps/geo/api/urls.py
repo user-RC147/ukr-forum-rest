@@ -1,10 +1,12 @@
 from django.urls import path
-from apps.geo.api import views
-
-app_name = 'geo'
+from apps.geo.api.views.resolve import GeoResolveView
+from apps.geo.api.views.countries import CountryListView
+from apps.geo.api.views.regions import RegionListView
+from apps.geo.api.views.cities import CityListView
 
 urlpatterns = [
-    path('countries/', views.CountryListView.as_view(), name='countries'),
-    path('regions/',   views.RegionListView.as_view(),  name='regions'),
-    path('cities/',    views.CityListView.as_view(),    name='cities'),
+    path('resolve/',   GeoResolveView.as_view(),  name='geo-resolve'),
+    path('countries/', CountryListView.as_view(), name='geo-countries'),
+    path('regions/',   RegionListView.as_view(),  name='geo-regions'),
+    path('cities/',    CityListView.as_view(),    name='geo-cities'),
 ]

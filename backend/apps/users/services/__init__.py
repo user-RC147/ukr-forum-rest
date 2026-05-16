@@ -2,6 +2,7 @@
 from .auth_service import auth_service
 from .profile_service import update_profile, update_location
 from .consent_service import give_consent, revoke_consent
+from .user_service  import UserService, user_service
 
 __all__ = [
     # auth
@@ -10,6 +11,8 @@ __all__ = [
     # profile
     "update_profile",
     "update_location",
+    'UserService',
+    'user_service',
 
     # consent
     "give_consent",

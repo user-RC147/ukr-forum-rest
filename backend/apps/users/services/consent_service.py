@@ -14,7 +14,7 @@ def give_consent(user: CustomUser) -> CustomUser:
     latest_consent = consent_repository.get_latest()
     user.consent_given =True
     user.consent_date=timezone.now()
-    user.consent_version-latest_consent
+    user.consent_version=latest_consent
     user.save()
     return user
 

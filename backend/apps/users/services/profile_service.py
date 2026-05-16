@@ -1,11 +1,8 @@
 # apps/users/services/profile_service.py
 from apps.users.models import CustomUser
 from apps.users.dto import ProfileUpdateDTO, LocationUpdateDTO
-from apps.users.repositories import user_repository
-from apps.users.contracts.geo_contract import GeoServiceProtocol,GeoRepositoryProtocol
-
-# імпортуємо реальні об'єкти — вони будуть значеннями за замовчуванням
-from apps.geo.repositories import geo_repository
+from apps.users.repositories.user_repository import user_repository
+from apps.users.contracts.geo_contract import GeoServiceProtocol
 from apps.geo.services.geo_service import geo_service
 
 
@@ -16,52 +13,23 @@ def update_profile(
     Оновлює тільки ті поля які були передані (не None).
     Зберігає в БД і повертає оновленого користувача.
     """
-    # vars(dto) перетворює dataclass в словник:
-    # ProfileUpdateDTO(display_name="Іван", age=None, phone_number=None ...)
-    # → {"display_name": "Іван", "age": None, "phone_number": None ...}
-    
     for field, value in vars(dto).items():
-        if value is not None:           # пропускаємо поля які не передали
-            setattr(user, field, value) # user.display_name = "Іван"
+        if value is not None:
+            setattr(user, field, value)
     return user_repository.save(user)
 
 
 def update_location(
         user: CustomUser,
         dto: LocationUpdateDTO,
-        geo_svc:GeoServiceProtocol =geo_service,
-        geo_repo:GeoRepositoryProtocol=geo_repository,
+        geo_svc: GeoServiceProtocol = geo_service,
         ) -> CustomUser:
-    user.country = None
-    user.region  = None
-    user.city    = None
-
-    if dto.country_id:
-        countries    = geo_svc.get_countries()
-        # countries — це список [], не словник з results
-        country_data = next(
-            (c for c in countries if c['id'] == dto.country_id),  # ← прибрали ['results']
-            None
-        )
-        if country_data:
-            user.country = geo_repo.get_or_create_country(country_data)
-
-    if dto.region_id and user.country:
-        regions     = geo_svc.get_regions(country_code=user.country.code)
-        region_data = next(
-            (r for r in regions['results'] if r['id'] == dto.region_id),  # ← regions має results
-            None
-        )
-        if region_data:
-            user.region = geo_repo.get_or_create_region(region_data, user.country)
-
-    if dto.city_id and user.region:
-        cities    = geo_svc.get_cities(region_id=dto.region_id)
-        city_data = next(
-            (c for c in cities['results'] if c['id'] == dto.city_id),  # ← cities теж перевіримо
-            None
-        )
-        if city_data:
-            user.city = geo_repo.get_or_create_city(city_data, user.country, user.region)
+    """
+    Оновлює локацію користувача.
+    users модуль зберігає тільки id — не FK об'єкти.
+    """
+    user.country_id = dto.country_id
+    user.region_id  = dto.region_id
+    user.city_id    = dto.city_id
 
     return user_repository.save(user)
