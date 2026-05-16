@@ -1,4 +1,6 @@
 from django.db import models
+# from django.contrib.postgres.fields import ArrayField
+
 
 class ProductModel(models.Model):
     title = models.CharField(max_length=300, blank=False)
@@ -6,8 +8,10 @@ class ProductModel(models.Model):
     price = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    vizible = models.BooleanField(default=True)
 
-    # owner = models.ForeignKey("users.User", on_delete=models.CASCADE, db_column="owner_id")
+    owner_id = models.PositiveIntegerField(blank=False)
+    # category_id = ArrayField(base_field=models.IntegerField())
 
     class Meta:
         db_table = "product"
