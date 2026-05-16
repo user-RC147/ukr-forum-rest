@@ -4,7 +4,6 @@ BASE_DIR = Path(__file__).resolve().parent
 
 LOGGING = {
     "handlers": {
-
         "shop_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": str(BASE_DIR / "shop.log"),

@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class ShopConfig(AppConfig):
-    name = 'apps.shop'
-    verbose_name="Барахолка"
+    name = "apps.shop"
+    verbose_name = "Барахолка"
