@@ -5,6 +5,9 @@ class ShopException(Exception):
 class ProductNotFound(ShopException):
     pass
 
+class GeoNotFound(Exception):
+    pass
+
 
 class ProductOutOfStock(ShopException):
     pass
