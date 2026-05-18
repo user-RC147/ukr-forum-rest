@@ -13,6 +13,10 @@ class ProductModel(models.Model):
     owner_id = models.PositiveIntegerField(blank=False)
     # category_id = ArrayField(base_field=models.IntegerField())
 
+    country_id = models.PositiveIntegerField(blank=False)
+    region_id = models.PositiveIntegerField()
+    city_id = models.PositiveIntegerField(blank=False)
+
     class Meta:
         db_table = "product"
         ordering = ["-id"]
