@@ -3,7 +3,6 @@ from django.db import models
 from core.mixins.LocationMixin import LocationMixin, PrivateLocationMixin
 
 from apps.household.models.group import Group
-from apps.household.models.place_type import PlaceType
 
 
 class Asset(LocationMixin,models.Model):
@@ -15,35 +14,19 @@ class Asset(LocationMixin,models.Model):
         max_length=100,
         verbose_name="Назва активу",
     )
-    place_type=models.ForeignKey(
-        PlaceType,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="assets",
-        verbose_name="Тип місця",
-    )
     group=models.ForeignKey(
         Group,
         on_delete=models.CASCADE,
         related_name="assets",
         verbose_name="Група",
     )
-    country_id = models.IntegerField(
-        null=True, blank=True, verbose_name="ID країни"
-    )
-    region_id = models.IntegerField(
-        null=True, blank=True, verbose_name="ID регіону"
-    )
-    city_id = models.IntegerField(
-        null=True, blank=True, verbose_name="ID міста"
-    )
-    address = models.CharField(
+    address_line=models.CharField(
         max_length=255,
+        null=True,
         blank=True,
-        default="",
-        verbose_name="Адреса (вулиця, дім)",
+        verbose_name="Адреса(вул.+дім)"
     )
+   
 
     class Meta:
         db_table = "household_asset"

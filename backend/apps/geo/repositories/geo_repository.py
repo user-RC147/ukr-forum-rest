@@ -1,3 +1,4 @@
+# apps/geo/repositories/geo_repository.py
 from apps.geo.models import Country, Region, City
 
 
@@ -8,7 +9,7 @@ class GeoRepository:
             code=api_data['code'],
             defaults={
                 'name':       api_data['name'],
-                'name_ua':    api_data.get('name_ua', ''),
+                'name_ua':    api_data.get('name_translate', ''),
                 'flag_emoji': api_data.get('flag_emoji', ''),
                 'currency':   api_data.get('currency'),
             }
@@ -17,10 +18,10 @@ class GeoRepository:
 
     def get_or_create_region(self, api_data: dict, country: Country) -> Region:
         region, _ = Region.objects.get_or_create(
-            api_id=api_data['id'],
+            api_id=api_data['id'],  # ← зовнішній id зберігаємо в api_id
             defaults={
                 'name':    api_data['name'],
-                'name_ua': api_data.get('name_ua', ''),
+                'name_ua': api_data.get('name_translate', ''),
                 'country': country,
             }
         )
@@ -28,10 +29,10 @@ class GeoRepository:
 
     def get_or_create_city(self, api_data: dict, country: Country, region: Region) -> City:
         city, _ = City.objects.get_or_create(
-            api_id=api_data['id'],
+            api_id=api_data['id'],  # ← зовнішній id зберігаємо в api_id
             defaults={
                 'name':      api_data['name'],
-                'name_ua':   api_data.get('name_ua', ''),
+                'name_ua':   api_data.get('name_translate', ''),
                 'country':   country,
                 'region':    region,
                 'latitude':  api_data.get('latitude'),

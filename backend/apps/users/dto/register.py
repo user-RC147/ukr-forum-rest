@@ -6,7 +6,7 @@ from typing import Optional
 class RegisterDTO:
     username: str
     email: str
-    pessword: str
+    password: str
     country: Optional[str] = None
     region: Optional[str] = None
     city: Optional[str] = None
