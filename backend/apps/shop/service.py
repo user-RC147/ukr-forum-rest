@@ -4,6 +4,8 @@ from .exceptions import UnauthorizedException, GeoNotFound
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.geo.contracts.city_contract import get_city_contract
+from apps.shop.exceptions import ProductNotFound
+from django.core.exceptions import ObjectDoesNotExist
 
 import logging
 
@@ -51,12 +53,14 @@ class ProductService(BaseService[ProductModel]):
             )
             raise UnauthorizedException
 
-    def geo_validate(self, data: dict):
-        if (
-            not self.country_service.get_country(data["country_id"])
-            or not self.region_service.get_region(data["region_id"], data["country_id"])
-            or not self.city_service.get_city(data["city_id"], data["region_id"])
-        ):
+    def geo_validate(self, data: dict) -> None:
+        try:
+            country = self.country_service.get_country(data["country_id"])
+            region = self.region_service.get_region(
+                data["region_id"], data["country_id"]
+            )
+            city = self.city_service.get_city(data["city_id"], data["region_id"])
+        except ObjectDoesNotExist:
             logger.info(
                 "Geo data with country: %s, region: %s, city: %s not found!",
                 data["country_id"],
