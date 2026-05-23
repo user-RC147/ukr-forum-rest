@@ -2,6 +2,8 @@ from .models import ProductModel
 from apps.shop.base.service_base import BaseService
 from .exceptions import UnauthorizedException, GeoNotFound
 from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.region_contract import get_region_contract
+from apps.geo.contracts.city_contract import get_city_contract
 
 import logging
 
@@ -12,6 +14,8 @@ class ProductService(BaseService[ProductModel]):
     def __init__(self, model=ProductModel) -> None:
         super().__init__(model)
         self.country_service = get_country_contract()
+        self.region_service = get_region_contract()
+        self.city_service = get_city_contract()
 
     def get_all(self, user_id=None):
         if user_id:
@@ -22,8 +26,8 @@ class ProductService(BaseService[ProductModel]):
     def create(self, user_id: int, data: dict) -> ProductModel:
         if (
             not self.country_service.get_country(data["country_id"])
-            # or not self.country_service.get_region(data["region_id"])
-            # or not self.country_service.get_city(data["city_id"])
+            or not self.region_service.get_region(data["region_id"], data["country_id"])
+            or not self.city_service.get_city(data["city_id"], data["region_id"])
         ):
             logger.info(
                 "Geo data with country: %s, region: %s, city: %s not found!",
