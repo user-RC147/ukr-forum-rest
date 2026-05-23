@@ -1,6 +1,7 @@
 from .dto import ProductDTO
 from .service import ProductService
 from dataclasses import fields
+from shop.protocols import ProductContractProtocol
 
 
 class ProductContract:
@@ -25,3 +26,7 @@ class ProductContract:
         dto_fields = {f.name for f in fields(self.dto_class)}
         result = {field: getattr(data, field) for field in dto_fields}
         return self.dto_class(**result)
+
+
+def get_product_contract() -> ProductContractProtocol:
+    return ProductContract()
