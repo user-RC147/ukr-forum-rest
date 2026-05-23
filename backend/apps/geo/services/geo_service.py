@@ -1,7 +1,9 @@
 # apps/geo/services/geo_service.py
 from typing import Optional
 from apps.geo.models import Country, Region, City
-from apps.geo.dto.geo_dto import CountryDTO, RegionDTO, CityDTO
+from apps.geo.dto.country import CountryDTO
+from apps.geo.dto.region import RegionDTO
+from apps.geo.dto.city import CityDTO
 from apps.geo.clients.geo_api_client import geo_api_client
 from apps.geo.repositories.geo_repository import geo_repository
 
@@ -84,14 +86,14 @@ class GeoService:
     def get_region(self, region_id: int, country_id: int) -> Optional[RegionDTO]:
         try:
             r = Region.objects.get(country__id=country_id, id=region_id)
-            return RegionDTO(id=r.id, name=r.name, name_ua=r.name_ua)
+            return RegionDTO(id=r.id, name=r.name, name_ua=r.name_ua, country_id=r.country_id)
         except Region.DoesNotExist:
             return None
 
     def get_city(self, city_id: int, region_id: int) -> Optional[CityDTO]:
         try:
             c = City.objects.get(region__id=region_id, id=city_id)
-            return CityDTO(id=c.id, name=c.name, name_ua=c.name_ua)
+            return CityDTO(id=c.id, name=c.name, name_ua=c.name_ua, country_id=c.country_id, region_id=c.region_id, latitude=c.latitude, longitude=c.longitude)
         except City.DoesNotExist:
             return None
 
