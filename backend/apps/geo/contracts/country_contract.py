@@ -5,8 +5,8 @@ from dataclasses import fields
 
 
 class CountryContract:
-    def __init__(self) -> None:
-        self.service = GeoService()
+    def __init__(self, service: GeoService | None = None) -> None:
+        self.service = service or GeoService()
         self._dto_fields = {f.name for f in fields(CountryDTO)}
 
     def get_country(self, country_id: int) -> CountryDTO:
