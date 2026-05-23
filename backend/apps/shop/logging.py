@@ -7,10 +7,8 @@ LOGGING = {
         "shop_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": str(BASE_DIR / "shop.log"),
-            "when": "midnight",
-            "interval": 1,
-            "backupCount": 7,
             "encoding": "utf-8",
+            'delay': True,
             "level": "INFO",
             "formatter": "verbose",
         },

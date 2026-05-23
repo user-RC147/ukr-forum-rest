@@ -3,7 +3,7 @@ from .serializers import ProductSerializer
 from .service import ProductService
 from rest_framework.response import Response
 from rest_framework import status
-from apps.shop.exceptions import ProductNotFound, UnauthorizedException
+from apps.shop.exceptions import ProductNotFound, UnauthorizedException, GeoNotFound
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
@@ -25,10 +25,12 @@ class ProductViewSet(viewsets.ViewSet):
     def create(self, request):
         serializer = ProductSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)  # 400 if not valid
-
-        product = self.service.create(
-            user_id=request.user.id, data=serializer.validated_data
-        )
+        try:
+            product = self.service.create(
+                user_id=request.user.id, data=serializer.validated_data
+            )
+        except GeoNotFound as e:
+            raise NotFound(detail=str(e))
 
         return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
 
