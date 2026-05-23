@@ -20,8 +20,17 @@ class ProductService(BaseService[ProductModel]):
         return self.model.objects.all()
 
     def create(self, user_id: int, data: dict) -> ProductModel:
-        if not self.country_service.get_country(data["country_id"]):
-            logger.info("Geo data with country: %s, region: %s, city: %s not found!", data["country_id"], data["region_id"], data["city_id"])
+        if (
+            not self.country_service.get_country(data["country_id"])
+            # or not self.country_service.get_region(data["region_id"])
+            # or not self.country_service.get_city(data["city_id"])
+        ):
+            logger.info(
+                "Geo data with country: %s, region: %s, city: %s not found!",
+                data["country_id"],
+                data["region_id"],
+                data["city_id"],
+            )
             raise GeoNotFound("Geo data with this params not found!")
 
         data["owner_id"] = user_id
