@@ -64,3 +64,7 @@ class ProductService(BaseService[ProductModel]):
                 data["city_id"],
             )
             raise GeoNotFound("Geo data with this params not found!")
+
+    def delete_all_by_user(self, user_id: int) -> int:
+        deleted, _ = self.model.objects.filter(owner_id=user_id).delete()
+        return deleted
