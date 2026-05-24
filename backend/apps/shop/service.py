@@ -53,6 +53,12 @@ class ProductService(BaseService[ProductModel]):
             )
             raise UnauthorizedException
 
+    def nullify_geo(self, field_name: str, geo_id: int) -> int:
+
+        return self.model.objects.filter(**{field_name: geo_id}).update(
+            **{field_name: None}
+        )
+
     def geo_validate(self, data: dict) -> None:
         try:
             country = self.country_service.get_country(data["country_id"])
