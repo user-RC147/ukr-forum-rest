@@ -1,19 +1,5 @@
-from .asset import Asset
-from .category import Category
-from .group import Group,GroupMember
-from .product import Product
-from .market import Market
-from .purchase import Purchase
-from .purchase_item import PurchaseItem
+# Якщо __init__.py порожній — ви даєте сигнал розробнику: 
+# «Сюди не лізь загальним імпортом, імпортуй файли напряму (як у моделях)».
 
-__all__=[
-    'Asset',
-    'Category',
-    'Group',
-    'GroupMember',
-    'Product',
-    'Market',
-    'Purchase',
-    'PurchaseItem',
-
-]
+# Якщо __init__.py наповнений через __all__ — ви кажете: 
+# «Цей прошарок безпечний, ось список класів, які ти можеш брати через один імпорт».

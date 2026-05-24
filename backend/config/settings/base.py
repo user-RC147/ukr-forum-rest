@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # BASE_DIR вказує на папку backend/
 # __file__ = backend/config/settings/base.py
@@ -28,9 +29,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    
     # Third party
     "rest_framework",
     "rest_framework_simplejwt",
+    'rest_framework_simplejwt.token_blacklist',
     "corsheaders",
     "drf_spectacular",
     # Local
@@ -142,3 +146,16 @@ from config.logging import merge_logging_configs
 from apps.shop.logging import LOGGING as SHOP_LOGGING
 
 LOGGING = merge_logging_configs(SHOP_LOGGING)
+
+SIMPLE_JWT = {
+    # Змінюємо час дії основного токена на 24 години (1 день)
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    
+    # Refresh токен зазвичай роблять довшим (наприклад, 7 днів), 
+    # щоб користувач не переавторизовувався щодня
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    
+    # Решта ваших поточних налаштувань SIMPLE_JWT (якщо вони є)
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}

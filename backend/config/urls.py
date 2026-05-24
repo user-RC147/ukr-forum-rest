@@ -7,6 +7,8 @@ from drf_spectacular.views import (
 
 from django.conf import settings
 
+from rest_framework_simplejwt.views import TokenBlacklistView
+
 
 
 
@@ -16,6 +18,8 @@ urlpatterns = [
     # Всі ендпоінти users під префіксом /api/users/
     #Users
     path('api/users/', include('apps.users.api.urls')),
+
+    path('api/auth/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 
     #Geo
     path('api/geo/',include('apps.geo.api.urls')),
