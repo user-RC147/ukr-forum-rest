@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.geo',
     'apps.household',
     "apps.shop",
+    "apps.files",
 ]
 
 MIDDLEWARE = [
@@ -140,5 +141,6 @@ FRONTEND_URL = "http://localhost:5173"
 from config.logging import merge_logging_configs
 
 from apps.shop.logging import LOGGING as SHOP_LOGGING
+from apps.files.logging import LOGGING as FILES_LOGGING
 
-LOGGING = merge_logging_configs(SHOP_LOGGING)
+LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING)
