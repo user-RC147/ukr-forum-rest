@@ -13,6 +13,7 @@ BASE_LOGGING = {
         "err": {
             "class": "logging.FileHandler",
             "filename": "general.log",
+            "encoding": "utf-8",
             "level": "WARNING",
             "formatter": "verbose",
         },

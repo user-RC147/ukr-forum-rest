@@ -5,10 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent
 LOGGING = {
     "handlers": {
         "shop_file": {
-            "class": "logging.handlers.TimedRotatingFileHandler",
+            "class": "logging.FileHandler",
             "filename": str(BASE_DIR / "shop.log"),
             "encoding": "utf-8",
-            'delay': True,
             "level": "INFO",
             "formatter": "verbose",
         },

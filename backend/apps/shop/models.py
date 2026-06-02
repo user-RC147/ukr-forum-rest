@@ -13,9 +13,9 @@ class ProductModel(models.Model):
     owner_id = models.PositiveIntegerField(blank=False)
     # category_id = ArrayField(base_field=models.IntegerField())
 
-    country_id = models.PositiveIntegerField(blank=False)
-    region_id = models.PositiveIntegerField()
-    city_id = models.PositiveIntegerField(blank=False)
+    country_id = models.PositiveIntegerField(blank=False, null=True)
+    region_id = models.PositiveIntegerField(null=True)
+    city_id = models.PositiveIntegerField(blank=False, null=True)
 
     class Meta:
         db_table = "product"
