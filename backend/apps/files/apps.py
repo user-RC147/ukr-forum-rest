@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class FilesConfig(AppConfig):
-    name = 'files'
+    name = "apps.files"
+    verbose_name = "Файли"
