@@ -1,5 +1,6 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # BASE_DIR вказує на папку backend/
@@ -34,9 +35,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     # Local
-    'apps.users',
-    'apps.geo',
-    'apps.household',
+    "apps.users",
+    "apps.geo",
+    "apps.household",
     "apps.shop",
     "apps.files",
 ]
@@ -137,10 +138,12 @@ DEFAULT_FROM_EMAIL = "noreply@ukr-forum.com"
 # --- Frontend URL (для посилань в email) ---
 FRONTEND_URL = "http://localhost:5173"
 
+# --- Serving files uploaded---
+# MEDIA_URL = "media/"
 
-from config.logging import merge_logging_configs
-
-from apps.shop.logging import LOGGING as SHOP_LOGGING
+# --- Logger conf---
 from apps.files.logging import LOGGING as FILES_LOGGING
+from apps.shop.logging import LOGGING as SHOP_LOGGING
+from config.logging import merge_logging_configs
 
 LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING)
