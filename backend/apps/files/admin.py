@@ -8,4 +8,5 @@ from apps.files.models import FileModel
 @admin.register(FileModel)
 class FileAdmin(admin.ModelAdmin):
     ordering = ["-created_at"]
-    search_fields = ["title", "mime_type"]
+    search_fields = ["name"]
+    readonly_fields = ["id", "created_at"]

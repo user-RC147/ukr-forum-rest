@@ -27,7 +27,7 @@ class FileModel(models.Model):
     name = models.CharField(max_length=100, blank=False)
     owner_id = models.PositiveIntegerField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    vizible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=True)
 
     class Meta:
         db_table = "file"
@@ -41,5 +41,6 @@ class FileModel(models.Model):
             title = self.name[:16] + self.name.split(".")[-1]
         else:
             title = self.name
+        date = self.created_at.strftime("%d.%m.%y")
 
-        return f"{title} - {self.created_at}"
+        return f"{title} - {date} - id: {self.id}"
