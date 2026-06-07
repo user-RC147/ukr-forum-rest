@@ -1,5 +1,5 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
-# from django.contrib.postgres.fields import ArrayField
 
 
 class ProductModel(models.Model):
@@ -8,10 +8,11 @@ class ProductModel(models.Model):
     price = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    vizible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=True)
 
     owner_id = models.PositiveIntegerField(blank=False)
     # category_id = ArrayField(base_field=models.IntegerField())
+    files_ids = ArrayField(base_field=models.PositiveIntegerField())
 
     country_id = models.PositiveIntegerField(blank=False, null=True)
     region_id = models.PositiveIntegerField(null=True)
