@@ -8,3 +8,16 @@ class ProductSerializer(serializers.Serializer):
     country_id = serializers.IntegerField()
     region_id = serializers.IntegerField()
     city_id = serializers.IntegerField()
+    files = serializers.ListField(child=serializers.ImageField(allow_empty_file=False), allow_empty=False, max_length=10,)
+
+class ProductReadSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    owner_id = serializers.IntegerField()
+    title = serializers.CharField()
+    description = serializers.CharField()
+    price = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
+    country_id = serializers.IntegerField()
+    region_id = serializers.IntegerField()
+    city_id = serializers.IntegerField()
+    files = serializers.ListField(child=serializers.DictField(), default=list)
