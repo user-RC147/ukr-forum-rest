@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
@@ -57,17 +58,29 @@ class FileService:
 
     def delete_file(self, file_id: int) -> None:
         try:
-            self.model.objects.get(id=file_id).delete()
+            instance = self.model.objects.get(id=file_id)
+            file_path = instance.file
+            instance.delete()
         except ObjectDoesNotExist:
             logger.warning("Tried to delete non-existent file id:%s", file_id)
             raise
+        logger.debug("File with id:%s was deleted", file_id)
+        transaction.on_commit(lambda: default_storage.delete(file_path))
         logger.debug("File with id:%s was deleted", file_id)
 
     def delete_files_map(self, file_ids: list[int]) -> None:
         if not file_ids:
             return
+        data = self.model.objects.filter(id__in=file_ids)
+        file_paths = list(data.values_list("file", flat=True))
 
-        deleted_count, _ = self.model.objects.filter(id__in=file_ids).delete()
+        deleted_count, _ = data.delete()
+
+        def cleanup_disk():
+            for path in file_paths:
+                default_storage.delete(path)
+
+        transaction.on_commit(cleanup_disk)
         logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
 
     def create_files_list(
