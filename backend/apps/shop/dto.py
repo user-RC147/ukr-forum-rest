@@ -8,4 +8,4 @@ class ProductDTO:
     title: str
     description: str
     price: int
-    vizible: Optional[bool]
+    visible: Optional[bool]
