@@ -1,10 +1,12 @@
 import logging
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import UploadedFile
-from dto import FileDTO
-from exceptions import FileExtensionError, FileNameError, FileSizeError
+from django.db import transaction
 
+from apps.files.dto import FileDTO
+from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError
 from apps.files.models import FileModel
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,67 @@ class FileService:
         self.model = model
 
     def create_file(self, data: UploadedFile, user_id: int) -> FileDTO:
-        ext = data.name.split(".")[-1]
+        self._validate_file(data, user_id)
+
+        result = self.model.objects.create(name=data.name, file=data, owner_id=user_id)
+
+        return _to_dto(result)
+
+    def get_file(self, file_id: int) -> FileDTO:
+        try:
+            result = self.model.objects.get(id=file_id)
+        except ObjectDoesNotExist:
+            logger.info("Object with id:%s not found!", file_id)
+            raise FileNotFoundError
+
+        return _to_dto(result)
+
+    def get_files_map(self, file_ids: list[int]) -> dict[int, FileDTO]:
+        if not file_ids:
+            return {}
+
+        files = self.model.objects.filter(id__in=file_ids)
+
+        found_ids = {f.id for f in files}
+        missing = set(file_ids) - found_ids
+        if missing:
+            logger.warning("Files not found for ids: %s", missing)
+
+        return {f.id: _to_dto(f) for f in files}
+
+    def delete_file(self, file_id: int) -> None:
+        try:
+            self.model.objects.get(id=file_id).delete()
+        except ObjectDoesNotExist:
+            logger.warning("Tried to delete non-existent file id:%s", file_id)
+            raise
+        logger.debug("File with id:%s was deleted", file_id)
+
+    def delete_files_map(self, file_ids: list[int]) -> None:
+        if not file_ids:
+            return
+
+        deleted_count, _ = self.model.objects.filter(id__in=file_ids).delete()
+        logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
+
+    def create_files_list(
+        self, data: list[UploadedFile], user_id: int
+    ) -> list[FileDTO]:
+
+        for d in data:
+            self._validate_file(d, user_id)
+
+        with transaction.atomic():
+            return [self.create_file(f, user_id) for f in data]
+
+    def _validate_file(self, data: UploadedFile, user_id: int) -> None:
+        if "." not in data.name:
+            raise FileExtensionError("File has no extension.")
+
+        ext = data.name.split(".")[-1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             logger.info(
-                "Downloaded file with non-supported extention: %s, from user_id: %s",
+                "Upload rejected - unsupported extension: %s, from user_id: %s",
                 ext,
                 user_id,
             )
@@ -37,7 +96,7 @@ class FileService:
             )
         if data.size > ALLOWED_SIZE:
             logger.info(
-                "Downloaded file with too big size: %s, from user_id: %s",
+                "Upload rejected - large file weight: %s, from user_id: %s",
                 data.size,
                 user_id,
             )
@@ -46,7 +105,7 @@ class FileService:
             )
         if len(data.name) > ALLOWED_NAMESIZE:
             logger.info(
-                "Downloaded file name too long: %s, from user_id: %s",
+                "Upload rejected - long name: %s, from user_id: %s",
                 len(data.name),
                 user_id,
             )
@@ -54,34 +113,13 @@ class FileService:
                 f"File name is too long ({len(data.name)})! Try with max name size: {ALLOWED_NAMESIZE}"
             )
 
-        result = self.model.objects.create(
-            name=data.name, file=data.file, owner_id=user_id
-        )
 
-        return FileDTO(
-            owner_id=result.owner_id,
-            file_id=result.id,
-            file=result.file,
-            vizible=result.vizible,
-            created_at=result.created_at,
-        )
-
-    def get_file(self, file_id: int) -> FileDTO:
-        try:
-            result = self.model.objects.get(id=file_id)
-        except ObjectDoesNotExist:
-            logger.info("Object with id:%s not found!", file_id)
-
-        return FileDTO(
-            owner_id=result.owner_id,
-            file_id=result.id,
-            file=result.file,
-            vizible=result.vizible,
-            created_at=result.created_at,
-        )
-
-    def delete_file(self, file_id: int, user_id: int) -> None:
-        # if not get_user(user_id):
-        #     raise AttributeError
-        self.model.objects.get(id=file_id).delete()
-        logger.info("File with id:%s was deleted by user_id:%s", file_id, user_id)
+def _to_dto(file: FileModel) -> FileDTO:
+    time = file.created_at.strftime("%d.%m.%Y %H:%M:%S")
+    return FileDTO(
+        owner_id=file.owner_id,
+        file_id=file.id,
+        file=f"{settings.BASE_URL}/{file.file}",
+        visible=file.visible,
+        created_at=time,
+    )
