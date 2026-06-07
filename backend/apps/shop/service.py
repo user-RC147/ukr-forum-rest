@@ -1,13 +1,16 @@
-from .models import ProductModel
-from apps.shop.base.service_base import BaseService
-from .exceptions import UnauthorizedException, GeoNotFound
-from apps.geo.contracts.country_contract import get_country_contract
-from apps.geo.contracts.region_contract import get_region_contract
-from apps.geo.contracts.city_contract import get_city_contract
-from apps.shop.exceptions import ProductNotFound
+import dataclasses
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 
-import logging
+from apps.files.contracts import get_file_contract
+from apps.geo.contracts.city_contract import get_city_contract
+from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.region_contract import get_region_contract
+from apps.shop.base.service_base import BaseService
+
+from .exceptions import GeoNotFound, UnauthorizedException
+from .models import ProductModel
 
 logger = logging.getLogger("shop")
 
@@ -18,17 +21,46 @@ class ProductService(BaseService[ProductModel]):
         self.country_service = get_country_contract()
         self.region_service = get_region_contract()
         self.city_service = get_city_contract()
+        self.file_contract = get_file_contract()
 
     def get_all(self, user_id=None):
         if user_id:
-            return self.model.objects.all().filter(owner_id=user_id)
+            qs = self.model.objects.filter(owner_id=user_id)
+        else:
+            qs = self.model.objects.all()
 
-        return self.model.objects.all()
+        result = list(qs)
+
+        if not result:
+            return result
+
+        all_file_ids = []
+        for r in result:
+            if r.files_ids:
+                all_file_ids.extend(r.files_ids)
+
+        files_map = {}
+        if all_file_ids:
+            files_map = self.file_contract.get_files_map(all_file_ids)
+
+        for r in result:
+            r.created_at = r.created_at.strftime("%d.%m.%Y %H:%M:%S")
+            r.files = [
+                dataclasses.asdict(files_map[fid])
+                for fid in (r.files_ids or [])
+                if fid in files_map
+            ]
+
+        return result
 
     def create(self, user_id: int, data: dict) -> ProductModel:
         self.geo_validate(data)
 
         data["owner_id"] = user_id
+        files = data.pop("files")
+        file_list = self.file_contract.create_files_list(files, user_id)
+        file_ids = [i.file_id for i in file_list]
+        data["files_ids"] = file_ids
         return super().create(data)
 
     def update(self, id: int, user_id: int, data: dict) -> ProductModel:
