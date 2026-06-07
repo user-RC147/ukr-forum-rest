@@ -18,7 +18,7 @@ media/
 mediafiles/
 staticfiles/
 #static/
-files/
+backend/files
 
 # Local settings and environment
 .env
