@@ -47,7 +47,7 @@ class ProductViewSet(viewsets.ViewSet):
         except ProductNotFound as e:
             raise NotFound(detail=str(e))
 
-        serializer = ProductSerializer(product)
+        serializer = ProductReadSerializer(product)
 
         return Response(serializer.data)
 

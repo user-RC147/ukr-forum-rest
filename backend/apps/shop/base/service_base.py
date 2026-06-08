@@ -46,5 +46,4 @@ class BaseService(AbstractService[T]):
         return self.model.objects.get(id=id)
 
     def delete(self, id: int) -> None:
-        self.get(id)
         self.model.objects.get(id=id).delete()
