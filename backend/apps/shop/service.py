@@ -2,6 +2,7 @@ import dataclasses
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 
 from apps.files.contracts import get_file_contract
 from apps.geo.contracts.city_contract import get_city_contract
@@ -22,6 +23,25 @@ class ProductService(BaseService[ProductModel]):
         self.region_service = get_region_contract()
         self.city_service = get_city_contract()
         self.file_contract = get_file_contract()
+
+    def get(self, id: int) -> ProductModel:
+        result = super().get(id)
+
+        if not result:
+            return result
+
+        files_map = {}
+        if result.files_ids:
+            files_map = self.file_contract.get_files_map(result.files_ids)
+
+        result.created_at = result.created_at.strftime("%d.%m.%Y %H:%M:%S")
+        result.files = [
+            dataclasses.asdict(files_map[fid])
+            for fid in (result.files_ids or [])
+            if fid in files_map
+        ]
+
+        return result
 
     def get_all(self, user_id=None):
         if user_id:
@@ -78,12 +98,16 @@ class ProductService(BaseService[ProductModel]):
 
         product = self.get(id)
         if int(user_id) == product.owner_id:
-            return super().delete(id)
+            with transaction.atomic():
+                self.file_contract.delete_files_map(product.files_ids)
+                result = super().delete(id)
         else:
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
             )
             raise UnauthorizedException
+
+        return result
 
     def nullify_geo(self, field_name: str, geo_id: int) -> int:
 
