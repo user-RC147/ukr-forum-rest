@@ -9,6 +9,7 @@ from django.db import transaction
 from apps.files.dto import FileDTO
 from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError
 from apps.files.models import FileModel
+from apps.files.utils import _cleanup_empty_parent_dirs
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +65,12 @@ class FileService:
         except ObjectDoesNotExist:
             logger.warning("Tried to delete non-existent file id:%s", file_id)
             raise
-        logger.debug("File with id:%s was deleted", file_id)
-        transaction.on_commit(lambda: default_storage.delete(file_path))
+
+        def cleanup():
+            default_storage.delete(file_path)
+            _cleanup_empty_parent_dirs(file_path)
+
+        transaction.on_commit(cleanup)
         logger.debug("File with id:%s was deleted", file_id)
 
     def delete_files_map(self, file_ids: list[int]) -> None:
@@ -79,6 +84,7 @@ class FileService:
         def cleanup_disk():
             for path in file_paths:
                 default_storage.delete(path)
+                _cleanup_empty_parent_dirs(str(path))
 
         transaction.on_commit(cleanup_disk)
         logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
@@ -93,7 +99,8 @@ class FileService:
         with transaction.atomic():
             return [self.create_file(f, user_id) for f in data]
 
-    def _validate_file(self, data: UploadedFile, user_id: int) -> None:
+    @staticmethod
+    def _validate_file(data: UploadedFile, user_id: int) -> None:
         if "." not in data.name:
             raise FileExtensionError("File has no extension.")
 
