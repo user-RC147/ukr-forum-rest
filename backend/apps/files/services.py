@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
@@ -98,6 +99,45 @@ class FileService:
 
         with transaction.atomic():
             return [self.create_file(f, user_id) for f in data]
+
+    def update_files_map(
+        self, data: list[UploadedFile], user_id: int, target_ids: list[int]
+    ) -> list[FileDTO]:
+        for d in data:
+            self._validate_file(d, user_id)
+
+        files = list(self.model.objects.filter(id__in=target_ids).order_by("id"))
+
+        if not files:
+            return []
+
+        old_file_paths = [f.file.name for f in files]
+        new_file_paths = []
+
+        for file, d in zip(files, data):
+            file.name = d.name
+            file.file.save(d.name, ContentFile(d.file.read()), save=False)
+            new_file_paths.append(file.file.name)
+
+        try:
+            with transaction.atomic():
+                self.model.objects.bulk_update(files, fields=["name", "file"])
+
+                def cleanup_disk():
+                    for path in old_file_paths:
+                        default_storage.delete(path)
+                        _cleanup_empty_parent_dirs(str(path))
+
+                transaction.on_commit(cleanup_disk)
+        except Exception:
+            for path in new_file_paths:
+                default_storage.delete(path)
+                _cleanup_empty_parent_dirs(str(path))
+            raise
+
+        logger.debug("Updated files with ids: %s", target_ids)
+
+        return [_to_dto(f) for f in files]
 
     @staticmethod
     def _validate_file(data: UploadedFile, user_id: int) -> None:

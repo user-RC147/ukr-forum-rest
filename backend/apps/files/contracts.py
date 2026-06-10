@@ -30,6 +30,11 @@ class FileContract:
     def delete_files_map(self, files_ids: list[int]) -> None:
         return self.service.delete_files_map(files_ids)
 
+    def update_files_map(
+        self, data: list[UploadedFile], user_id: int, target_ids: list[int]
+    ) -> list[FileDTO]:
+        return self.service.update_files_map(data, user_id, target_ids)
+
 
 def get_file_contract() -> FileProtocol:
     return FileContract()
