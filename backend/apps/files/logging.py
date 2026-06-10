@@ -4,7 +4,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 LOGGING = {
     "handlers": {
-        "shop_file": {
+        "files_file": {
             "class": "logging.FileHandler",
             "filename": str(BASE_DIR / "files.log"),
             "encoding": "utf-8",
@@ -13,9 +13,9 @@ LOGGING = {
         },
     },
     "loggers": {
-        "shop": {
+        "apps.files": {
             "level": "DEBUG",
-            "handlers": ["err", "dbg", "inf", "shop_file"],
+            "handlers": ["err", "dbg", "inf", "files_file"],
             "propagate": False,
         },
     },
