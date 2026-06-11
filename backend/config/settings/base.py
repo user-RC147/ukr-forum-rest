@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.household",
     "apps.shop",
     "apps.files",
+    "apps.search",
 ]
 
 MIDDLEWARE = [
@@ -151,13 +152,6 @@ FRONTEND_URL = "http://localhost:5173"
 # MEDIA_URL = "media/"
 
 
-
-from config.logging import merge_logging_configs
-
-from apps.shop.logging import LOGGING as SHOP_LOGGING
-
-LOGGING = merge_logging_configs(SHOP_LOGGING)
-
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
@@ -178,5 +172,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 # --- Logger conf---
 from apps.files.logging import LOGGING as FILES_LOGGING
+from apps.shop.logging import LOGGING as SHOP_LOGGING
+from apps.search.logging import LOGGING as SEARCH_LOGGING
+from config.logging import merge_logging_configs
 
-LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING)
+LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING, SEARCH_LOGGING)
