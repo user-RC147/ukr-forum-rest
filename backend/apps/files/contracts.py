@@ -9,26 +9,31 @@ class FileContract:
     def __init__(self) -> None:
         self.service = FileService()
 
-    def create_file(self, data: UploadedFile, user_id: int) -> FileDTO:
-        return self.service.create_file(data, user_id)
+    def create(self, data: UploadedFile, user_id: int) -> FileDTO:
+        return self.service.create(data, user_id)
 
-    def get_file(self, file_id: int) -> FileDTO:
-        return self.service.get_file(file_id)
+    def get(self, file_id: int) -> FileDTO:
+        return self.service.get(file_id)
 
-    def get_files_map(self, files_ids: list[int]) -> dict[int, FileDTO]:
-        return self.service.get_files_map(files_ids)
+    def get_many(self, files_ids: list[int]) -> dict[int, FileDTO]:
+        return self.service.get_many(files_ids)
 
-    def create_files_list(
+    def create_many(
         self, data: list[UploadedFile], user_id: int
     ) -> list[FileDTO]:
-        return self.service.create_files_list(data, user_id)
+        return self.service.create_many(data, user_id)
 
-    def delete_file(self, file_id: int) -> None:
+    def delete(self, file_id: int) -> None:
 
-        return self.service.delete_file(file_id)
+        return self.service.delete(file_id)
 
-    def delete_files_map(self, files_ids: list[int]) -> None:
-        return self.service.delete_files_map(files_ids)
+    def delete_many(self, files_ids: list[int]) -> None:
+        return self.service.delete_many(files_ids)
+
+    def update_many(
+        self, data: list[UploadedFile], user_id: int, target_ids: list[int]
+    ) -> list[FileDTO]:
+        return self.service.update_many(data, user_id, target_ids)
 
 
 def get_file_contract() -> FileProtocol:
