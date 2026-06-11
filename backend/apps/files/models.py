@@ -23,11 +23,15 @@ def file_directory_path(instance, filename):
 
 
 class FileModel(models.Model):
-    file = models.FileField(upload_to=file_directory_path, max_length=100)
-    name = models.CharField(max_length=100, blank=False)
-    owner_id = models.PositiveIntegerField(blank=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    visible = models.BooleanField(default=True)
+    file = models.FileField(
+        upload_to=file_directory_path, max_length=100, verbose_name="Шлях до файлу"
+    )
+    name = models.CharField(max_length=100, blank=False, verbose_name="Ім'я файлу")
+    owner_id = models.PositiveIntegerField(
+        blank=False, verbose_name="Айді власника(юзера)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
+    visible = models.BooleanField(default=True, verbose_name="Видимість")
 
     class Meta:
         db_table = "file"
@@ -36,11 +40,10 @@ class FileModel(models.Model):
         verbose_name_plural = "Файли"
 
     def __str__(self) -> str:
-
-        if len(self.name) > 15:
-            title = self.name[:16] + self.name.split(".")[-1]
+        if len(self.name) > 16:
+            ext = Path(self.name).suffix
+            name = f"{Path(self.name).stem[:12]}…{ext}"
         else:
-            title = self.name
-        date = self.created_at.strftime("%d.%m.%y")
+            name = self.name
 
-        return f"{title} - {date} - id: {self.id}"
+        return f"[{self.id}] {name} (owner: {self.owner_id})"
