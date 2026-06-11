@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.shop.exceptions import GeoNotFound, ProductNotFound, UnauthorizedException
-from apps.shop.schemas import product_create_schema
+from apps.shop.schemas import product_create_schema, product_update_schema
 
 from .serializers import ProductReadSerializer, ProductSerializer
 from .service import ProductService
@@ -51,6 +51,7 @@ class ProductViewSet(viewsets.ViewSet):
 
         return Response(serializer.data)
 
+    @product_update_schema
     def partial_update(self, request, pk):
         try:
             product = self.service.get(pk)
@@ -67,7 +68,7 @@ class ProductViewSet(viewsets.ViewSet):
         except UnauthorizedException:
             raise PermissionDenied(detail="Access denied")
 
-        return Response(ProductSerializer(product).data, status=status.HTTP_200_OK)
+        return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
     def list(self, request):
         product = self.service.get_all()

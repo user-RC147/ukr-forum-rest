@@ -32,7 +32,7 @@ class ProductService(BaseService[ProductModel]):
 
         files_map = {}
         if result.files_ids:
-            files_map = self.file_contract.get_files_map(result.files_ids)
+            files_map = self.file_contract.get_many(result.files_ids)
 
         result.created_at = result.created_at.strftime("%d.%m.%Y %H:%M:%S")
         result.files = [
@@ -61,7 +61,7 @@ class ProductService(BaseService[ProductModel]):
 
         files_map = {}
         if all_file_ids:
-            files_map = self.file_contract.get_files_map(all_file_ids)
+            files_map = self.file_contract.get_many(all_file_ids)
 
         for r in result:
             r.created_at = r.created_at.strftime("%d.%m.%Y %H:%M:%S")
@@ -78,8 +78,8 @@ class ProductService(BaseService[ProductModel]):
 
         data["owner_id"] = user_id
         files = data.pop("files")
-        file_list = self.file_contract.create_files_list(files, user_id)
-        file_ids = [i.file_id for i in file_list]
+        file_list = self.file_contract.create_many(files, user_id)
+        file_ids = [i.id for i in file_list]
         data["files_ids"] = file_ids
         return super().create(data)
 
@@ -87,7 +87,11 @@ class ProductService(BaseService[ProductModel]):
         self.geo_validate(data)
         product = self.get(id)
         if int(user_id) == product.owner_id:
-            return super().update(id, data)
+            with transaction.atomic():
+                files = data.pop("files")
+                target_ids = product.files_ids
+                self.file_contract.update_many(files, user_id, target_ids)
+                return super().update(id, data)
         else:
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
@@ -99,7 +103,7 @@ class ProductService(BaseService[ProductModel]):
         product = self.get(id)
         if int(user_id) == product.owner_id:
             with transaction.atomic():
-                self.file_contract.delete_files_map(product.files_ids)
+                self.file_contract.delete_many(product.files_ids)
                 result = super().delete(id)
         else:
             logger.warning(
