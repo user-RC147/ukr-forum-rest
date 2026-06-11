@@ -29,14 +29,14 @@ class FileService:
     def __init__(self, model=FileModel) -> None:
         self.model = model
 
-    def create_file(self, data: UploadedFile, user_id: int) -> FileDTO:
+    def create(self, data: UploadedFile, user_id: int) -> FileDTO:
         self._validate_file(data, user_id)
 
         result = self.model.objects.create(name=data.name, file=data, owner_id=user_id)
 
         return _to_dto(result)
 
-    def get_file(self, file_id: int) -> FileDTO:
+    def get(self, file_id: int) -> FileDTO:
         try:
             result = self.model.objects.get(id=file_id)
         except ObjectDoesNotExist:
@@ -45,7 +45,7 @@ class FileService:
 
         return _to_dto(result)
 
-    def get_files_map(self, file_ids: list[int]) -> dict[int, FileDTO]:
+    def get_many(self, file_ids: list[int]) -> dict[int, FileDTO]:
         if not file_ids:
             return {}
 
@@ -58,7 +58,7 @@ class FileService:
 
         return {f.id: _to_dto(f) for f in files}
 
-    def delete_file(self, file_id: int) -> None:
+    def delete(self, file_id: int) -> None:
         try:
             instance = self.model.objects.get(id=file_id)
             file_path = instance.file
@@ -74,7 +74,7 @@ class FileService:
         transaction.on_commit(cleanup)
         logger.debug("File with id:%s was deleted", file_id)
 
-    def delete_files_map(self, file_ids: list[int]) -> None:
+    def delete_many(self, file_ids: list[int]) -> None:
         if not file_ids:
             return
         data = self.model.objects.filter(id__in=file_ids)
@@ -90,17 +90,15 @@ class FileService:
         transaction.on_commit(cleanup_disk)
         logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
 
-    def create_files_list(
-        self, data: list[UploadedFile], user_id: int
-    ) -> list[FileDTO]:
+    def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileDTO]:
 
         for d in data:
             self._validate_file(d, user_id)
 
         with transaction.atomic():
-            return [self.create_file(f, user_id) for f in data]
+            return [self.create(f, user_id) for f in data]
 
-    def update_files_map(
+    def update_many(
         self, data: list[UploadedFile], user_id: int, target_ids: list[int]
     ) -> list[FileDTO]:
         for d in data:
@@ -114,7 +112,7 @@ class FileService:
         old_file_paths = [f.file.name for f in files]
         new_file_paths = []
 
-        for file, d in zip(files, data):
+        for file, d in zip(files, data, strict=False):
             file.name = d.name
             file.file.save(d.name, ContentFile(d.file.read()), save=False)
             new_file_paths.append(file.file.name)
@@ -123,21 +121,43 @@ class FileService:
             with transaction.atomic():
                 self.model.objects.bulk_update(files, fields=["name", "file"])
 
+                result = [_to_dto(f) for f in files[: len(data)]]
+
+                if len(files) < len(data):
+                    remainder = self.create_many(data[len(files) :], user_id)
+                    result.extend(remainder)
+                    logger.debug(
+                        "Updated files with ids: %s, added files with ids: %s",
+                        target_ids,
+                        [i.id for i in remainder],
+                    )
+                elif len(files) > len(data):
+                    excess = files[len(data) :]
+                    delete_ids = [f.id for f in excess]
+                    result = result[: len(data)]
+                    self.delete_many(delete_ids)
+                    logger.debug(
+                        "Updated files with ids: %s, deleted files with ids: %s",
+                        target_ids,
+                        delete_ids,
+                    )
+                else:
+                    logger.debug("Updated files with ids: %s", target_ids)
+
                 def cleanup_disk():
                     for path in old_file_paths:
                         default_storage.delete(path)
                         _cleanup_empty_parent_dirs(str(path))
 
                 transaction.on_commit(cleanup_disk)
+
         except Exception:
             for path in new_file_paths:
                 default_storage.delete(path)
                 _cleanup_empty_parent_dirs(str(path))
             raise
 
-        logger.debug("Updated files with ids: %s", target_ids)
-
-        return [_to_dto(f) for f in files]
+        return result
 
     @staticmethod
     def _validate_file(data: UploadedFile, user_id: int) -> None:
@@ -178,7 +198,7 @@ def _to_dto(file: FileModel) -> FileDTO:
     time = file.created_at.strftime("%d.%m.%Y %H:%M:%S")
     return FileDTO(
         owner_id=file.owner_id,
-        file_id=file.id,
+        id=file.id,
         file=f"{settings.BASE_URL}/{file.file}",
         visible=file.visible,
         created_at=time,
