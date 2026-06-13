@@ -11,6 +11,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 class GeoService:
 
+    def __init__(self,repository):
+        self.repository=repository
+
     # -------------------------------------------------------
     # Для фронту — реєстрація і зміна локації
     # Беремо з зовнішнього API і зберігаємо в локальну БД
@@ -130,4 +133,4 @@ class GeoService:
         if not region or not region.api_id:
             return []
 
-geo_service = GeoService()
+#geo_service = GeoService()
