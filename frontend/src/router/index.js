@@ -17,8 +17,7 @@ const routes = [
                 name: 'profile',
                 component: () => import('../modules/users/views/ProfileView.vue'),
                 meta: { requiresAuth: true },
-                
-            },            
+            },
             {
                 path: 'geo/location',
                 name: 'location',
@@ -49,8 +48,42 @@ const routes = [
                 component: () => import('../modules/users/views/HomeView.vue'), // тимчасово
                 meta: { requiresAuth: true },
             },
+            {
+                path: 'outlay',
+                name: 'outlay',
+                component: () => import('../modules/users/views/HomeView.vue'),
+                meta: { requiresAuth: true },
+            },
+            {
+                path: 'household',
+                component: () => import('../modules/household/views/HouseHoldIndexView.vue'),
+                meta: { requiresAuth: true },
+                children: [
+                    {
+                        path: '',
+                        name: 'household-index',
+                        component: () => import('../modules/household/views/OutlayAllView.vue'),
+                    },
+                    {
+                        path: 'purchases/create',
+                        name: 'household-purchases-create',
+                        component: () => import('../modules/household/views/purchases/PurchaseCreateView.vue'),
+                    },
+                    {
+                        path: 'groups/create',
+                        name: 'household-group-create',
+                        component: () => import('../modules/household/views/group/GroupCreate.vue'),
+                    },
+                    {
+                        path:'assets/create',
+                        name:'household-asset-create',
+                        component: ()=>import('../modules/household/views/assets/AssetCreate.vue')
+                    },
+                ],
+            },
         ],
     },
+
     {
         path: '/auth',
         component: () => import('../shared/layouts/AuthLayout.vue'),

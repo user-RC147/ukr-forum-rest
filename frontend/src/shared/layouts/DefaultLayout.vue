@@ -1,3 +1,18 @@
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../../modules/users/stores/useUserStore'
+
+const router = useRouter()
+const userStore = useUserStore()
+const mobileMenuOpen = ref(false)
+
+const handleLogout = () => {
+  userStore.logout()
+  router.push({ name: 'login' })
+}
+</script>
+
 <template>
   <div class="app-bg w-full m-0 p-0">    
 
@@ -33,6 +48,10 @@
           <RouterLink to="/stories"
             class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             Досвід / Розповіді
+          </RouterLink>
+          <RouterLink to="/household"
+            class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+            ДомВитрати
           </RouterLink>
         </div>
 
@@ -89,6 +108,12 @@
                 Досвід / Розповіді
               </RouterLink>
             </li>
+            <li>
+              <RouterLink to="/household" @click="mobileMenuOpen = false"
+                class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
+                ДомВитрати
+              </RouterLink>
+            </li>
           </ul>
         </div>
 
@@ -102,18 +127,3 @@
 
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '../../modules/users/stores/useUserStore'
-
-const router = useRouter()
-const userStore = useUserStore()
-const mobileMenuOpen = ref(false)
-
-const handleLogout = () => {
-  userStore.logout()
-  router.push({ name: 'login' })
-}
-</script>

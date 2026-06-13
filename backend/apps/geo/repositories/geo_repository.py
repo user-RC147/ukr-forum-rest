@@ -1,5 +1,6 @@
 # apps/geo/repositories/geo_repository.py
 from apps.geo.models import Country, Region, City
+from typing import Optional
 
 
 class GeoRepository:
@@ -40,6 +41,31 @@ class GeoRepository:
             }
         )
         return city
+
+
+#=====
+# Додати всередину класу GeoRepository у файлі apps/geo/repositories/geo_repository.py:
+
+    def get_country_by_code(self, code: str) -> Optional[Country]:
+        return Country.objects.filter(code=code).first()
+
+    def get_region_by_id_with_country(self, region_id: int) -> Optional[Region]:
+        return Region.objects.select_related('country').filter(id=region_id).first()
+
+    def get_city_by_id(self, city_id: int) -> Optional[City]:
+        return City.objects.filter(id=city_id).first()
+
+    def country_exists(self, country_id: int) -> bool:
+        return Country.objects.filter(id=country_id).exists()
+
+    def region_exists(self, region_id: int) -> bool:
+        return Region.objects.filter(id=region_id).exists()
+
+    def city_exists(self, city_id: int) -> bool:
+        return City.objects.filter(id=city_id).exists()
+
+#=====
+
 
 
 geo_repository = GeoRepository()

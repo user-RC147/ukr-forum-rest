@@ -1,24 +1,39 @@
 from typing import Protocol
+from dataclasses import dataclass
 
 
-class GeoServiceProtocol(Protocol):
-
-    def get_countries(self) -> dict: ...
-
-    def get_regions(self, country_code: str | None = None) -> dict: ...
-
-    def get_cities(
-        self, region_id: str | None = None, search: str | None = None
-    ) -> dict: ...
+@dataclass
+class CountryData:
+    id:int
+    name:str
+    code:str
 
 
-class GeoRepositoryProtocol(Protocol):
+@dataclass
+class RegionData:
+    id:int
+    name:str
+    country_id:int
 
-    def get_or_create_country(self, api_data: dict): ...
 
-    def get_or_create_region(self, api_data: dict, country): ...
+@dataclass
+class CityData:
+    id:int
+    name:str
+    region_id:int
 
-    def get_or_ctreate_city(self, api_data: dict, country, region): ...
+
+
+
+
+class IGeoContract(Protocol):
+
+    def get_country(self,country_id:int) -> CountryData: ...
+
+    def get_region(self, region_id:int) -> RegionData: ...
+
+    def get_citie(self,city_id:int)->CityData: ...
+
 
 
 class LocationProtocol(Protocol):

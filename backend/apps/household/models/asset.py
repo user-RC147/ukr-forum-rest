@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 from core.mixins.LocationMixin import LocationMixin, PrivateLocationMixin
 
@@ -27,6 +28,20 @@ class Asset(LocationMixin,models.Model):
         verbose_name="Адреса(вул.+дім)"
     )
    
+
+
+    created_by=models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # ← завжди вказує на активну модель користувача
+        on_delete=models.CASCADE,
+        null=True,      # ← додати тимчасово
+        blank=True,     # ← додати тимчасово
+        verbose_name="Створив",
+    )
+   
+    created_at=models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата створення"
+        )
 
     class Meta:
         db_table = "household_asset"

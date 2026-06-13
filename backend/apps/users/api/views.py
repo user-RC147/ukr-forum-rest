@@ -26,6 +26,7 @@ class RegisterView(APIView):
     Реєстрація нового користувача.
     Доступно всім — без авторизації.
     """
+    
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -55,6 +56,7 @@ class ProfileView(APIView):
 
     def get(self, request):
         # request.user — поточний авторизований користувач (з JWT токена)
+        
         user = get_profile(request.user)
 
         # серіалізатор для відповіді — перетворює об'єкт користувача в JSON

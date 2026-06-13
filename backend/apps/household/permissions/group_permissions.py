@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 
-from apps.household.models import GroupMember
+from apps.household.models.group import GroupMember
 
 
 class IsGroupMember(BasePermission):
