@@ -2,7 +2,9 @@ import dataclasses
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import QuerySet
 
 from apps.files.contracts import get_file_contract
 from apps.geo.contracts.city_contract import get_city_contract
@@ -34,7 +36,6 @@ class ProductService(BaseService[ProductModel]):
         if result.files_ids:
             files_map = self.file_contract.get_many(result.files_ids)
 
-        result.created_at = result.created_at.strftime("%d.%m.%Y %H:%M:%S")
         result.files = [
             dataclasses.asdict(files_map[fid])
             for fid in (result.files_ids or [])
@@ -43,11 +44,12 @@ class ProductService(BaseService[ProductModel]):
 
         return result
 
-    def get_all(self, user_id=None):
-        if user_id:
-            qs = self.model.objects.filter(owner_id=user_id)
-        else:
-            qs = self.model.objects.all()
+    def get_all(self, user_id=None, page: int = 1, page_size: int = 20):
+        qs = (
+            self.model.objects.filter(owner_id=user_id)
+            if user_id
+            else self.model.objects.all()
+        )
 
         result = list(qs)
 
@@ -64,14 +66,15 @@ class ProductService(BaseService[ProductModel]):
             files_map = self.file_contract.get_many(all_file_ids)
 
         for r in result:
-            r.created_at = r.created_at.strftime("%d.%m.%Y %H:%M:%S")
             r.files = [
                 dataclasses.asdict(files_map[fid])
                 for fid in (r.files_ids or [])
                 if fid in files_map
             ]
 
-        return result
+        result = Paginator(result, page_size)
+
+        return result.page(page).object_list
 
     def create(self, user_id: int, data: dict) -> ProductModel:
         self.geo_validate(data)
@@ -138,3 +141,13 @@ class ProductService(BaseService[ProductModel]):
     def delete_all_by_user(self, user_id: int) -> int:
         deleted, _ = self.model.objects.filter(owner_id=user_id).delete()
         return deleted
+
+    @staticmethod
+    def get_searchable_queryset() -> QuerySet[ProductModel]:
+        return ProductModel.objects.filter(
+            visible=True,
+        )
+
+
+def get_service() -> ProductService:
+    return ProductService()
