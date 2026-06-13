@@ -3,7 +3,7 @@ from apps.users.models import CustomUser
 from apps.users.dto import ProfileUpdateDTO, LocationUpdateDTO
 from apps.users.repositories.user_repository import user_repository
 from apps.users.contracts.geo_contract import GeoServiceProtocol
-from apps.geo.services.geo_service import GeoService
+from apps.geo.services.geo_service import geo_service
 
 
 def update_profile(
@@ -22,7 +22,7 @@ def update_profile(
 def update_location(
         user: CustomUser,
         dto: LocationUpdateDTO,
-        geo_svc: GeoServiceProtocol = GeoService,
+        geo_svc: GeoServiceProtocol = geo_service,
         ) -> CustomUser:
     """
     Оновлює локацію користувача.

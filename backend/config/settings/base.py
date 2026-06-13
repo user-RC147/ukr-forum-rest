@@ -1,5 +1,6 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -35,11 +36,13 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
+    'django.contrib.postgres',
     # Local
     "apps.users",
     "apps.geo",
     "apps.household",
     "apps.shop",
+    "apps.files",
 ]
 
 MIDDLEWARE = [
@@ -144,6 +147,8 @@ DEFAULT_FROM_EMAIL = "noreply@ukr-forum.com"
 # --- Frontend URL (для посилань в email) ---
 FRONTEND_URL = "http://localhost:5173"
 
+# --- Serving files uploaded---
+# MEDIA_URL = "media/"
 
 
 
@@ -171,3 +176,7 @@ SIMPLE_JWT = {
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
+# --- Logger conf---
+from apps.files.logging import LOGGING as FILES_LOGGING
+
+LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING)

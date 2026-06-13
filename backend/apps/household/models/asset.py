@@ -6,7 +6,6 @@ from core.mixins.LocationMixin import LocationMixin, PrivateLocationMixin
 from apps.household.models.group import Group
 
 
-
 class Asset(LocationMixin,models.Model):
     """
     Конкретний актив групи — дім, авто, дача тощо.
@@ -28,6 +27,7 @@ class Asset(LocationMixin,models.Model):
         blank=True,
         verbose_name="Адреса(вул.+дім)"
     )
+   
 
 
     created_by=models.ForeignKey(

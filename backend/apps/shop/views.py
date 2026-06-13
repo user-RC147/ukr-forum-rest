@@ -1,11 +1,13 @@
-from rest_framework import viewsets
-from .serializers import ProductSerializer
-from .service import ProductService
-from rest_framework.response import Response
-from rest_framework import status
-from apps.shop.exceptions import ProductNotFound, UnauthorizedException
+from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.shop.exceptions import GeoNotFound, ProductNotFound, UnauthorizedException
+from apps.shop.schemas import product_create_schema, product_update_schema
+
+from .serializers import ProductReadSerializer, ProductSerializer
+from .service import ProductService
 
 
 class ProductViewSet(viewsets.ViewSet):
@@ -22,15 +24,22 @@ class ProductViewSet(viewsets.ViewSet):
             return [IsAuthenticated()]
         return []
 
+    @product_create_schema
     def create(self, request):
-        serializer = ProductSerializer(data=request.data)
+        data = request.data.dict()
+        data["files"] = request.FILES.getlist("files")
+        serializer = ProductSerializer(data=data)
         serializer.is_valid(raise_exception=True)  # 400 if not valid
+        try:
+            product = self.service.create(
+                user_id=request.user.id, data=serializer.validated_data
+            )
+        except GeoNotFound as e:
+            raise NotFound(detail=str(e))
 
-        product = self.service.create(
-            user_id=request.user.id, data=serializer.validated_data
+        return Response(
+            ProductReadSerializer(product).data, status=status.HTTP_201_CREATED
         )
-
-        return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
         try:
@@ -38,10 +47,11 @@ class ProductViewSet(viewsets.ViewSet):
         except ProductNotFound as e:
             raise NotFound(detail=str(e))
 
-        serializer = ProductSerializer(product)
+        serializer = ProductReadSerializer(product)
 
         return Response(serializer.data)
 
+    @product_update_schema
     def partial_update(self, request, pk):
         try:
             product = self.service.get(pk)
@@ -58,12 +68,12 @@ class ProductViewSet(viewsets.ViewSet):
         except UnauthorizedException:
             raise PermissionDenied(detail="Access denied")
 
-        return Response(ProductSerializer(product).data, status=status.HTTP_200_OK)
+        return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
     def list(self, request):
         product = self.service.get_all()
 
-        serializer = ProductSerializer(product, many=True)
+        serializer = ProductReadSerializer(product, many=True)
 
         return Response(serializer.data)
 
