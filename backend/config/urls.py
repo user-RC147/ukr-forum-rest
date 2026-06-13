@@ -35,6 +35,12 @@ urlpatterns = [
     
 ]
 
+#rest framework
+urlpatterns+=[
+    #URLs specific omly to Django REST Framework:
+    path('api-auth/',include('rest_framework.urls')),
+]
+
 # debug toolbar тільки в режимі розробки
 if settings.DEBUG:
     import debug_toolbar

@@ -17,9 +17,13 @@ class HouseholdConfig(AppConfig):
         if self._asset_service is None:
             from apps.household.selectors import AssetSelector
             from apps.household.services import AssetService
+            from apps.household.repositories import AssetRepo
 
             asset_selector = AssetSelector()
-            self._asset_service = AssetService(selector=asset_selector)
+            self._asset_service = AssetService(
+                selector=asset_selector,
+                repository=AssetRepo()
+                )
         return self._asset_service
 
     @property
@@ -73,6 +77,6 @@ class HouseholdConfig(AppConfig):
             from apps.household.services import GroupService
 
             self._group_service = GroupService(
-                repository=GroupRepo(), group_selector=GroupSelector()
+                group_repo=GroupRepo(), group_selector=GroupSelector()
             )
         return self._group_service

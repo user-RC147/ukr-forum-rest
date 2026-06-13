@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 GEO_API_URL = os.getenv("GEO_API_URL")
 GEO_API_TOKEN = os.getenv("GEO_API_TOKEN")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []   #["127.0.0.1", "localhost"]
 
 # --- Додатки ---
 INSTALLED_APPS = [
@@ -29,18 +29,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
-    
     # Third party
     "rest_framework",
     "rest_framework_simplejwt",
-    'rest_framework_simplejwt.token_blacklist',
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     # Local
-    'apps.users',
-    'apps.geo',
-    'apps.household',
+    "apps.users",
+    "apps.geo",
+    "apps.household",
     "apps.shop",
 ]
 
@@ -95,9 +93,15 @@ AUTH_USER_MODEL = "users.CustomUser"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
     ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# DEFAULT_PERMISSION_CLASSES=[
+#     'rest_framework.permissions.IsAuthenticated',
+# ]
 
 # --- OpenAPI документація (drf-spectacular) ---
 SPECTACULAR_SETTINGS = {
@@ -141,6 +145,8 @@ DEFAULT_FROM_EMAIL = "noreply@ukr-forum.com"
 FRONTEND_URL = "http://localhost:5173"
 
 
+
+
 from config.logging import merge_logging_configs
 
 from apps.shop.logging import LOGGING as SHOP_LOGGING
@@ -150,12 +156,18 @@ LOGGING = merge_logging_configs(SHOP_LOGGING)
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    
-    # Refresh токен зазвичай роблять довшим (наприклад, 7 днів), 
+    # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
     # щоб користувач не переавторизовувався щодня
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    
     # Решта ваших поточних налаштувань SIMPLE_JWT (якщо вони є)
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
+
+
+# Куди перенаправляти користувача після успішного входу
+#LOGIN_REDIRECT_URL = "/api/docs/"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]

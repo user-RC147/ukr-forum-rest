@@ -1,3 +1,4 @@
+from email.headerregistry import Group
 from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +8,7 @@ from apps.household.api.serializers import GroupMemberOutSerializer,GroupOutSeri
 from apps.household.selectors import GroupSelector
 from apps.household.apps import HouseholdConfig
 from apps.household.services import GroupService
+from apps.household.dto import GroupOutDTO
 from drf_spectacular.utils import extend_schema
 
 
@@ -18,16 +20,24 @@ class GroupViewSet(viewsets.ViewSet):
     """
     permission_classes=[IsAuthenticated]
 
+
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
+
         
         # 1. Отримуємо живий екземпляр конфігу додатка з реєстру Django
         household_config = apps.get_app_config('household')
+
         
         # 2. Тепер властивість спрацює правильно і поверне зібраний GroupService
         self._service = household_config.group_service
 
 
+    #чи є користувач частиною групи
+    #Викликаємо метод екземпляра сервісу, передаючи ID авторизованого юзера
+    def auth_user_group(self,request):
+        user =self._service.get_all_list(user_id=request.user.id)
+        return user
 
 
     def list(self, request):
@@ -50,11 +60,14 @@ class GroupViewSet(viewsets.ViewSet):
     #     request=CreateGroupInSerializer,
     #     responses={201: {"type": "object", "properties": {"id": {"type": "integer"}, "detail": {"type": "string"}}}}
     # )
+
+    @extend_schema(request=CreateGroupInSerializer, responses={201: None})
     def create(self, request):
         """
         POST /api/household/groups/
         Створення нової групи поточним аутентифікованим користувачем.
         """
+
         # 1. Передаємо сирі дані в серіалізатор для перевірки
         serializer=CreateGroupInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
