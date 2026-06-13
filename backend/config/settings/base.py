@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # BASE_DIR вказує на папку backend/
 # __file__ = backend/config/settings/base.py
@@ -19,7 +20,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 GEO_API_URL = os.getenv("GEO_API_URL")
 GEO_API_TOKEN = os.getenv("GEO_API_TOKEN")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []   #["127.0.0.1", "localhost"]
 
 # --- Додатки ---
 INSTALLED_APPS = [
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     # Third party
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     'django.contrib.postgres',
@@ -94,9 +96,15 @@ AUTH_USER_MODEL = "users.CustomUser"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
     ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# DEFAULT_PERMISSION_CLASSES=[
+#     'rest_framework.permissions.IsAuthenticated',
+# ]
 
 # --- OpenAPI документація (drf-spectacular) ---
 SPECTACULAR_SETTINGS = {
@@ -142,9 +150,33 @@ FRONTEND_URL = "http://localhost:5173"
 # --- Serving files uploaded---
 # MEDIA_URL = "media/"
 
+
+
+from config.logging import merge_logging_configs
+
+from apps.shop.logging import LOGGING as SHOP_LOGGING
+
+LOGGING = merge_logging_configs(SHOP_LOGGING)
+
+SIMPLE_JWT = {
+    # Змінюємо час дії основного токена на 24 години (1 день)
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
+    # щоб користувач не переавторизовувався щодня
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    # Решта ваших поточних налаштувань SIMPLE_JWT (якщо вони є)
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+
+
+# Куди перенаправляти користувача після успішного входу
+#LOGIN_REDIRECT_URL = "/api/docs/"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
 # --- Logger conf---
 from apps.files.logging import LOGGING as FILES_LOGGING
-from apps.shop.logging import LOGGING as SHOP_LOGGING
-from config.logging import merge_logging_configs
 
 LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING)
