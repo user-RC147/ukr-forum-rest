@@ -28,6 +28,9 @@ urlpatterns = [
     #Shop
     path('api/shop/',include('apps.shop.urls')),
 
+    #Search
+    path('api/search/',include('apps.search.urls')),
+
     # OpenAPI документація — відкрий http://localhost:8000/api/docs/
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
