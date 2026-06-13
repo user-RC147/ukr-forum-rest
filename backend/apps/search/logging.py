@@ -15,7 +15,7 @@ LOGGING = {
     "loggers": {
         "apps.search": {
             "level": "DEBUG",
-            "handlers": ["err", "dbg", "inf", "files_file"],
+            "handlers": ["err", "dbg", "inf", "search_file"],
             "propagate": False,
         },
     },
