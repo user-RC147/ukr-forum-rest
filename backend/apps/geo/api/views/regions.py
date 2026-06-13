@@ -2,7 +2,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from apps.geo.services.geo_service import geo_service
+
+from django.apps import apps
 from dataclasses import asdict
 
 
@@ -14,6 +15,10 @@ class RegionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
+        # 2. Отримуємо налаштований geo_service з IoC-контейнера
+        geo_service = apps.get_app_config('geo').service
+
         country_code = request.query_params.get('country_code', '')
         if not country_code:
             return Response({'results': []})
