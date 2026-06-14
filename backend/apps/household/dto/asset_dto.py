@@ -6,3 +6,9 @@ class CreateAssetDTO:
     group_id:int
     user_id: int                     # ID користувача, який створює (created_by)
     address_line: str | None = None  # Може бути рядком або None, за замовчуванням None
+
+
+@dataclass(frozen=True)
+class ListAssetDTO:
+    group_id: int | None = None
+    user_id: int | None = None  # ← Додаємо для ідентифікації користувача

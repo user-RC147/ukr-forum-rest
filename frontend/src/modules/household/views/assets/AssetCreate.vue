@@ -25,7 +25,7 @@ const store=useAssetStore()
 
 const groupStore=useGroupStore()
 // беремо групу з URL, наприклад ?group=2
-const selectedGroupId=ref(route.query.group ? +route.query.group : null)
+const selectedGroupId=ref(route.query.group_id ? +route.query.group_id : null)
 
 // назва вибраної групи для відображення
 const selectedGroup = computed(() =>

@@ -1,4 +1,4 @@
-from .asset_serializer import AssetSerializer
+from .asset_serializer import AssetSerializer,AssetListFilterSerializer
 from .group_serializer import GroupMemberOutSerializer,GroupOutSerializer,CreateGroupInSerializer
 from .market_serializer import MarketSerializer
 from .product_serializer import ProductSerializer
@@ -14,5 +14,6 @@ __all__=[
     'ProductSerializer',
     'PurchaseCreateSerializer',
     'PurchaseItemCreateSerializer',
+    'AssetListFilterSerializer',
     
 ]
