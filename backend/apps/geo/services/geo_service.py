@@ -1,6 +1,9 @@
 # apps/geo/services/geo_service.py
 
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.manager import BaseManager
 
 from apps.geo.clients.geo_api_client import geo_api_client
 from apps.geo.dto.city import CityDTO
@@ -8,6 +11,8 @@ from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.geo.models import City, Country, Region
 from apps.geo.repositories.geo_repository import geo_repository
+
+logger = logging.getLogger(__name__)
 
 
 class GeoService:
@@ -122,35 +127,45 @@ class GeoService:
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
 
-    def get_countries(self, ids: list[int]) -> list[CountryDTO]:
+    def get_countries(self, ids: list[int]) -> list[BaseManager[Country]]:
         if not ids:
             return []
-        return [
-            CountryDTO(
-                id=c.id,
-                name=c.name,
-                name_ua=c.name_ua,
-                code=c.code,
-                flag_emoji=c.flag_emoji,
-            )
-            for c in Country.objects.filter(id__in=ids)
-        ]
 
-    def get_regions(self, ids: list[int]) -> list[RegionDTO]:
-        if not ids:
-            return []
-        return [
-            RegionDTO(id=r.id, name=r.name, name_ua=r.name_ua)
-            for r in Region.objects.filter(id__in=ids)
-        ]
+        countries = self.repository.get_countries(ids)
 
-    def get_cities(self, ids: list[int]) -> list[CityDTO]:
+        found_ids = [c.id for c in countries]
+        missing = set(ids) - set(found_ids)
+        if missing:
+            logger.warning("Countries not found for ids: %s", missing)
+
+
+        return countries
+
+    def get_regions(self, ids: list[int]) -> list[BaseManager[Region]]:
         if not ids:
             return []
-        return [
-            CityDTO(id=c.id, name=c.name, name_ua=c.name_ua)
-            for c in City.objects.filter(id__in=ids)
-        ]
+
+        regions = self.repository.get_regions(ids)
+
+        found_ids = [r.id for r in regions]
+        missing = set(ids) - set(found_ids)
+        if missing:
+            logger.warning("Regions not found for ids: %s", missing)
+
+        return regions
+
+    def get_cities(self, ids: list[int]) -> list[BaseManager[City]]:
+        if not ids:
+            return []
+
+        cities = self.repository.get_cities(ids)
+
+        found_ids = [c.id for c in cities]
+        missing = set(ids) - set(found_ids)
+        if missing:
+            logger.warning("Cities not found for ids: %s", missing)
+
+        return cities
 
     def fetch_and_save_cities(self, region_id: int) -> list[CityDTO]:
         """Отримує міста з зовнішнього API і зберігає в БД."""
