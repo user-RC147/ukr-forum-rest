@@ -22,10 +22,15 @@ class CityContract:
             self._service = apps.get_app_config('geo').service
         return self._service
 
-    def get_city(self, city_id: int, region_id: int) -> CityDTO:
+    def get_city(self, city_id: int) -> CityDTO:
         # self.service автоматично звертається до property вище
-        data = self.service.get_city(city_id, region_id)
+        data = self.service.get_city(city_id)
         return self._to_dto(data)
+    
+    def get_many(self, city_ids: list[int]) -> dict[int, CityDTO]:
+        # self.service автоматично звертається до property вище
+        data = self.service.get_cities(city_ids)
+        return {d.id: self._to_dto(d) for d in data}
 
     def _to_dto(self, data) -> CityDTO:
         # Запобіжник на випадок, якщо місто не знайдено і повернувся None
