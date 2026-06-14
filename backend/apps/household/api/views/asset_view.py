@@ -6,9 +6,10 @@ from django.apps import apps
 from rest_framework import status
 
 from apps.household.apps import HouseholdConfig
-from apps.household.api.serializers.asset_serializer import AssetSerializer
-from apps.household.dto.asset_dto import CreateAssetDTO
+from apps.household.api.serializers.asset_serializer import AssetListFilterSerializer, AssetSerializer
+from apps.household.dto.asset_dto import CreateAssetDTO, ListAssetDTO
 from apps.household.services import AssetService
+from apps.shop import serializers
 
 
 class AssetViewSet(ViewSet):
@@ -22,10 +23,32 @@ class AssetViewSet(ViewSet):
 
 
     def list(self, request):
-        """Повертає активи для селекту на сторінці створення чека."""
-        assets=self.service.get_user_assets(user_id=request.user.id)
-        serializer=AssetSerializer(assets,many=True)
-        return Response(serializer.data)
+        """
+        GET /api/household/assets/?group=5
+        Повертає активи для селекту на сторінці створення чека.
+        """
+        # 1. Беремо group_id з query_params (урл-рядка), а не з тіла запиту
+        serializer = AssetListFilterSerializer(data=request.query_params)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 2. Формуємо DTO
+        dto = ListAssetDTO(
+            group_id=serializer.validated_data.get('group_id'),
+            user_id=request.user.id
+        )
+        
+        # 3. Викликаємо бізнес-логику
+        asset_list = self.service.get_list_asset(dto)
+        
+        # 4. ОБОВ'ЯЗКОВО СЕРІАЛІЗУЄМО список моделей перед відповіддю
+        # Використовуємо many=True, бо передаємо список об'єктів
+        output_serializer = AssetSerializer(asset_list, many=True)
+        
+        return Response({'results': output_serializer.data}, status=status.HTTP_200_OK)
+            
+        
 
     def create(self, request):
         serializer =AssetSerializer(data=request.data)

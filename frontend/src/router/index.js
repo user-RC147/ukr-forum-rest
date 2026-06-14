@@ -79,6 +79,7 @@ const routes = [
                         name:'household-asset-create',
                         component: ()=>import('../modules/household/views/assets/AssetCreate.vue')
                     },
+                    
                 ],
             },
         ],
