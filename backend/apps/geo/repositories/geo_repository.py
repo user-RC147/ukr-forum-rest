@@ -1,7 +1,7 @@
 # apps/geo/repositories/geo_repository.py
 from apps.geo.models import Country, Region, City
 from typing import Optional
-
+from django.db.models.manager import BaseManager
 
 class GeoRepository:
 
@@ -63,7 +63,15 @@ class GeoRepository:
 
     def city_exists(self, city_id: int) -> bool:
         return City.objects.filter(id=city_id).exists()
-
+    
+    def get_countries(self, ids: list[int]) -> BaseManager[Country]:
+        return Country.objects.filter(id__in=ids)
+    
+    def get_regions(self, ids: list[int]) -> BaseManager[Region]:
+        return Region.objects.filter(id__in=ids)
+    
+    def get_cities(self, ids: list[int]) -> BaseManager[City]:
+        return City.objects.filter(id__in=ids)
 #=====
 
 
