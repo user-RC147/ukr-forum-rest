@@ -79,6 +79,12 @@ const routes = [
                         name:'household-asset-create',
                         component: ()=>import('../modules/household/views/assets/AssetCreate.vue')
                     },
+
+                    {
+                        path:'markets/create',
+                        name:'household-market-create',
+                        component: ()=>import('../modules/household/views/markets/MarketCreat.vue')
+                    },
                     
                 ],
             },

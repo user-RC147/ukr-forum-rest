@@ -1,78 +1,169 @@
 <script setup>
-import {ref,computed,onMounted,watch} from 'vue';
-// 1. Імпортуємо useRoute, щоб мати доступ до поточного URL
-import {useRoute} from 'vue-router';
+
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { useGroupStore } from '../../stores/useGroupStore';
 import { useAssetStore } from '../../stores/useAssetStore';
 import { useUserStore } from '../../../users/stores/useUserStore';
+import { useMarketStore } from '../../stores/useMarketStore';
+
+// Імпортуємо функції з geo.js
+import { getCountries, getRegions, getCities } from '../../../geo/api/geo';
 
 // Ініціалізуємо сховища даних
-const groupStore=useGroupStore();
+const groupStore = useGroupStore();
 const assetStore = useAssetStore();
-const userStore=useUserStore();
+const userStore = useUserStore();
+const marketStore = useMarketStore();
 
-// 2. Ініціалізуємо роут
-const route=useRoute();
+const route = useRoute();
 
 // Поля «шапки» чека
-/*****************************************************************
- * 3. ПРИВ'ЯЗУЄМО ДАНІ З URL ДО НАШИХ ЗМІННИХ
- * Якщо в URL є ?group_id=..., ми беремо його і перетворюємо на число (Number).
- * Якщо параметрів немає, залишаємо null.
- *****************************************************************/
-const selectedGroup=ref(route.query.group_id ? Number(route.query.group_id):null); // ID обраної сімейної групи
-const selectedAsset=ref(route.query.asset_id ? Number(route.query.asset_id):null); // ID обраного об'єкта (активу)
+const selectedGroup = ref(route.query.group_id ? Number(route.query.group_id) : null);
+const selectedAsset = ref(route.query.asset_id ? Number(route.query.asset_id) : null);
 
-const selectedShop=ref(null); // ID обраного магазину
-const checkDate=ref(new Date().toISOString().substr(0,10)); // Поточна дата за замовчуванням (YYYY-MM-DD)
+// Виправлено: змінна називається selectedMarket, оскільки у шаблоні v-model="selectedMarket"
+const selectedMarket = ref(null); 
+const checkDate = ref(new Date().toISOString().substr(0, 10));
 
-// Тимчасові реактивні змінні для полів "Додавання товару" (новий рядок)
-const newProduct=ref({
-    name:'',
-    unit:'шт.',
-    qty:1,
-    price:0
-
+// Тимчасові реактивні змінні для полів "Додавання товару"
+const newProduct = ref({
+    name: '',
+    unit: 'шт.',
+    qty: 1,
+    price: 0
 });
 
-// Масив уже доданих до чека товарів (динамічна таблиця)
-const checkItems=ref([
-    // Поки залишаємо тестові дані, щоб бачити їх у таблиці:
-    { name: 'Хліб', unit: 'шт.', qty: 1.0, price: 4.03, total: 2.03 },
-    { name: 'Булочка', unit: 'шт.', qty: 1.0, price: 2.03, total: 2.03 }
-])
+// Масив уже доданих до чека товарів
+const checkItems = ref([
+    { name: 'Хліб', unit: 'шт.', qty: 1.0, price: 4.03 },
+    { name: 'Булочка', unit: 'шт.', qty: 1.0, price: 2.03 }
+]);
+
+// Змінна контролю модалки
+const isMarketModalOpen = ref(false);
+
+// Тимчасові дані для форми створення нового магазину
+const newMarketName = ref('');
+const streetAndHouse = ref('');
+
+// Списки даних для випадаючих списків у модалку
+const countries = ref([]);
+const regions   = ref([]);
+const cities    = ref([]);
+
+// Стан обраних ID у формі модалки
+const modalCountryId = ref(null);
+const modalRegionId  = ref(null);
+const modalCityId    = ref(null);
 
 // Загальна сума чека
-const totalSum=computed(()=>{
-    return checkItems.value.reduce((sum,item)=>sum+(Number(item.qty)*Number(item.price)),0).toFixed(2);
+const totalSum = computed(() => {
+    return checkItems.value.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0).toFixed(2);
 });
 
-onMounted(async ()=>{
-    // Паралельно завантажуємо групи та активи користувача
+onMounted(async () => {
     await Promise.all([
         groupStore.fetchGroups(),
         assetStore.fetchAssets(),
-        userStore.fetchProfile()
+        userStore.fetchProfile(),
+        marketStore.fetchMarkets()
     ]);
 });
 
+// Функція збереження нового магазину
+const handleCreateMarket = async () => {
+    if (!newMarketName.value.trim()) return;
 
+    try {
+        const createdMarket = await marketStore.createMarket({
+            name: newMarketName.value.trim(),
+            address_line: streetAndHouse.value.trim() || null,
+            country_id: modalCountryId.value ? Number(modalCountryId.value) : null,
+            region_id: modalRegionId.value ? Number(modalRegionId.value) : null,
+            city_id: modalCityId.value ? Number(modalCityId.value) : null
+        });
 
-// Додаємо watch для відстеження зміни вибраної групи
-watch(selectedGroup,(newGroupId)=>{
-    // Скидаємо вибраний об'єкт, бо він не належить новій групі
-    selectedAsset.value=null;
+        // Автоматично вибираємо щойно створений магазин
+        selectedMarket.value = createdMarket.id;
 
-    if (newGroupId){
-        // Якщо обрано конкретну групу, вантажимо її активи
-        assetStore.fetchAssets(newGroupId);
-    }else{
-        // Якщо обрано "Всі групи", вантажимо активи всіх доступних груп
-        assetStore.fetchAssets();
+        // Очищаємо поля
+        newMarketName.value = '';
+        streetAndHouse.value = '';
+        modalCountryId.value = null;
+        modalRegionId.value = null;
+        modalCityId.value = null;
+
+        isMarketModalOpen.value = false;
+    } catch (error) {
+        alert('Помилка при створенні магазину');
+    }
+};
+
+// 1. Слідкуємо за відкриттям модалки -> вантажимо країни
+watch(isMarketModalOpen, async (isOpen) => {
+    if (isOpen && countries.value.length === 0) {
+        try {
+            const res = await getCountries();
+            // Захист від пагінації (беремо .results або чистий масив .data)
+            countries.value = res.data.results || res.data;
+        } catch (err) {
+            console.error('Помилка завантаження країн у модалку:', err);
+        }
     }
 });
 
+// 2. Слідкуємо за вибором країни у модалці -> вантажимо регіони
+watch(modalCountryId, async (countryId) => {
+    modalRegionId.value = null;
+    modalCityId.value   = null;
+    regions.value       = [];
+    cities.value        = [];
+
+    if (!countryId) return;  // ← ! (заперечення) — виходимо якщо NULL
+
+    const country = countries.value.find(c => Number(c.id) === Number(countryId));
+
+    console.log('Знайдена країна:', country);
+    console.log('country.code:', country?.code);
+
+    if (country && country.code) {
+        console.log('Викликаю getRegions з кодом:', country.code)  // ← додай
+        try {
+            const res = await getRegions(country.code);
+            console.log('regions response:', res.data);
+            regions.value = res.data.results || res.data;
+        } catch (err) {
+            console.error('Помилка завантаження регіонів:', err);
+        }
+    }
+});
+
+// 3. Слідкуємо за вибором регіону у модалці -> вантажимо міста
+watch(modalRegionId, async (regionId) => {
+    modalCityId.value = null;
+    cities.value      = [];
+
+    if (regionId) {
+        try {
+            const res = await getCities(Number(regionId));
+            cities.value = res.data.results || res.data;
+        } catch (err) {
+            console.error('Помилка завантаження міст:', err);
+        }
+    }
+});
+
+// Слідкуємо за зміною групи
+watch(selectedGroup, (newGroupId) => {
+    selectedAsset.value = null;
+    if (newGroupId) {
+        assetStore.fetchAssets(newGroupId);
+    } else {
+        assetStore.fetchAssets();
+    }
+});
 </script>
 
 
@@ -131,10 +222,15 @@ watch(selectedGroup,(newGroupId)=>{
 
         <!-- Кнопки створення -->
         <div class="grid grid-cols-2 gap-4 mb-10">
-            <a href="#" 
-            class="bg-amber-50 hover:bg-amber-100 text-center py-4 rounded-2xl transition">
+            <button 
+                type="button"
+                @click="isMarketModalOpen=true"
+                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition"
+            >
                 створити магазин
-            </a>
+
+            </button>
+
             <a href="#" 
             class="bg-amber-50 hover:bg-amber-100 text-center py-4 rounded-2xl transition">
                 створити товар
@@ -182,21 +278,35 @@ watch(selectedGroup,(newGroupId)=>{
             <div class="overflow-x-auto border border-gray-300 rounded-2xl bg-white">
                 <table class="w-full min-w-[650px]">
                     <caption class="p-4 border-b bg-amber-50">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <select class="bg-transparent font-medium focus:outline-none">
-                                <option>Lidl - Altenessener Str. 289, 45326 Essen</option>
-                                <option>Aldi - Setree Str. 4, 45326 Essen</option>
-                            </select>
-                            <!-- Поле з календарем -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm text-gray-600 whitespace-nowrap">Дата чека:</span>
-                                <input 
-                                    type="date" 
-                                    name="check_date"
-                                    value="2026-05-14" 
-                                    class="bg-white border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-400">
-                            </div>
-                        </div>
+
+                                <div class="flex justify-between sm:flex-row sm:items-center justify-between gap-4">
+                                    
+                                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                                        <span class="text-sm text-gray-600 whitespace-nowrap">Магазин/Місце:</span>
+                                        <select 
+                                            v-model="selectedMarket" 
+                                            class="bg-white border border-gray-300 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-amber-400 cursor-pointer w-full sm:w-auto"
+                                        >
+                                            <option :value="null">-- Оберіть магазин --</option>
+                                            <option 
+                                                v-for="market in marketStore.markets" 
+                                                :key="market.id" 
+                                                :value="market.id"
+                                            >
+                                                {{ market.name || market.market_name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <!-- Поле з календарем -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm text-gray-600 whitespace-nowrap">Дата чека:</span>
+                                        <input 
+                                            type="date" 
+                                            v-model="checkDate"
+                                            class="bg-white border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-400"
+                                        >
+                                    </div>
+                                </div>
                     </caption>
                     
                     <thead>
@@ -235,7 +345,102 @@ watch(selectedGroup,(newGroupId)=>{
                 </table>
             </div>
         </div>
+    <!-- Модалка на створення магазину -->
+    <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ МАГАЗИНУ -->
+        <!-- Тонкий чорний напівпрозорий фон. Показується лише якщо isMarketModalOpen === true -->
+        <div v-if="isMarketModalOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            
+            <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl relative">
+                
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Новий магазин</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Назва магазину/місця *</label>
+                        <input 
+                            type="text" 
+                            v-model="newMarketName"
+                            placeholder="Наприклад: Lidl, Aldi, Аптека"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                        >
+                    </div>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Країна</label>
+                            <select 
+                                v-model="modalCountryId"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                            >
+                                <option :value="null">Оберіть країну</option>
+                                <option v-for="c in countries" :key="c.id" :value="c.id">
+                                    {{ c.flag_emoji }} {{ c.name_ua || c.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Область / Регіон</label>
+                            <select 
+                                v-model="modalRegionId"
+                                :disabled="!modalCountryId"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
+                            >
+                                <option :value="null">Оберіть область</option>
+                                <option v-for="r in regions" :key="r.id" :value="r.id">
+                                    {{ r.name_ua || r.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Місто</label>
+                            <select 
+                                v-model="modalCityId"
+                                :disabled="!modalRegionId"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
+                            >
+                                <option :value="null">Оберіть місто</option>
+                                <option v-for="c in cities" :key="c.id" :value="c.id">
+                                    {{ c.name_ua || c.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Вулиця, будинок</label>
+                            <input 
+                                type="text" 
+                                v-model="streetAndHouse"
+                                placeholder="вул. Головна, 12"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                            >
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-6 border-t pt-4 border-gray-100">
+                    <button 
+                        type="button" 
+                        @click="isMarketModalOpen = false"
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition"
+                    >
+                        Скасувати
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        @click="handleCreateMarket"
+                        :disabled="!newMarketName.trim()"
+                        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-sm font-semibold transition"
+                    >
+                        Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
 </template>

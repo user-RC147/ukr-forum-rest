@@ -17,6 +17,7 @@ class GeoApiClient:
         response=requests.get(
             f'{self.base_url}/countries/',
             headers=self.headers,
+            timeout=3,
         )
         response.raise_for_status()
         data=response.json()
@@ -28,6 +29,7 @@ class GeoApiClient:
         response=requests.get(
             f'{self.base_url}/regions/',
             headers=self.headers,
+            timeout=3,
             params={'country_code':country_code},
         )
         response.raise_for_status()
@@ -38,6 +40,7 @@ class GeoApiClient:
         response=requests.get(
             f'{self.base_url}/cities/',
             headers=self.headers,
+            timeout=3,
             params={'region':region_id},
         )
         response.raise_for_status()
