@@ -1,4 +1,78 @@
-<script>
+<script setup>
+import {ref,computed,onMounted,watch} from 'vue';
+// 1. Імпортуємо useRoute, щоб мати доступ до поточного URL
+import {useRoute} from 'vue-router';
+
+import { useGroupStore } from '../../stores/useGroupStore';
+import { useAssetStore } from '../../stores/useAssetStore';
+import { useUserStore } from '../../../users/stores/useUserStore';
+
+// Ініціалізуємо сховища даних
+const groupStore=useGroupStore();
+const assetStore = useAssetStore();
+const userStore=useUserStore();
+
+// 2. Ініціалізуємо роут
+const route=useRoute();
+
+// Поля «шапки» чека
+/*****************************************************************
+ * 3. ПРИВ'ЯЗУЄМО ДАНІ З URL ДО НАШИХ ЗМІННИХ
+ * Якщо в URL є ?group_id=..., ми беремо його і перетворюємо на число (Number).
+ * Якщо параметрів немає, залишаємо null.
+ *****************************************************************/
+const selectedGroup=ref(route.query.group_id ? Number(route.query.group_id):null); // ID обраної сімейної групи
+const selectedAsset=ref(route.query.asset_id ? Number(route.query.asset_id):null); // ID обраного об'єкта (активу)
+
+const selectedShop=ref(null); // ID обраного магазину
+const checkDate=ref(new Date().toISOString().substr(0,10)); // Поточна дата за замовчуванням (YYYY-MM-DD)
+
+// Тимчасові реактивні змінні для полів "Додавання товару" (новий рядок)
+const newProduct=ref({
+    name:'',
+    unit:'шт.',
+    qty:1,
+    price:0
+
+});
+
+// Масив уже доданих до чека товарів (динамічна таблиця)
+const checkItems=ref([
+    // Поки залишаємо тестові дані, щоб бачити їх у таблиці:
+    { name: 'Хліб', unit: 'шт.', qty: 1.0, price: 4.03, total: 2.03 },
+    { name: 'Булочка', unit: 'шт.', qty: 1.0, price: 2.03, total: 2.03 }
+])
+
+// Загальна сума чека
+const totalSum=computed(()=>{
+    return checkItems.value.reduce((sum,item)=>sum+(Number(item.qty)*Number(item.price)),0).toFixed(2);
+});
+
+onMounted(async ()=>{
+    // Паралельно завантажуємо групи та активи користувача
+    await Promise.all([
+        groupStore.fetchGroups(),
+        assetStore.fetchAssets(),
+        userStore.fetchProfile()
+    ]);
+});
+
+
+
+// Додаємо watch для відстеження зміни вибраної групи
+watch(selectedGroup,(newGroupId)=>{
+    // Скидаємо вибраний об'єкт, бо він не належить новій групі
+    selectedAsset.value=null;
+
+    if (newGroupId){
+        // Якщо обрано конкретну групу, вантажимо її активи
+        assetStore.fetchAssets(newGroupId);
+    }else{
+        // Якщо обрано "Всі групи", вантажимо активи всіх доступних груп
+        assetStore.fetchAssets();
+    }
+});
+
 </script>
 
 
@@ -8,7 +82,7 @@
 
         <!-- Верхній рядок: Повернутися + Зберегти -->
         <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
-            <router-link :to="{ name: 'household-group' }" 
+            <router-link :to="{ name: 'household-index' }" 
                 class="flex items-center justify-center bg-[#cce9f8] hover:bg-[#aedbf4] text-[#2e332e] px-5 py-3 rounded-xl text-sm font-medium transition transform hover:scale-105 w-full sm:w-auto">
                 ← Повернутися
             </router-link>
@@ -22,24 +96,35 @@
         <!-- Фільтри це обєкт до якого привязується чек -->
         <div class="flex flex-wrap justify-around mb-8">
             <div class="bg-amber-100 px-4 py-3 rounded-2xl flex min-w-[130px]">
-                <select class="w-full bg-transparent focus:outline-none">
-                    <option selected>Всі об'єкти</option>
-                    <option>Meerkamp, 32</option>
-                    <option>Транспортний,2</option>
-                    <option>Кірово,23</option>
+                <select v-model="selectedAsset"
+                        class="w-full bg-transparent focus:outline-none">
+                    <option :value="null">Всі об'єкти</option>
+                    <option 
+                            v-for="asset in assetStore.assets"
+                            :key="asset.id"
+                            :value="asset.id"
+                    >
+                    {{ asset.name }}
+                    </option>
                 </select>
+                
             </div>
 
             <div class="bg-amber-100 px-4 py-3 rounded-2xl text-center whitespace-nowrap">
-                user.name
+                {{ userStore.user?.username || userStore.user?.display_name || 'Завантаження...' }}
             </div>
 
             <div class="bg-amber-100 px-4 py-3 rounded-2xl flex min-w-[130px]">
-                <select class="w-full bg-transparent focus:outline-none">
-                    <option selected>my group</option>
-                    <option>user1</option>
-                    <option>user2</option>
-                    <option>user3</option>
+                <select v-model="selectedGroup"
+                        class="w-full bg-transparent focus:outline-none">
+                    <option :value="null">Всі групи</option>
+                    <option 
+                            v-for="group in groupStore.groups" 
+                            :key="group.id" 
+                            :value="group.id"
+                        >
+                        {{ group.name }}
+                    </option>
                 </select>
             </div>
         </div>
@@ -125,35 +210,26 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        <tr class="border-b">
-                            <td class="border-r py-3">1</td>
-                            <td class="border-r py-3">хліб</td>
-                            <td class="border-r py-3">шт.</td>
-                            <td class="border-r py-3">1,0</td>
-                            <td class="border-r py-3">2,03</td>
-                            <td class="py-3">2.03</td>
+                        <tr class="border-b"
+                            v-for="(item,index) in checkItems"
+                            :key="index">
+                            <td class="border-r py-3">{{ index+1}}</td>
+                            <td class="border-r py-3">{{ item.name }}</td>
+                            <td class="border-r py-3">{{ item.unit }}</td>
+                            <td class="border-r py-3">{{ Number(item.qty).toFixed(1) }}</td>
+                            <td class="border-r py-3">{{ Number(item.price).toFixed(2) }}</td>
+                            <td class="py-3">{{ (Number(item.qty)*Number(item.price)).toFixed(2) }}</td>
                         </tr>
-                        <tr class="border-b">
-                            <td class="border-r py-3">2</td>
-                            <td class="border-r py-3">булочка</td>
-                            <td class="border-r py-3">шт.</td>
-                            <td class="border-r py-3">1,0</td>
-                            <td class="border-r py-3">2,03</td>
-                            <td class="py-3">2.03</td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="border-r py-3">3</td>
-                            <td class="border-r py-3">молоко</td>
-                            <td class="border-r py-3">шт.</td>
-                            <td class="border-r py-3">1,0</td>
-                            <td class="border-r py-3">2,03</td>
-                            <td class="py-3">2.03</td>
+                        <tr v-if="checkItems.length === 0">
+                            <td colspan="6" class="py-8 text-gray-400 italic bg-gray-50/50">
+                                У чеку поки немає товарів. Додайте перший товар вище.
+                            </td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr class="font-semibold bg-amber-50">
                             <td colspan="5" class="text-right py-4 pr-6 border-t">Разом</td>
-                            <td class="py-4 text-center border-t">6.09</td>
+                            <td class="py-4 text-center border-t">{{ totalSum }}</td>
                         </tr>
                     </tfoot>
                 </table>

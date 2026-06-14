@@ -1,11 +1,3 @@
-# from django.apps import AppConfig
-
-
-# class GeoConfig(AppConfig):
-#     name = 'apps.geo'
-#     verbose_name="Геолокація"
-
-
 from django.apps import AppConfig
 
 
@@ -13,22 +5,25 @@ class GeoConfig(AppConfig):
     name = 'apps.geo'
     verbose_name = 'Локація(GEO)'
 
-    # Публічна точка доступу до сервісу для інших модулів системи.
-    # Вона типізується інтерфейсом-контрактом core.contracts.geo.IGeoServiceContract
-    service = None
+    # Внутрішня кеш-змінна для Singleton-об'єкта сервісу
+    _service = None
 
-    def ready(self) -> None:
+    @property
+    def service(self):
         """
-        Метод викликається один раз, коли Django повністю завантажив додаток GEO.
-        Тут ми ініціалізуємо репозиторій та сервіс.
+        Ледача ініціалізація сервісу GEO.
+        Об'єкт створюється лише тоді, коли до нього вперше звертаються.
         """
-        # Імпортуємо класи шарів всередині ready(), щоб уникнути передчасного завантаження моделей
-        from apps.geo.repositories.geo_repository import GeoRepository
-        from apps.geo.services.geo_service import GeoService
+        if self._service is None:
+            # Імпортуємо класи шарів всередині property, щоб уникнути 
+            # передчасного завантаження моделей та циклічних імпортів
+            from apps.geo.repositories.geo_repository import GeoRepository
+            from apps.geo.services.geo_service import GeoService
 
-        # 1. Створюємо єдиний екземпляр репозиторію (працює з БД)
-        repository = GeoRepository()
+            # 1. Створюємо екземпляр репозиторію
+            repository = GeoRepository()
 
-        # 2. Створюємо сервіс і передаємо йому репозиторій як залежність.
-        # Записуємо його в атрибут класу GeoConfig.
-        GeoConfig.service = GeoService(repository=repository)
+            # 2. Збираємо сервіс, передаючи йому репозиторій як залежність
+            self._service = GeoService(repository=repository)
+            
+        return self._service

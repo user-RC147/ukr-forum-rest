@@ -1,3 +1,4 @@
+from django.apps import apps
 from apps.geo.services.geo_service import GeoService
 from apps.geo.protocols.country import CountryContractProtocol
 from apps.geo.dto.country import CountryDTO
@@ -6,15 +7,26 @@ from dataclasses import fields
 
 class CountryContract:
     def __init__(self, service: GeoService | None = None) -> None:
-        self.service = service or GeoService()
+        # Зберігаємо сервіс, якщо його передали явно (наприклад, у тестах)
+        self._service = service
         self._dto_fields = {f.name for f in fields(CountryDTO)}
 
-    def get_country(self, country_id: int) -> CountryDTO:
-        data = self.service.get_country(country_id)
+    @property
+    def service(self) -> GeoService:
+        """Ледаче отримання налаштованого сервісу з IoC-контейнера Django"""
+        if self._service is None:
+            self._service = apps.get_app_config('geo').service
+        return self._service
 
+    def get_country(self, country_id: int) -> CountryDTO:
+        # Тепер self.service викликає property вище і повертає повністю готовий сервіс
+        data = self.service.get_country(country_id)
         return self._to_dto(data)
 
     def _to_dto(self, data) -> CountryDTO:
+        # Якщо даних немає (None), повертаємо None або обробляємо помилку
+        if data is None:
+            return None
         return CountryDTO(**{field: getattr(data, field) for field in self._dto_fields})
 
 

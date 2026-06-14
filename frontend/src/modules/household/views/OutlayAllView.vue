@@ -1,16 +1,16 @@
 <script setup>
-    import { ref, computed, onMounted } from 'vue';
+    import { ref, computed, watch, onMounted } from 'vue';
     import { useGroupStore } from '../stores/useGroupStore.js';
     import { useUserStore } from '../../users/stores/useUserStore.js';
     import { useAssetStore } from '../stores/useAssetStore.js';
 
     const groupStore = useGroupStore();
-    const selectedGroup = ref(null);
+    const selectedGroup = ref(null); // Тут зберігається id вибраної групи
 
     const userStore = useUserStore(); //ref() // замінити на store.user.username
 
-    const assetStore=useAssetStore()
-    const selectedAsset =ref(null)
+    const assetStore = useAssetStore();
+    const selectedAsset = ref(null);
 
     // Тільки групи де поточний user є учасником
     // const myGroups = computed(() =>
@@ -18,9 +18,24 @@
     // );
 
     onMounted(() => {
-        groupStore.fetchGroups()
-        assetStore.fetchAssets()
-    })
+        groupStore.fetchGroups();
+        // При старті завантажуємо активи для "Всіх груп" (запит піде без group_id)
+        assetStore.fetchAssets();
+    });
+
+    watch(selectedGroup, (newGroupId) => {
+        // Скидаємо вибраний актив при зміні групи
+        selectedAsset.value = null;
+
+        if (newGroupId) {
+            // Передаємо id групи в оновлений стор (тепер запит піде як ?group_id=X)
+            assetStore.fetchAssets(newGroupId);
+        } else {
+            // Якщо обрано "Всі групи", викликаємо без аргументів.
+            // Бекенд поверне активи всіх груп цього користувача
+            assetStore.fetchAssets();
+        }
+    });
 
     // Тимчасові дані — замінити на реальні з API
     const purchases = ref([
@@ -41,19 +56,17 @@
 
 <template>
     <div class="max-w-5xl mx-auto px-4 py-6">
-
         <!-- Фільтри -->
         <div class="flex flex-wrap justify-between gap-4 mb-6">
-
             <!-- Об'єкт -->
             <div class="flex flex-col gap-2">
-                <router-link 
-                    :to="{name: 'household-asset-create', query: selectedGroup ? { group: selectedGroup } : {}}"
-                    
-                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                <router-link
+                    :to="{ name: 'household-asset-create', query: selectedGroup ? { group_id: selectedGroup } : {} }"
+                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
+                >
                     + Створити об'єкт
                 </router-link>
-                
+
                 <div class="bg-amber-100 px-4 py-2 rounded-2xl">
                     <select v-model="selectedAsset" class="bg-transparent focus:outline-none text-sm">
                         <option :value="null">Всі об'єкти</option>
@@ -66,8 +79,10 @@
 
             <!-- Група -->
             <div class="flex flex-col gap-2">
-                <router-link :to="{ name: 'household-group-create' }"
-                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                <router-link
+                    :to="{ name: 'household-group-create' }"
+                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
+                >
                     + Створити групу
                 </router-link>
                 <div class="bg-amber-100 px-4 py-2 rounded-2xl">
@@ -79,13 +94,19 @@
                     </select>
                 </div>
             </div>
-
         </div>
 
         <!-- Кнопка додати чек -->
         <div class="mb-6">
-            <router-link :to="{ name: 'household-purchases-create' }"
-                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition">
+            <router-link
+                :to="{ name: 'household-purchases-create',
+                    query: { 
+                            group_id: selectedGroup, 
+                            asset_id: selectedAsset 
+                        }
+                 }"
+                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition"
+            >
                 + Додати чек
             </router-link>
         </div>
@@ -137,12 +158,9 @@
 
         <!-- Таблиця магазинів + фільтр -->
         <div class="flex flex-wrap gap-6 items-start">
-
             <!-- Таблиця магазинів -->
             <div class="flex-1 min-w-[300px] border border-gray-200 rounded-2xl overflow-hidden bg-white">
-                <div class="px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm font-medium">
-                    інші магазини
-                </div>
+                <div class="px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm font-medium">інші магазини</div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm border-collapse">
                         <thead class="bg-gray-50 font-semibold">
@@ -183,11 +201,16 @@
                     <option>Рік</option>
                 </select>
                 <div class="flex flex-col gap-2">
-                    <span>з <input type="date" class="border border-gray-300 rounded-lg px-2 py-1 text-sm ml-1" /></span>
-                    <span>по <input type="date" class="border border-gray-300 rounded-lg px-2 py-1 text-sm ml-1" /></span>
+                    <span>
+                        з
+                        <input type="date" class="border border-gray-300 rounded-lg px-2 py-1 text-sm ml-1" />
+                    </span>
+                    <span>
+                        по
+                        <input type="date" class="border border-gray-300 rounded-lg px-2 py-1 text-sm ml-1" />
+                    </span>
                 </div>
             </div>
-
         </div>
     </div>
 </template>
