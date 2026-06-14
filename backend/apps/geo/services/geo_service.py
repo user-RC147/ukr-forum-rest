@@ -87,16 +87,16 @@ class GeoService:
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
 
-    def get_region(self, region_id: int, country_id: int) -> Optional[RegionDTO]:
+    def get_region(self, region_id: int) -> Optional[RegionDTO]:
         try:
-            r = Region.objects.get(country__id=country_id, id=region_id)
+            r = Region.objects.get(id=region_id)
             return RegionDTO(id=r.id, name=r.name, name_ua=r.name_ua, country_id=r.country_id)
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
 
-    def get_city(self, city_id: int, region_id: int) -> Optional[CityDTO]:
+    def get_city(self, city_id: int) -> Optional[CityDTO]:
         try:
-            c = City.objects.get(region__id=region_id, id=city_id)
+            c = City.objects.get(id=city_id)
             return CityDTO(id=c.id, name=c.name, name_ua=c.name_ua, country_id=c.country_id, region_id=c.region_id, latitude=c.latitude, longitude=c.longitude)
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
