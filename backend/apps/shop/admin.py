@@ -9,3 +9,4 @@ class ProductAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     ordering = ["-created_at"]
     show_full_result_count = False
+    readonly_fields = ["id", "created_at"]

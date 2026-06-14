@@ -42,6 +42,24 @@ class ProductService(BaseService[ProductModel]):
             if fid in files_map
         ]
 
+        geo = {
+            "country": self.country_service.get_country(result.country_id)
+            if result.country_id
+            else None,
+            "region": self.region_service.get_region(
+                result.region_id, result.country_id
+            )
+            if result.region_id and result.country_id
+            else None,
+            "city": self.city_service.get_city(result.city_id, result.region_id)
+            if result.region_id and result.city_id
+            else None,
+        }
+
+        result.country = dataclasses.asdict(geo["country"])
+        result.region = dataclasses.asdict(geo["region"])
+        result.city = dataclasses.asdict(geo["city"])
+
         return result
 
     def get_all(self, user_id=None, page: int = 1, page_size: int = 20):
