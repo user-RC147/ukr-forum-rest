@@ -22,6 +22,11 @@ class CountryContract:
         # Тепер self.service викликає property вище і повертає повністю готовий сервіс
         data = self.service.get_country(country_id)
         return self._to_dto(data)
+    
+    def get_many(self, countries_ids:list[int]) -> dict[int, CountryDTO]:
+        data = self.service.get_countries(countries_ids)
+        print(data[0].name, data[0].code, data[0].flag_emoji)
+        return {d.id:self._to_dto(d) for d in data}
 
     def _to_dto(self, data) -> CountryDTO:
         # Якщо даних немає (None), повертаємо None або обробляємо помилку

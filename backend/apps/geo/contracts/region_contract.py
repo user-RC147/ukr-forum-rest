@@ -26,6 +26,10 @@ class RegionContract:
         # self.service тут автоматично викличе @property вище
         data = self.service.get_region(region_id, country_id)
         return self._to_dto(data)
+    
+    def get_many(self, regions_ids: list[int]) -> dict[int, RegionDTO]:
+        data = self.service.get_regions(regions_ids)
+        return {d.id:self._to_dto(d) for d in data}
 
     def _to_dto(self, data) -> RegionDTO:
         # Запобіжник: якщо регіон не знайдено в БД і повернувся None

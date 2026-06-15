@@ -21,10 +21,49 @@ logger = logging.getLogger("shop")
 class ProductService(BaseService[ProductModel]):
     def __init__(self, model=ProductModel) -> None:
         super().__init__(model)
-        self.country_service = get_country_contract()
-        self.region_service = get_region_contract()
-        self.city_service = get_city_contract()
+        self.country_contract = get_country_contract()
+        self.region_contract = get_region_contract()
+        self.city_contract = get_city_contract()
         self.file_contract = get_file_contract()
+
+    def _fetch_map(self, ids: list, contract) -> dict:
+        """Deduplicate IDs and call get_many."""
+        unique_ids = list(set(filter(None, ids)))  # take away None and doubles
+        if not unique_ids:
+            return {}
+        return contract.get_many(unique_ids)
+
+    @staticmethod
+    def _to_dict(obj) -> dict | None:
+        return dataclasses.asdict(obj) if obj is not None else None
+
+    def _attach_products(self, products: list) -> None:
+        # Get all IDs
+        all_file_ids, all_city_ids, all_region_ids, all_country_ids = [], [], [], []
+
+        for p in products:
+            all_file_ids.extend(p.files_ids or [])
+            all_city_ids.append(p.city_id)
+            all_region_ids.append(p.region_id)
+            all_country_ids.append(p.country_id)
+
+        # Patter for all contracts
+        files_map    = self._fetch_map(all_file_ids,    self.file_contract)
+        cities_map   = self._fetch_map(all_city_ids,    self.city_contract)
+        regions_map  = self._fetch_map(all_region_ids,  self.region_contract)
+        countries_map = self._fetch_map(all_country_ids, self.country_contract)
+
+        # Set data
+        for p in products:
+            p.files = [
+                self._to_dict(files_map[fid])
+                for fid in (p.files_ids or [])
+                if fid in files_map
+            ]
+            p.city    = self._to_dict(cities_map.get(p.city_id))
+            p.region  = self._to_dict(regions_map.get(p.region_id))
+            p.country = self._to_dict(countries_map.get(p.country_id))
+
 
     def get(self, id: int) -> ProductModel:
         result = super().get(id)
@@ -32,15 +71,7 @@ class ProductService(BaseService[ProductModel]):
         if not result:
             return result
 
-        files_map = {}
-        if result.files_ids:
-            files_map = self.file_contract.get_many(result.files_ids)
-
-        result.files = [
-            dataclasses.asdict(files_map[fid])
-            for fid in (result.files_ids or [])
-            if fid in files_map
-        ]
+        self._attach_products([result])
 
         return result
 
@@ -51,30 +82,15 @@ class ProductService(BaseService[ProductModel]):
             else self.model.objects.all()
         )
 
-        result = list(qs)
+        paginator = Paginator(qs, page_size)
+        page_products = list(paginator.page(page).object_list)
 
-        if not result:
-            return result
+        if not page_products:
+            return page_products
 
-        all_file_ids = []
-        for r in result:
-            if r.files_ids:
-                all_file_ids.extend(r.files_ids)
+        self._attach_products(page_products)
 
-        files_map = {}
-        if all_file_ids:
-            files_map = self.file_contract.get_many(all_file_ids)
-
-        for r in result:
-            r.files = [
-                dataclasses.asdict(files_map[fid])
-                for fid in (r.files_ids or [])
-                if fid in files_map
-            ]
-
-        result = Paginator(result, page_size)
-
-        return result.page(page).object_list
+        return page_products
 
     def create(self, user_id: int, data: dict) -> ProductModel:
         self.geo_validate(data)
