@@ -1,4 +1,6 @@
 from typing import Any
+
+from pytest import mark
 from core.contracts.geo import IGeoServiceContract
 
 
@@ -21,8 +23,9 @@ class MarketService:
                  )->None:
         # Залежності заходять сюди з HouseholdConfig.ready()
         self._repository=repository
-        self.selector=selector
+        self._selector=selector
         self._geo_service=geo_service
+
 
 
     def get_all_markets(self,
@@ -33,8 +36,8 @@ class MarketService:
                         ordering=None
                         ):
         
-        # Делегуємо задачу селектору
-        market_all_list=self._repository.get_market_list(
+        # 1. Забираємо базовий список магазинів через селектор
+        market_all_list = self._selector.get_market_list(
             search_query=search_query,
             country_id=country_id,
             region_id=region_id,
@@ -42,7 +45,81 @@ class MarketService:
             ordering=ordering
         )
 
+        if not market_all_list:
+            return []
+
+        # 2. Збираємо унікальні ID (виправлено помилку з countery_id)
+        country_ids = list({m.country_id for m in market_all_list if m.country_id})
+        region_ids = list({m.region_id for m in market_all_list if m.region_id})
+        box_city_ids = list({m.city_id for m in market_all_list if m.city_id})
+
+        # 3. Викликаємо РЕАЛЬНІ методи вашого GeoService замість неіснуючого get_name_by_ids
+        countries_dtos = self._geo_service.get_countries(country_ids)
+        regions_dtos = self._geo_service.get_regions(region_ids)
+        cities_dtos = self._geo_service.get_cities(box_city_ids)
+
+        # 4. Перетворюємо списки DTO на зручні словники (мапи) типу {id: name}
+        # Використовуємо .name_ua (або .name, якщо потрібна оригінальна назва)
+        countries_map = {c.id: c.name_ua for c in countries_dtos}
+        regions_map = {r.id: r.name_ua for r in regions_dtos}
+        cities_map = {c.id: c.name_ua for c in cities_dtos}
+
+        # 5. Динамічно збагачуємо об'єкти моделей Market перед передачею в серіалізатор
+        for market in market_all_list:
+            market.country_name = countries_map.get(market.country_id, None)
+            market.region_name = regions_map.get(market.region_id, None)
+            market.city_name = cities_map.get(market.city_id, None)
+
         return market_all_list
+
+    # def get_all_markets(self,
+    #                     search_query=None,
+    #                     country_id=None,
+    #                     region_id=None,
+    #                     city_id=None,
+    #                     ordering=None
+    #                     ):
+        
+    #     # 1. Забираємо базовий список магазинів через репозиторій/селектор
+    #     # Примітка: у вашому коді в сервісі викликається self._repository.get_market_list, 
+    #     # хоча логіка написана в MarketSelector. Переконайтеся, що викликаєте саме селектор: self.selector.get_market_list(...)
+    #     market_all_list=self._selector.get_market_list(
+    #         search_query=search_query,
+    #         country_id=country_id,
+    #         region_id=region_id,
+    #         city_id=city_id,
+    #         ordering=ordering
+    #     )
+
+    #     if not market_all_list:
+    #         return []
+    #     # 2. Збираємо унікальні ID для передачі в контракт (фільтруємо None значення)
+    #     country_ids=list({m.countery_id for m in market_all_list if m.country_id})
+    #     region_ids=list({m.region_id for m in market_all_list if m.region_id})
+    #     box_city_ids =list({m.city_id for m in market_all_list if m.city_id})
+
+    #     # 3. Йдемо через контракт в інший модуль Geo (ОДИН запит на весь список)
+    #     # Очікуємо, що гео-сервіс поверне структуру з мапами: {country_id: "Назва", ...}
+    #     geo_data=self._geo_service.get_name_by_ids(
+    #         country_ids=country_ids,
+    #         region_ids=region_ids,
+    #         city_ids=box_city_ids
+    #     )
+
+    #     # Дістаємо мапи або створюємо пусті дефолти, якщо контракт повернув None
+    #     countries_map=geo_data.get('countries',{})
+    #     regions_map=geo_data.get('regions',{})
+    #     cities_map=geo_data.get('cities',{})
+
+    #     # 4. Динамічно збагачуємо (мутуємо) об'єкти перед передачею в серіалізатор
+    #     for market in market_all_list:
+    #         # Навішуємо нові атрибути прямо на Django-модель у пам'яті Python
+    #         market.country_name=countries_map.get(market.country_id,None)
+    #         market.region_name=regions_map.get(market.region_id,None)
+    #         market.city_name=cities_map.get(market.city_id,None)
+
+
+    #     return market_all_list
     
     def create(self,dto:CreateMarketInDTO,user)->Any:
         """
