@@ -1,10 +1,7 @@
 # apps/geo/services/geo_service.py
-<<<<<<< HEAD
 from typing import Optional
 
 from requests import RequestException
-from apps.geo.models import Country, Region, City
-=======
 
 import logging
 
@@ -13,7 +10,6 @@ from django.db.models.manager import BaseManager
 
 from apps.geo.clients.geo_api_client import geo_api_client
 from apps.geo.dto.city import CityDTO
->>>>>>> main
 from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.geo.models import City, Country, Region
@@ -23,14 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class GeoService:
-<<<<<<< HEAD
-
-    def __init__(self,repository):
-        self._repository=repository
-=======
     def __init__(self, repository):
         self.repository = repository
->>>>>>> main
 
     # -------------------------------------------------------
     # Для фронту — реєстрація і зміна локації
@@ -38,7 +28,6 @@ class GeoService:
     # -------------------------------------------------------
 
     def fetch_and_save_countries(self) -> list[CountryDTO]:
-<<<<<<< HEAD
         """Отримує країни з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
         try:
             # Пробуємо отримати дані з зовнішнього API
@@ -47,21 +36,11 @@ class GeoService:
             for data in api_countries:
                 country = geo_repository.get_or_create_country(data)
                 result.append(CountryDTO(
-=======
-        """Отримує країни з зовнішнього API і зберігає в БД."""
-        api_countries = geo_api_client.get_countries()
-        result = []
-        for data in api_countries:
-            country = geo_repository.get_or_create_country(data)
-            result.append(
-                CountryDTO(
->>>>>>> main
                     id=country.id,
                     name=country.name,
                     name_ua=country.name_ua,
                     code=country.code,
                     flag_emoji=country.flag_emoji,
-<<<<<<< HEAD
                 ))
             return result
         except (RequestException, Exception) as e:
@@ -79,11 +58,6 @@ class GeoService:
                 )
                 for c in Country.objects.all()
             ]
-=======
-                )
-            )
-        return result
->>>>>>> main
 
     def fetch_and_save_regions(self, country_code: str) -> list[RegionDTO]:
         """Отримує регіони з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
@@ -93,7 +67,6 @@ class GeoService:
         except Country.DoesNotExist:
             return []
 
-<<<<<<< HEAD
         try:
             # Пробуємо отримати регіони з зовнішнього API
             api_regions = geo_api_client.get_regions(country_code)
@@ -121,20 +94,6 @@ class GeoService:
                 )
                 for r in Region.objects.filter(country=country)
             ]
-=======
-        api_regions = geo_api_client.get_regions(country_code)
-        result = []
-        for data in api_regions:
-            region = geo_repository.get_or_create_region(data, country)
-            result.append(
-                RegionDTO(
-                    id=region.id,
-                    name=region.name,
-                    name_ua=region.name_ua,
-                )
-            )
-        return result
->>>>>>> main
 
     def fetch_and_save_cities(self, region_id: int) -> list[CityDTO]:
         """Отримує міста з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
@@ -263,13 +222,8 @@ class GeoService:
     def is_country_exists(self, country_id: int) -> bool:
         return Country.objects.filter(id=country_id).exists()
 
-<<<<<<< HEAD
     def is_region_exists(self, region_id: int) -> bool:
         return Region.objects.filter(id=region_id).exists()
 
     def is_city_exists(self, city_id: int) -> bool:
         return City.objects.filter(id=city_id).exists()
-=======
-
-# geo_service = GeoService()
->>>>>>> main
