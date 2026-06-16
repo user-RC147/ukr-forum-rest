@@ -1,12 +1,10 @@
 # apps/geo/services/geo_service.py
-from typing import Optional
-
-from requests import RequestException
 
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
+from requests import RequestException
 
 from apps.geo.clients.geo_api_client import geo_api_client
 from apps.geo.dto.city import CityDTO
@@ -35,26 +33,28 @@ class GeoService:
             result = []
             for data in api_countries:
                 country = geo_repository.get_or_create_country(data)
-                result.append(CountryDTO(
-                    id=country.id,
-                    name=country.name,
-                    name_ua=country.name_ua,
-                    code=country.code,
-                    flag_emoji=country.flag_emoji,
-                ))
+                result.append(
+                    CountryDTO(
+                        id=country.id,
+                        name=country.name,
+                        name_ua=country.name_ua,
+                        code=country.code,
+                        flag_emoji=country.flag_emoji,
+                    )
+                )
             return result
         except (RequestException, Exception) as e:
             # Якщо api.ukrkolo.site недоступний або впав по таймауту:
             print(f"Зовнішній гео-API недоступний ({e}). Беремо країни з локальної БД.")
-            
+
             # Повертаємо всі країни, які вже встигли зберегтися в локальній БД раніше
             return [
                 CountryDTO(
-                    id=c.id, 
-                    name=c.name, 
+                    id=c.id,
+                    name=c.name,
                     name_ua=c.name_ua,
-                    code=c.code, 
-                    flag_emoji=c.flag_emoji
+                    code=c.code,
+                    flag_emoji=c.flag_emoji,
                 )
                 for c in Country.objects.all()
             ]
@@ -73,24 +73,25 @@ class GeoService:
             result = []
             for data in api_regions:
                 region = geo_repository.get_or_create_region(data, country)
-                result.append(RegionDTO(
-                    id=region.id,
-                    name=region.name,
-                    name_ua=region.name_ua,
-                    country_id=region.country_id  # Задовольняємо вимогу RegionDTO
-                ))
+                result.append(
+                    RegionDTO(
+                        id=region.id,
+                        name=region.name,
+                        name_ua=region.name_ua,
+                        country_id=region.country_id,  # Задовольняємо вимогу RegionDTO
+                    )
+                )
             return result
         except (RequestException, Exception) as e:
             # Якщо зовнішній сервіс недоступний:
-            print(f"Зовнішній гео-API недоступний ({e}). Беремо регіони з локальної БД.")
-            
+            print(
+                f"Зовнішній гео-API недоступний ({e}). Беремо регіони з локальної БД."
+            )
+
             # Повертаємо регіони цієї країни, які вже є в локальній базі
             return [
                 RegionDTO(
-                    id=r.id, 
-                    name=r.name, 
-                    name_ua=r.name_ua, 
-                    country_id=r.country_id
+                    id=r.id, name=r.name, name_ua=r.name_ua, country_id=r.country_id
                 )
                 for r in Region.objects.filter(country=country)
             ]
@@ -105,7 +106,13 @@ class GeoService:
         if not region.api_id:
             # Якщо немає api_id, віддаємо локальні міста
             return [
-                CityDTO(id=c.id, name=c.name, name_ua=c.name_ua, country_id=c.country_id, region_id=c.region_id)
+                CityDTO(
+                    id=c.id,
+                    name=c.name,
+                    name_ua=c.name_ua,
+                    country_id=c.country_id,
+                    region_id=c.region_id,
+                )
                 for c in City.objects.filter(region_id=region_id)
             ]
 
@@ -115,25 +122,27 @@ class GeoService:
             result = []
             for data in api_cities:
                 city = geo_repository.get_or_create_city(data, region.country, region)
-                result.append(CityDTO(
-                    id=city.id,
-                    name=city.name,
-                    name_ua=city.name_ua,
-                    country_id=city.country_id,
-                    region_id=city.region_id
-                ))
+                result.append(
+                    CityDTO(
+                        id=city.id,
+                        name=city.name,
+                        name_ua=city.name_ua,
+                        country_id=city.country_id,
+                        region_id=city.region_id,
+                    )
+                )
             return result
         except (RequestException, Exception) as e:
             print(f"Зовнішній гео-API недоступний ({e}). Беремо міста з локальної БД.")
-            
+
             # Повертаємо міста цього регіону з локальної БД
             return [
                 CityDTO(
-                    id=c.id, 
-                    name=c.name, 
-                    name_ua=c.name_ua, 
-                    country_id=c.country_id, 
-                    region_id=c.region_id
+                    id=c.id,
+                    name=c.name,
+                    name_ua=c.name_ua,
+                    country_id=c.country_id,
+                    region_id=c.region_id,
                 )
                 for c in City.objects.filter(region_id=region_id)
             ]
@@ -189,7 +198,6 @@ class GeoService:
         missing = set(ids) - set(found_ids)
         if missing:
             logger.warning("Countries not found for ids: %s", missing)
-
 
         return countries
 
