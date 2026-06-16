@@ -9,8 +9,8 @@ class ProductSerializer(serializers.Serializer):
     region_id = serializers.IntegerField()
     city_id = serializers.IntegerField()
     files = serializers.ListField(
-        child=serializers.ImageField(allow_empty_file=False),
-        allow_empty=False,
+        child=serializers.ImageField(allow_empty_file=True),
+        allow_empty=True,
         max_length=10,
     )
 
