@@ -2,26 +2,58 @@ from jsonschema import ValidationError
 from rest_framework import serializers
 
 
+from rest_framework import serializers
+
+class MarketLocationSerializer(serializers.Serializer):
+    """Вкладений серіалізатор для красивого групування локації"""
+    country_id = serializers.CharField(source='country_name', allow_null=True)
+    region_id = serializers.CharField(source='region_name', allow_null=True)
+    city_id = serializers.CharField(source='city_name', allow_null=True)
+
 
 class MarketSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=150)
+    address_line = serializers.CharField(max_length=255, allow_null=True, allow_blank=True)
+    
+    # Використовуємо StringRelatedField або ReadOnlyField для відображення юзера у вигляді рядка (username)
+    created_by = serializers.CharField(source='created_by.username', default=None, allow_null=True)
+    
+    # Створюємо динамічне поле для вкладеної локації
+    location = serializers.SerializerMethodField()
 
-    """
-    Серіалізатор магазину.
-    - Магазин глобальний — всі користувачі бачать однакові магазини.
-    - created_by підставляється автоматично з request.user.
-    - Локація повертається як id — резолвиться фронтом через /api/geo/resolve/.
-    """
-
-    id=serializers.IntegerField(read_only=True)
-    name=serializers.CharField(read_only=True)
-    address_line=serializers.CharField(read_only=True)
-
-    created_by=serializers.StringRelatedField(read_only=True)
+    def get_location(self, obj):
+        """
+        Цей метод бере поточний об'єкт магазину і загортає його 
+        динамічні поля у вкладений серіалізатор MarketLocationSerializer
+        """
+        return MarketLocationSerializer(obj).data
 
 
-    country_id=serializers.IntegerField(read_only=True)
-    region_id=serializers.IntegerField(read_only=True)
-    city_id=serializers.IntegerField(read_only=True)
+# class MarketSerializer(serializers.Serializer):
+
+#     """
+#     Серіалізатор магазину.
+#     - Магазин глобальний — всі користувачі бачать однакові магазини.
+#     - created_by підставляється автоматично з request.user.
+#     - Локація повертається як id — резолвиться фронтом через /api/geo/resolve/.
+#     """
+
+#     id=serializers.IntegerField(read_only=True)
+#     name=serializers.CharField(read_only=True)
+#     address_line=serializers.CharField(max_length=255, allow_null=True, allow_blank=True)
+
+#     created_by=serializers.StringRelatedField(read_only=True)
+
+
+#     country_id=serializers.IntegerField(read_only=True)
+#     region_id=serializers.IntegerField(read_only=True)
+#     city_id=serializers.IntegerField(read_only=True)
+
+#     # Динамічні текстові поля, які додав сервіс через контракт модулів
+#     country_name = serializers.CharField(max_length=100, allow_null=True, required=False)
+#     region_name = serializers.CharField(max_length=100, allow_null=True, required=False)
+#     city_name = serializers.CharField(max_length=100, allow_null=True, required=False)
 
 
 class MarketCreateSerializer(serializers.Serializer):

@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+from django.apps import AppConfig,apps
 
 
 class HouseholdConfig(AppConfig):
@@ -34,9 +34,12 @@ class HouseholdConfig(AppConfig):
             from apps.household.selectors import MarketSelector
             from apps.household.services import MarketService
 
-            # Навіть якщо geo запустився пізніше, у цей момент
-            # (коли пішов перший запит до API) його сервіс вже точно готовий!
-            geo_service_contract = GeoConfig.service
+        
+            # 2. ВИПРАВЛЕНО: Дістаємо живий об'єкт конфігу 'geo' з контейнера Django
+            geo_app = apps.get_app_config('geo')
+            
+            # 3. Тепер @property на geo_app відпрацює правильно і поверне робочий сервіс
+            geo_service_contract = geo_app.service
 
             self._market_service = MarketService(
                 repository=MarketRepo(),

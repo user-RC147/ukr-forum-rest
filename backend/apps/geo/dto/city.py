@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Optional
 
 @dataclass
 class CityDTO:
@@ -11,5 +12,5 @@ class CityDTO:
     name_ua: str
     country_id: int
     region_id: int
-    latitude: Decimal
-    longitude: Decimal
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None

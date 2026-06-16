@@ -3,15 +3,17 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ViewSet
 from rest_framework import status
-from yaml import serialize
+from django.apps import apps
 
 
-from apps.household.api.serializers.market_serializer import MarketSerializer
+from apps.household.api.serializers.market_serializer import MarketSerializer, MarketCreateSerializer
 from apps.household.apps import HouseholdConfig
 from apps.household.permissions.group_permissions import IsGroupCreator,IsOwner
-from apps.household.dto.market_dto import CreateMarketInDTO
+from apps.household.dto.market_dto import CreateMarketInDTO, ListMarketDTO
 from apps.household.repositories.maket_repo import MarketRepo
 from apps.household.services.market_service import MarketService
+
+
 
 
 
@@ -32,25 +34,41 @@ class MarketViewSet(ViewSet):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         #self.service=MarketService(MarketRepo())
-        # Беремо готовий зібраний сервіс з контейнера додатка
-        self.service = HouseholdConfig.market_service
+
+
+        # 2. Дістаємо поточний ініціалізований екземпляр додатка з контейнера Django
+        household_app = apps.get_app_config('household')
+        
+        # 3. Тепер @property відпрацює правильно і поверне готовий MarketService
+        self.service = household_app.market_service
 
 
     def list(self, request):
         """
         GET /api/household/markets/
-        Повертає повний список магазинів для селекту на фронтенді.
         """
-        # Передаємо дефолтні значення, оскільки сервіс чеselfкає на ці аргументи
-        markets = self.service.get_all_markets(
-            search_query=None,
-            country_id=None,
-            region_id=None,
-            city_id=None,
-            ordering='name'
+        # 1. Читаємо query-параметри з URL фронтенду (якщо вони є)
+        search_query = request.query_params.get('search', None)
+        country_id = request.query_params.get('country_id', None)
+        region_id = request.query_params.get('region_id', None)
+        city_id = request.query_params.get('city_id', None)
+        ordering = request.query_params.get('ordering', 'name')
+
+        # 2. Викликаємо ініціалізований сервіс (а не сам клас статично!)
+        # Примітка: переконайтеся, що у вашому View екземпляр сервісу лежить у self.market_service або аналогічно
+        markets_data = self.service.get_all_markets(
+            search_query=search_query,
+            country_id=country_id,
+            region_id=region_id,
+            city_id=city_id,
+            ordering=ordering
         )
-        serializer=MarketSerializer(markets,many=True)
-        return Response(serializer.data)
+        
+        # 3. Проганяємо дані через серіалізатор
+        serializer = MarketSerializer(markets_data, many=True)
+
+        # 4. Повертаємо саме serializer.data
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
     def create(self, request):
@@ -59,7 +77,7 @@ class MarketViewSet(ViewSet):
         Створення нового магазину. Викликається кнопкою з форми чека.
         """
 
-        serializer = MarketSerializer(data=request.data)
+        serializer = MarketCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         vd = serializer.validated_data

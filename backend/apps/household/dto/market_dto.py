@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 
+@dataclass(frozen=True)
+class ListMarketDTO:
+    name:int
+    
+
 
 @dataclass(frozen=True)
 class CreateMarketInDTO:
