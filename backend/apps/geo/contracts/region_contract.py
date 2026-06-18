@@ -22,9 +22,9 @@ class RegionContract:
             self._service = apps.get_app_config('geo').service
         return self._service
 
-    def get_region(self, region_id: int, country_id: int) -> RegionDTO:
+    def get(self, region_id: int) -> RegionDTO:
         # self.service тут автоматично викличе @property вище
-        data = self.service.get_region(region_id, country_id)
+        data = self.service.get_region(region_id)
         return self._to_dto(data)
     
     def get_many(self, regions_ids: list[int]) -> dict[int, RegionDTO]:
