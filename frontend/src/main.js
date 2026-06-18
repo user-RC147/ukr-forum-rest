@@ -2,16 +2,23 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router/index.js'
 import App from './App.vue'
-import './assets/css/style.css'      // ← Tailwind
-import './assets/css/my_style.css'   // ← твої стилі
+import './assets/css/style.css'
+import './assets/css/my_style.css'
+import { initAuth } from './app/initAuth.js' // ✅ ДОБАВЛЕНО
 
-const app = createApp(App)
+// ✅ ИСПРАВЛЕНО: обернуть в async function
+const startApp = async () => {
+  const app = createApp(App)
 
-// підключаємо pinia — state management
-app.use(createPinia())
+  const pinia = createPinia()
+  app.use(pinia)
+  app.use(router)
 
-// підключаємо router — маршрутизація
-// router підключаємо після pinia бо navigation guard використовує store
-app.use(router)
+  // 🔥 КРИТИЧНО: дождаться восстановления auth ПЕРЕД mount
+  await initAuth(pinia)
 
-app.mount('#app')
+  // mount ТОЛЬКО после этого
+  app.mount('#app')
+}
+
+startApp()
