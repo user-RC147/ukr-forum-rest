@@ -31,6 +31,11 @@ const routes = [
                 meta: { title: 'Оголошення', requiresAuth: true },
             },
             {
+            path: 'shop/:pk',  
+            name: 'shop-product',
+            meta: { requiresAuth: true },  
+            },
+            {
                 path: 'advboard',
                 name: 'advboard',
                 component: () => import('../modules/users/views/HomeView.vue'),

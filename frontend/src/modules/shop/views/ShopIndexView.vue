@@ -1,12 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/shared/stores/auth.js'
-import DefaultLayout from '@/shared/layouts/DefaultLayout.vue'
+import { useUserStore } from '@/modules/users/stores/useUserStore'
 import ProductCardSmall from '../components/ProductCardSmall.vue'
 import FloatingActions from '../components/FloatingActions.vue'
 import { getLatestProducts } from '../api/shop.js'
 
-const auth = useAuthStore()
+const userStore = useUserStore()
 
 const products = ref([])
 const loading = ref(true)
@@ -30,90 +29,88 @@ onMounted(async () => {
 </script>
 
 <template>
-  <DefaultLayout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
-      <!-- Ошибка -->
-      <div
-        v-if="error"
-        class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-600 font-medium"
-      >
-        {{ error }}
-      </div>
+    <!-- Ошибка -->
+    <div
+      v-if="error"
+      class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-600 font-medium"
+    >
+      {{ error }}
+    </div>
 
-      <!-- Скелетон загрузки -->
-      <template v-if="loading">
-        <div>
-          <div class="h-7 w-56 bg-gray-200 rounded-lg animate-pulse mb-4"></div>
+    <!-- Скелетон загрузки -->
+    <template v-if="loading">
+      <div>
+        <div class="h-7 w-56 bg-gray-200 rounded-lg animate-pulse mb-4"></div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <div
-              v-for="n in 10"
-              :key="n"
-              class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse"
-            >
-              <div class="h-40 bg-gray-200"></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div
+            v-for="n in 10"
+            :key="n"
+            class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse"
+          >
+            <div class="h-40 bg-gray-200"></div>
 
-              <div class="p-3 space-y-2">
-                <div class="h-4 bg-gray-200 rounded w-full"></div>
-                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-                <div class="h-3 bg-gray-100 rounded w-1/2"></div>
-              </div>
+            <div class="p-3 space-y-2">
+              <div class="h-4 bg-gray-200 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div class="h-3 bg-gray-100 rounded w-1/2"></div>
             </div>
           </div>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <!-- Основной контент -->
-      <template v-else-if="!error">
-        <section>
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">
-            Останні оголошення
-          </h2>
+    <!-- Основной контент -->
+    <template v-else-if="!error">
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+          Останні оголошення
+        </h2>
 
-          <div
-            v-if="products.length"
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+        <div
+          v-if="products.length"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+        >
+          <ProductCardSmall
+            v-for="product in products"
+            :key="product.id"
+            :product="product"
+          />
+        </div>
+
+        <!-- Пустое состояние -->
+        <div v-else class="text-center py-20">
+          <svg
+            class="w-16 h-16 mx-auto mb-4 text-gray-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <ProductCardSmall
-              v-for="product in products"
-              :key="product.id"
-              :product="product"
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A[...]"
             />
-          </div>
+          </svg>
 
-          <!-- Пустое состояние -->
-          <div v-else class="text-center py-20">
-            <svg
-              class="w-16 h-16 mx-auto mb-4 text-gray-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
+          <p class="text-lg font-semibold text-gray-500">
+            Поки оголошень немає — ти можеш бути першим!
+          </p>
 
-            <p class="text-lg font-semibold text-gray-500">
-              Поки оголошень немає — ти можеш бути першим!
-            </p>
+          <router-link
+            v-if="userStore.isAuthenticated"
+            :to="{ name: 'shop-create-product' }"
+            class="inline-block mt-3 text-blue-600 underline hover:opacity-75 transition-opacity text-sm font-medium"
+          >
+            Додати свій товар
+          </router-link>
+        </div>
+      </section>
+    </template>
+  </div>
 
-            <router-link
-              v-if="auth.isAuthenticated"
-              :to="{ name: 'shop-create-product' }"
-              class="inline-block mt-3 text-blue-600 underline hover:opacity-75 transition-opacity text-sm font-medium"
-            >
-              Додати свій товар
-            </router-link>
-          </div>
-        </section>
-      </template>
-    </div>
-
-    <FloatingActions />
-  </DefaultLayout>
+  <FloatingActions />
 </template>
