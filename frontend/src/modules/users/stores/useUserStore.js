@@ -6,6 +6,7 @@ export const useUserStore = defineStore('user', {
         user: null,
         accessToken: localStorage.getItem('access_token') || null,
         refreshToken: localStorage.getItem('refresh_token') || null,
+        ready: false, // ✅ ДОБАВЛЕНО
     }),
 
     getters: {
@@ -19,6 +20,9 @@ export const useUserStore = defineStore('user', {
             this.refreshToken = response.data.refresh;
             localStorage.setItem('access_token', this.accessToken);
             localStorage.setItem('refresh_token', this.refreshToken);
+            
+            // ✅ ДОБАВЛЕНО: загружаем профиль СРАЗУ после логина
+            await this.fetchProfile();
         },
 
         async fetchProfile() {
@@ -29,6 +33,7 @@ export const useUserStore = defineStore('user', {
                 if (error.response?.status === 401) {
                     this.logout();
                 }
+                throw error; // ✅ ДОБАВЛЕНО: пробросить ошибку выше
             }
         },
 
