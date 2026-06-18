@@ -33,6 +33,7 @@ const routes = [
             {
             path: 'shop/:pk',  
             name: 'shop-product',
+            component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
             meta: { requiresAuth: true },  
             },
             {
