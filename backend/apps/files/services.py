@@ -92,6 +92,9 @@ class FileService:
 
     def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileDTO]:
 
+        if not data:
+            return []
+
         for d in data:
             self._validate_file(d, user_id)
 
@@ -101,6 +104,10 @@ class FileService:
     def update_many(
         self, data: list[UploadedFile], user_id: int, target_ids: list[int]
     ) -> list[FileDTO]:
+
+        if not data:
+            return []
+
         for d in data:
             self._validate_file(d, user_id)
 
