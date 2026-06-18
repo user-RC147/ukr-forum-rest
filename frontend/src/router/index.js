@@ -26,26 +26,32 @@ const routes = [
             },
             {
                 path: 'shop',
-                name: 'shop',
-                component: () => import('../modules/users/views/HomeView.vue'), // тимчасово
-                meta: { requiresAuth: true },
+                name: 'shop-index',
+                component: () => import('@/modules/shop/views/ShopIndexView.vue'),
+                meta: { title: 'Оголошення', requiresAuth: true },
+            },
+            {
+            path: 'shop/:pk',  
+            name: 'shop-product',
+            component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
+            meta: { requiresAuth: true },  
             },
             {
                 path: 'advboard',
                 name: 'advboard',
-                component: () => import('../modules/users/views/HomeView.vue'), // тимчасово
+                component: () => import('../modules/users/views/HomeView.vue'),
                 meta: { requiresAuth: true },
             },
             {
                 path: 'articles',
                 name: 'articles',
-                component: () => import('../modules/users/views/HomeView.vue'), // тимчасово
+                component: () => import('../modules/users/views/HomeView.vue'),
                 meta: { requiresAuth: true },
             },
             {
                 path: 'stories',
                 name: 'stories',
-                component: () => import('../modules/users/views/HomeView.vue'), // тимчасово
+                component: () => import('../modules/users/views/HomeView.vue'),
                 meta: { requiresAuth: true },
             },
             {
@@ -79,13 +85,11 @@ const routes = [
                         name:'household-asset-create',
                         component: ()=>import('../modules/household/views/assets/AssetCreate.vue')
                     },
-
                     {
                         path:'markets/create',
                         name:'household-market-create',
                         component: ()=>import('../modules/household/views/markets/MarketCreat.vue')
                     },
-                    
                 ],
             },
         ],
@@ -119,13 +123,19 @@ const router = createRouter({
 router.beforeEach((to) => {
     const userStore = useUserStore();
 
+    // ✅ ДОБАВИТЬ: ждём пока auth восстановится
+    if (!userStore.ready) {
+        return true; // пропустить guard, сработает снова после init
+    }
+
     if (to.meta.requiresAuth && !userStore.isAuthenticated) {
         return { name: 'login' };
     }
 
-    if (!to.meta.requiresAuth && userStore.isAuthenticated) {
-        return { name: 'home' };
-    }
+    // ❌ УДАЛИТЬ эту часть если она есть:
+    // if (!to.meta.requiresAuth && userStore.isAuthenticated) {
+    //     return { name: 'home' };
+    // }
 });
 
 export default router;
