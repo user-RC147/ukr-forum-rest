@@ -13,7 +13,6 @@ def file_directory_path(instance, filename):
     filename = f"{uuid.uuid4()}{ext}"
 
     return Path(
-        "files",
         str(instance.owner_id),
         str(today.year),
         f"{today.month:02}",
