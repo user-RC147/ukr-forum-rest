@@ -112,7 +112,8 @@ class ProductService(BaseService[ProductModel]):
                 if "files" in data.keys():
                     files = data.pop("files")
                     target_ids = product.files_ids
-                    self.file_contract.update_many(files, user_id, target_ids)
+                    files_ids = self.file_contract.update_many(files, user_id, target_ids)
+                    data["files_ids"] = [f.id for f in files_ids]
                 result = super().update(id, data)
                 self._attach_products([result])
                 return result
