@@ -98,8 +98,14 @@ class FileService:
         for d in data:
             self._validate_file(d, user_id)
 
+        instances = [
+        self.model(name=d.name, file=d, owner_id=user_id)
+        for d in data
+        ]
+
         with transaction.atomic():
-            return [self.create(f, user_id) for f in data]
+            result = self.model.objects.bulk_create(instances)
+            return [_to_dto(r) for r in result]
 
     def update_many(
         self, data: list[UploadedFile], user_id: int, target_ids: list[int]
@@ -122,7 +128,7 @@ class FileService:
         for file, d in zip(files, data, strict=False):
             file.name = d.name
             file.file.save(d.name, ContentFile(d.file.read()), save=False)
-            new_file_paths.append(file.file.name)
+            new_file_paths.append(file.file.url)
 
         try:
             with transaction.atomic():
@@ -206,7 +212,7 @@ def _to_dto(file: FileModel) -> FileDTO:
     return FileDTO(
         owner_id=file.owner_id,
         id=file.id,
-        file=f"{settings.BASE_URL}/{file.file}",
+        file=f"{settings.BASE_URL}{file.file.url}",
         visible=file.visible,
         created_at=time,
     )
