@@ -27,7 +27,8 @@ class ProductSearchHandler:
         vector = SearchVector("title", weight="A", config="simple")
 
         qs = (
-            ProductService.get_searchable_queryset().only("id", "title", "description", "price", "created_at", "files_ids")
+            ProductService.get_searchable_queryset()
+            .only("id", "title", "description", "price", "created_at", "files_ids")
             .annotate(
                 rank=SearchRank(vector, query),
                 similarity=TrigramSimilarity("title", params.query),
@@ -65,7 +66,7 @@ class ProductSearchHandler:
             description=obj.description,
             meta={
                 "price": obj.price,
-                "created_at": obj.created_at,
+                "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M:%S"),
                 "files": files,
             },
         )
