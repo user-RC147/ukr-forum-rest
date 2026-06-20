@@ -35,3 +35,7 @@ export const requestPasswordReset = (data) => {
 export const confirmPasswordReset = (data) => {
   return api.post('/users/password-reset/confirm/', data)
 }
+
+export const logoutUser = () => {
+  return api.post('/users/logout/');
+}

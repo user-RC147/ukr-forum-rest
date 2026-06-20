@@ -2,7 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from yaml import serialize
+from django.apps import apps
 
 from apps.household.apps import HouseholdConfig
 from apps.household.api.serializers.product_serializer import ProductSerializer
@@ -14,7 +14,13 @@ class ProductViewSet(ViewSet):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self.service=HouseholdConfig.product_service
+        #self.service=HouseholdConfig.product_service
+
+         # 2. Дістаємо поточний ініціалізований екземпляр додатка з контейнера Django
+        household_app = apps.get_app_config('household')
+        
+        # 3. Тепер @property відпрацює правильно і поверне готовий ....  
+        self.service = household_app.product_service 
     
 
     def list(self, request):
