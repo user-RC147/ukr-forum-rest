@@ -96,7 +96,8 @@ AUTH_USER_MODEL = "users.CustomUser"
 # --- DRF + JWT ---
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        #"rest_framework_simplejwt.authentication.JWTAuthentication",
+        'apps.users.api.jwt.authentication.CookieJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
@@ -118,6 +119,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vue dev server
     "http://localhost:5174",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 # --- Паролі ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -161,7 +163,16 @@ SIMPLE_JWT = {
     # Решта ваших поточних налаштувань SIMPLE_JWT (якщо вони є)
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+
+    # httpOnly cookies
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_HTTP_ONLY": True, 
 }
+
+
+
+
 
 
 # Куди перенаправляти користувача після успішного входу

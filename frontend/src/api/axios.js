@@ -1,21 +1,15 @@
 import axios from 'axios'
 
+// Створює інстанс axios з попередньо налаштованими параметрами
 const api = axios.create({
-  // адреса Django backend
+  // базова URL адреса для всіх запитів
   baseURL: 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // дозволяє відправляти cookies з запитами (якщо потрібно для сесійної автентифікації) 
 })
 
-// Interceptor — перед кожним запитом автоматично додає токен
-// Це як middleware в Django
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
 
+// експортує налаштований api інстанс для використання в компонентах
 export default api

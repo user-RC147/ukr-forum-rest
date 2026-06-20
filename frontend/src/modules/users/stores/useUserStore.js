@@ -4,21 +4,18 @@ import { loginUser, getProfile } from '../api/users';
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: null,
-        accessToken: localStorage.getItem('access_token') || null,
-        refreshToken: localStorage.getItem('refresh_token') || null,
     }),
 
     getters: {
-        isAuthenticated: (state) => !!state.accessToken,
+       isAuthenticated: (state) => state.user !== null,
     },
 
     actions: {
         async login(credentials) {
-            const response = await loginUser(credentials);
-            this.accessToken = response.data.access;
-            this.refreshToken = response.data.refresh;
-            localStorage.setItem('access_token', this.accessToken);
-            localStorage.setItem('refresh_token', this.refreshToken);
+            await loginUser(credentials);
+            await this.fetchProfile();
+            // Токени тепер в cookies — JS їх не бачить
+            // Просто відправляємо запит, cookies додаються автоматично
         },
 
         async fetchProfile() {
@@ -34,10 +31,6 @@ export const useUserStore = defineStore('user', {
 
         logout() {
             this.user = null;
-            this.accessToken = null;
-            this.refreshToken = null;
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
         },
     },
 });

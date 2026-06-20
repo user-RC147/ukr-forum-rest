@@ -43,6 +43,11 @@ const checkItems = ref([
 
 // Змінна контролю модалки
 const isMarketModalOpen = ref(false);
+const isProductModalOpen=ref(false);
+const newProductForm=ref({
+    name:'',
+    unit_of_measure:'шт' // ← точно як у Django моделі
+});
 
 // Тимчасові дані для форми створення нового магазину
 const newMarketName = ref('');
@@ -79,7 +84,7 @@ const handleCreateMarket = async () => {
     try {
         const createdMarket = await marketStore.createMarket({
             name: newMarketName.value.trim(),
-            address_line: streetAndHouse.value.trim() || null,
+            address_line: streetAndHouse.value.trim() || '',
             country_id: modalCountryId.value ? Number(modalCountryId.value) : null,
             region_id: modalRegionId.value ? Number(modalRegionId.value) : null,
             city_id: modalCityId.value ? Number(modalCityId.value) : null
@@ -97,7 +102,34 @@ const handleCreateMarket = async () => {
 
         isMarketModalOpen.value = false;
     } catch (error) {
+        console.log('Деталі помилки:', error.response?.data)  // ← додай
         alert('Помилка при створенні магазину');
+    }
+};
+
+// Функція збереження нового товару
+const handleCreateProduct=async()=>{
+     // Захист: якщо назва пуста — нічого не робимо
+     if(!newProductForm.value.name.trim()) return;
+
+     try{
+        // Відправляємо POST запит на бекенд
+        const response=await api.post('/household/products/',{
+            name: newProductForm.value.name.trim(),
+            unit_of_measure: newProductForm.value.unit_of_measure
+        });
+
+        // Закриваємо модалку
+        isProductModalOpen.value=false;
+
+        // Очищаємо форму для наступного разу
+        newProductForm.value.name='';
+        newProductForm.value.unit_of_measure='шт.';
+
+         console.log('Товар створено:', response.data);
+    } catch (error) {
+        console.log('Деталі помилки:', error.response?.data);
+        alert('Помилка при створенні товару');
     }
 };
 
@@ -231,10 +263,12 @@ watch(selectedGroup, (newGroupId) => {
 
             </button>
 
-            <a href="#" 
-            class="bg-amber-50 hover:bg-amber-100 text-center py-4 rounded-2xl transition">
-                створити товар
-            </a>
+            <button
+                class="bg-amber-50 hover:bg-amber-100 text-center py-4 rounded-2xl transition"
+                type="button"
+                @click="isProductModalOpen=true">                
+                    створити товар
+            </button>
         </div>
 
         <!-- Додавання товару -->
@@ -345,7 +379,7 @@ watch(selectedGroup, (newGroupId) => {
                 </table>
             </div>
         </div>
-    <!-- Модалка на створення магазину -->
+    <!-- Модалка на створення -->
     <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ МАГАЗИНУ -->
         <!-- Тонкий чорний напівпрозорий фон. Показується лише якщо isMarketModalOpen === true -->
         <div v-if="isMarketModalOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -434,6 +468,75 @@ watch(selectedGroup, (newGroupId) => {
                         type="button" 
                         @click="handleCreateMarket"
                         :disabled="!newMarketName.trim()"
+                        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-sm font-semibold transition"
+                    >
+                        Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ ТОВАРУ -->
+        <!-- Тонкий чорний напівпрозорий фон. Показується лише якщо isProductModalOpen === true -->
+        <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ ТОВАРУ -->
+        <div v-if="isProductModalOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            
+            <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl relative">
+                
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Новий товар</h3>
+                
+                <div class="space-y-4">
+
+                    <!-- Назва товару -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                            Назва товару *
+                        </label>
+                        <input 
+                            type="text" 
+                            v-model="newProductForm.name"
+                            placeholder="Наприклад: Хліб, Молоко, Цукор"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                        >
+                    </div>
+
+                    <!-- Одиниця вимірювання -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                            Одиниця вимірювання
+                        </label>
+                        <select 
+                            v-model="newProductForm.unit_of_measure"
+                            class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                        >
+                            <option value="шт">Штуки (шт)</option>
+                            <option value="кг">Кілограми (кг)</option>
+                            <option value="г">Грами (г)</option>
+                            <option value="л">Літри (л)</option>
+                            <option value="мл">Мілілітри (мл)</option>
+                            <option value="м">Метри (м)</option>
+                            <option value="уп">Упаковка (уп)</option>
+                            <option value="кор">Коробка (кор)</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex justify-end gap-3 mt-6 border-t pt-4 border-gray-100">
+                    <button 
+                        type="button" 
+                        @click="isProductModalOpen = false"
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition"
+                    >
+                        Скасувати
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        @click="handleCreateProduct"
+                        :disabled="!newProductForm.name.trim()"
                         class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-sm font-semibold transition"
                     >
                         Зберегти

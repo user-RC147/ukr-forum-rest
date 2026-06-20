@@ -1,9 +1,10 @@
 # apps/users/urls.py
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,  # POST /login/ → повертає access + refresh токени
-    TokenRefreshView,     # POST /token/refresh/ → оновлює access токен
+from apps.users.api.jwt.jwt_views import (
+    CustomTokenObtainPairView,
+    CustomTokenRefreshView,
 )
+
 from apps.users.api import views
 
 app_name = 'users'
@@ -12,9 +13,8 @@ urlpatterns = [
     # -------------------------------------------------------
     # Авторизація (JWT)
     # -------------------------------------------------------
-    path('login/', TokenObtainPairView.as_view(), name='login'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
+    path('login/', CustomTokenObtainPairView.as_view(), name='login'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
     # -------------------------------------------------------
     # Акаунт
     # -------------------------------------------------------
