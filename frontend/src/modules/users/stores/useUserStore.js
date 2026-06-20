@@ -26,6 +26,7 @@ export const useUserStore = defineStore('user', {
                 if (error.response?.status === 401) {
                     this.logout();
                 }
+                throw error; // ✅ ДОБАВЛЕНО: пробросить ошибку выше
             }
         },
 

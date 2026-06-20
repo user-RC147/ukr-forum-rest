@@ -151,7 +151,8 @@ DEFAULT_FROM_EMAIL = "noreply@ukr-forum.com"
 FRONTEND_URL = "http://localhost:5173"
 
 # --- Serving files uploaded---
-# MEDIA_URL = "media/"
+MEDIA_URL = '/files/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя файлы
 
 
 SIMPLE_JWT = {

@@ -100,17 +100,23 @@ class ProductService(BaseService[ProductModel]):
         file_list = self.file_contract.create_many(files, user_id)
         file_ids = [i.id for i in file_list]
         data["files_ids"] = file_ids
-        return super().create(data)
+        result = super().create(data)
+        self._attach_products([result])
+        return result
 
     def update(self, id: int, user_id: int, data: dict) -> ProductModel:
         self.geo_validate(data)
         product = self.get(id)
         if int(user_id) == product.owner_id:
             with transaction.atomic():
-                files = data.pop("files")
-                target_ids = product.files_ids
-                self.file_contract.update_many(files, user_id, target_ids)
-                return super().update(id, data)
+                if "files" in data.keys():
+                    files = data.pop("files")
+                    target_ids = product.files_ids
+                    files_ids = self.file_contract.update_many(files, user_id, target_ids)
+                    data["files_ids"] = [f.id for f in files_ids]
+                result = super().update(id, data)
+                self._attach_products([result])
+                return result
         else:
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
@@ -140,11 +146,11 @@ class ProductService(BaseService[ProductModel]):
 
     def geo_validate(self, data: dict) -> None:
         try:
-            country = self.country_service.get_country(data["country_id"])
-            region = self.region_service.get_region(
-                data["region_id"], data["country_id"]
+            country = self.country_contract.get(data["country_id"])
+            region = self.region_contract.get(
+                data["region_id"]
             )
-            city = self.city_service.get_city(data["city_id"], data["region_id"])
+            city = self.city_contract.get(data["city_id"])
         except ObjectDoesNotExist:
             logger.info(
                 "Geo data with country: %s, region: %s, city: %s not found!",
