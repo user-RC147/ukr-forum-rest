@@ -11,15 +11,17 @@ class SearchService:
     def __init__(self, limit_per_module: int = 10) -> None:
         self.limit_per_module = limit_per_module
 
-    def search(self, params) -> list[SearchResultItem]:
-        results: list[SearchResultItem] = []
+    def search(self, params, scope: str | None = None) -> list[SearchResultItem]:
+        handlers = SearchRegistry.all()
+        items = handlers.items() if scope is None else [(scope, handlers[scope])]
 
-        for name, handler in SearchRegistry.all().items():
+        results: list[SearchResultItem] = []
+        for name, handler in items:
             try:
-                found = handler.search(params)
-                results.extend(found)
+                results.extend(handler.search(params))
             except Exception:
-                # one errored module don`t drop all search
                 logger.exception("Search failed in module: %s", name)
+                if scope is not None:
+                    raise
 
         return results
