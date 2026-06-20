@@ -40,6 +40,9 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
 
     <!-- Тоглер -->
     <button
+      type="button"
+      :aria-expanded="isOpen"
+      aria-label="Інші дії"
       @click.stop="isOpen = !isOpen"
       class="text-sm font-semibold text-white bg-orange-400/80 hover:bg-orange-500/90
              px-5 py-2.5 rounded-xl shadow-md transition-all duration-200 active:scale-95"
