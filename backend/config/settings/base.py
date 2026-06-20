@@ -192,6 +192,6 @@ from config.logging import merge_logging_configs
 LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING, SEARCH_LOGGING, GEO_LOGGING)
 
 # --- Modules for search---
-SEARCH_HANDLERS = [
-    "apps.shop.search.ProductSearchHandler",
-]
+SEARCH_HANDLERS = {
+    "shop": "apps.shop.search.ProductSearchHandler",
+}
