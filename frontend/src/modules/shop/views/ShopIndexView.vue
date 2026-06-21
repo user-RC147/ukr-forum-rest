@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/shared/stores/useUserStore'
+import { getLatestProducts } from '../api/shop.js'
 import ProductCardSmall from '../components/ProductCardSmall.vue'
 import FloatingActions from '../components/FloatingActions.vue'
-import { getLatestProducts } from '../api/shop.js'
 
-const auth = useAuthStore()
+const userStore = useUserStore()
 
 const products = ref([])
 const loading = ref(true)
@@ -89,7 +89,7 @@ onMounted(async () => {
           </p>
 
           <router-link
-            v-if="auth.isAuthenticated"
+            v-if="userStore.isAuthenticated"
             :to="{ name: 'shop-create-product' }"
             class="inline-block mt-3 text-blue-600 underline hover:opacity-75 transition-opacity text-sm font-medium"
           >

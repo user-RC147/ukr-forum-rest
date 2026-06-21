@@ -26,16 +26,28 @@ const routes = [
             },
             {
                 path: 'shop',
-                name: 'shop-index',
                 component: () => import('@/modules/shop/views/ShopIndexView.vue'),
                 meta: { title: 'Оголошення', requiresAuth: true },
+                children:[
+                    {
+                        path: '',
+                        name: 'shop-index',
+                        component: () => import('@/modules/shop/views/ShopIndexView.vue'),
+                    },
+                    {
+                        path: 'shop/:pk',  
+                        name: 'shop-product',
+                        component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
+                    },
+                    {
+                        path: 'shop/create',  
+                        name: 'shop-create-product',
+                        component: () => import('@/modules/shop/views/ShopIndexView.vue'),
+                    },
+
+                ],
             },
-            {
-                path: 'shop/:pk',  
-                name: 'shop-product',
-                component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
-                meta: { requiresAuth: true },  
-            },
+            
             {
                 path: 'advboard',
                 name: 'advboard',

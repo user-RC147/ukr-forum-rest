@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/shared/stores/auth.js'
+import { useUserStore } from '@/shared/stores/useUserStore'
 
-const auth    = useAuthStore()
+const userStore = useUserStore()
 const isOpen  = ref(false)
 const wrapper = ref(null)
 
@@ -52,7 +52,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
 
     <!-- Главная кнопка -->
     <router-link
-      :to="auth.isAuthenticated ? { name: 'shop-create-product' } : { name: 'login' }"
+      :to="userStore.isAuthenticated ? { name: 'shop-create-product' } : { name: 'login' }"
       class="font-semibold text-white bg-orange-500 hover:bg-orange-600
              px-6 py-3 rounded-xl shadow-xl hover:shadow-2xl
              transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
