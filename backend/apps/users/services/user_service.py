@@ -1,7 +1,6 @@
-from typing import Optional
 
-from apps.users.models import CustomUser
 from apps.users.dto.user import UserDTO
+from apps.users.models import CustomUser
 
 
 class UserService:
@@ -10,29 +9,25 @@ class UserService:
     Використовується іншими модулями для отримання даних користувача.
     """
 
-    def get_user(self,user_id:int)->Optional[UserDTO]:
-        try:
-            u=CustomUser.objects.get(id=user_id)
-            return UserDTO(
-                id=u.id,
-                username=u.username,
-                display_name=u.get_public_name(),
-            )
-        except CustomUser.DoesNotExist:
-            return None
-        
+    def get_user(self,user_id:int)->UserDTO:
 
-    def get_users(self, ids: list[int]) -> list[UserDTO]:
+        u=CustomUser.objects.get(id=user_id)
+        return UserDTO(
+            id=u.id,
+            username=u.username,
+            display_name=u.get_public_name(),
+        )
+
+
+    def get_users(self, ids: list[int]) -> dict[int, UserDTO]:
         if not ids:
-            return []
-        
-        return [
-            UserDTO(
-                id=u.id,
-                username=u.username,
-                display_name=u.get_public_name(),
-            )
-            for u in CustomUser.objects.filter(id__in=ids)
-        ]
-    
+            return {}
+            
+        data = CustomUser.objects.filter(id__in=ids)
+
+        return {d.id: _to_dto(d) for d in data}
+
+def _to_dto(data) -> UserDTO:
+    return UserDTO(id=data.id, username=data.username, display_name=data.get_public_name())
+
 user_service = UserService()
