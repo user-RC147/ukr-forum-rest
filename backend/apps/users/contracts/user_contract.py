@@ -7,10 +7,10 @@ class UserContract:
     def __init__(self) -> None:
         self.service = user_service
 
-    def get(self, user_id: int) -> UserDTO | None:
+    def get(self, user_id: int) -> UserDTO:
         return self.service.get_user(user_id)
 
-    def get_many(self, ids: list[int]) -> list[UserDTO]:
+    def get_many(self, ids: list[int]) -> dict[int, UserDTO]:
         return self.service.get_users(ids)
 
 
