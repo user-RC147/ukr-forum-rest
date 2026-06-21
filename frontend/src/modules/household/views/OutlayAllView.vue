@@ -1,7 +1,7 @@
 <script setup>
     import { ref, computed, watch, onMounted } from 'vue';
     import { useGroupStore } from '../stores/useGroupStore.js';
-    import { useUserStore } from '../../users/stores/useUserStore.js';
+    import { useUserStore } from '@/shared/stores/useUserStore.js';
     import { useAssetStore } from '../stores/useAssetStore.js';
 
     const groupStore = useGroupStore();

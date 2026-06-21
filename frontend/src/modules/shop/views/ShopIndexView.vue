@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserStore } from '@/modules/users/stores/useUserStore'
+import { useUserStore } from '@/shared/stores/useUserStore'
 import ProductCardSmall from '../components/ProductCardSmall.vue'
 import FloatingActions from '../components/FloatingActions.vue'
 import { getLatestProducts } from '../api/shop.js'
