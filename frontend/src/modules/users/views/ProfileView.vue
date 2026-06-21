@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/useUserStore'
+import { useUserStore } from '@/shared/stores/useUserStore'
 import { updateProfile, updateLocation } from '../api/users'
 import { getCountries, getRegions, getCities } from '../../geo/api/geo'
 

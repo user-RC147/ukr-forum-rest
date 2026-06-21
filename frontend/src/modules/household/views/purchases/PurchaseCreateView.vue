@@ -5,18 +5,19 @@ import { useRoute } from 'vue-router';
 
 import { useGroupStore } from '../../stores/useGroupStore';
 import { useAssetStore } from '../../stores/useAssetStore';
-import { useUserStore } from '../../../users/stores/useUserStore';
+import { useUserStore } from '@/shared/stores/useUserStore';
 import { useMarketStore } from '../../stores/useMarketStore';
+import {useProductStore} from '../../stores/useProductStore';
 
 // Імпортуємо функції з geo.js
-import { getCountries, getRegions, getCities } from '../../../geo/api/geo';
+import { getCountries, getRegions, getCities } from '@/modules/geo/api/geo';
 
 // Ініціалізуємо сховища даних
 const groupStore = useGroupStore();
 const assetStore = useAssetStore();
 const userStore = useUserStore();
 const marketStore = useMarketStore();
-
+const productStore = useProductStore();
 const route = useRoute();
 
 // Поля «шапки» чека
@@ -114,7 +115,7 @@ const handleCreateProduct=async()=>{
 
      try{
         // Відправляємо POST запит на бекенд
-        const response=await api.post('/household/products/',{
+        const createdProduct = await productStore.addProduct({
             name: newProductForm.value.name.trim(),
             unit_of_measure: newProductForm.value.unit_of_measure
         });
@@ -126,9 +127,10 @@ const handleCreateProduct=async()=>{
         newProductForm.value.name='';
         newProductForm.value.unit_of_measure='шт.';
 
-         console.log('Товар створено:', response.data);
+         console.log('Товар створено:', createdProduct);
     } catch (error) {
-        console.log('Деталі помилки:', error.response?.data);
+        console.log('Деталі помилки:', error.createdProduct?.data)  // ← додай
+        // Тут можна додатково обробити помилку, наприклад, показати повідомлення з бекенду;
         alert('Помилка при створенні товару');
     }
 };

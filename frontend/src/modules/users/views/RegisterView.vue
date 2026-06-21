@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { registerUser } from '../api/users'
-import { useUserStore } from '../stores/useUserStore'  // ← додали
+import { useUserStore } from '@/shared/stores/useUserStore'  // ← додали
 
 const router    = useRouter()
 const userStore = useUserStore()  // ← додали
