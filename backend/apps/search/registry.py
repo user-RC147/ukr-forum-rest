@@ -9,18 +9,15 @@ class SearchRegistry:
 
     @classmethod
     def load_from_settings(cls) -> None:
-        paths: list[str] = getattr(settings, "SEARCH_HANDLERS", [])
+        paths: dict[str, str] = getattr(settings, "SEARCH_HANDLERS", {})
 
-        for dotted_path in paths:
-            handler_class = import_string(dotted_path)  # import class by strings
-            handler = handler_class()
+        for module_name, dotted_path in paths.items():
+            handler_class = import_string(dotted_path)
 
-            if not isinstance(handler, Searchable):
+            if not isinstance(handler_class(), Searchable):
                 raise TypeError(f"{dotted_path} doesn`t have Searchable protocol")
 
-            # key = first part of path, name of module ("shop", "users")
-            module_name = dotted_path.split(".")[0]
-            cls._handlers[module_name] = handler
+            cls._handlers[module_name] = handler_class()
 
     @classmethod
     def all(cls) -> dict[str, Searchable]:

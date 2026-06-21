@@ -5,7 +5,7 @@ import ProductCardSmall from '../components/ProductCardSmall.vue'
 import FloatingActions from '../components/FloatingActions.vue'
 import { getLatestProducts } from '../api/shop.js'
 
-const userStore = useUserStore()
+const auth = useAuthStore()
 
 const products = ref([])
 const loading = ref(true)
@@ -82,26 +82,14 @@ onMounted(async () => {
 
         <!-- Пустое состояние -->
         <div v-else class="text-center py-20">
-          <svg
-            class="w-16 h-16 mx-auto mb-4 text-gray-200"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A[...]"
-            />
-          </svg>
+          <InboxIcon class="w-16 h-16 mx-auto mb-4 text-gray-200" />
 
           <p class="text-lg font-semibold text-gray-500">
             Поки оголошень немає — ти можеш бути першим!
           </p>
 
           <router-link
-            v-if="userStore.isAuthenticated"
+            v-if="auth.isAuthenticated"
             :to="{ name: 'shop-create-product' }"
             class="inline-block mt-3 text-blue-600 underline hover:opacity-75 transition-opacity text-sm font-medium"
           >
