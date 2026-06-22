@@ -9,6 +9,18 @@ export const getRegions = (countryCode) =>
 export const getCities = (regionId) =>
     api.get(`/geo/cities/?region=${regionId}`)
 
+export const searchCountries = (q = '') => {
+  return api.get('/geo/get-countries/', {
+    params: q ? { q } : {},
+  })
+}
+
+export const getCountryById = (countryId) => {
+  return api.get('/geo/get-countries/', {
+    params: { country: countryId },
+  })
+}
+
 export const searchCities = (query, countryCode = null) => {
     let url = `/geo/cities/?search=${query}`
     if (countryCode) url += `&country_code=${countryCode}`
