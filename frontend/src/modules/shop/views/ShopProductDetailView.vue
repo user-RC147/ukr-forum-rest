@@ -2,7 +2,7 @@
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useToast } from "@/shared/composables/useToast";
-import { useAuthStore } from "@/shared/stores/auth.js";
+import { useUserStore } from "@/shared/stores/useUserStore";
 import { useProductGallery } from "../composables/useProductGallery";
 import { getProductDetail, createComplaint } from "../api/shop.js";
 import {
@@ -20,7 +20,7 @@ import {
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
-const auth = useAuthStore();
+const auth = useUserStore();
 const { error: showError, success: showSuccess } = useToast();
 
 const product = ref(null);
