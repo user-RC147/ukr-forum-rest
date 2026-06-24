@@ -42,6 +42,13 @@ function handleSelect(country) {
         @click="autocomplete.select(country); handleSelect(country)"
       >
         {{ country.name }}
+
+          <span
+          v-if="country.name_ua"
+          class="text-xs text-gray-400"
+          >
+            — {{ country.name_ua }}
+          </span>
         <span v-if="country.code" class="text-xs text-gray-400">({{ country.code }})</span>
       </li>
       <li v-if="!autocomplete.suggestions.length" class="px-4 py-2 text-sm text-gray-500">
