@@ -1,5 +1,5 @@
 // modules/shop/composables/useProductForm.js
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, toRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCategories, createProduct, updateProduct } from '@/modules/shop/api/shop'
 import { useCountryAutocomplete } from './useCountryAutocomplete'
@@ -43,7 +43,7 @@ export function useProductForm({ mode, product = null }) {
 
   const cityAutocomplete = useCityAutocomplete(
     { id: product?.city?.id ?? '', name: product?.city?.name ?? '' },
-    () => countryAutocomplete.countryId,
+    toRef(countryAutocomplete, 'countryId'),
   )
 
   const existingImages = (product?.images ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
