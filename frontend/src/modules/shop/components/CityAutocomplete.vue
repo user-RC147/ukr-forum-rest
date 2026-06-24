@@ -19,7 +19,6 @@ defineProps({
       @input="autocomplete.onInput($event.target.value)"
       @focus="autocomplete.onFocus()"
     />
-    <p class="mt-1 text-sm text-gray-400">Пошук англійською мовою</p>
 
     <ul
       v-if="autocomplete.isOpen"
