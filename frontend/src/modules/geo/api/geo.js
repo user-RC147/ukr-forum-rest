@@ -1,28 +1,40 @@
-import api from '../../../api/axios'  // ← 3 рівні вгору до src/api/axios.js
+import api from '../../../api/axios' // ← 3 уровня вверх до src/api/axios.js
 
-export const getCountries = () =>
-    api.get('/geo/countries/')
+export const getCountries = async () => {
+  const { data } = await api.get('/geo/countries/')
+  return data
+}
 
-export const getRegions = (countryCode) =>
-    api.get(`/geo/regions/?country_code=${countryCode}`)
+export const getRegions = async (countryCode) => {
+  const { data } = await api.get('/geo/regions/', {
+    params: { country_code: countryCode },
+  })
+  return data
+}
 
-export const getCities = (regionId) =>
-    api.get(`/geo/cities/?region=${regionId}`)
+export const getCities = async (regionId) => {
+  const { data } = await api.get('/geo/cities/', {
+    params: { region: regionId },
+  })
+  return data
+}
 
-export const searchCountries = (q = '') => {
-  return api.get('/geo/get-countries/', {
+export const searchCountries = async (q = '') => {
+  const { data } = await api.get('/geo/countries/search/', {
     params: q ? { q } : {},
   })
+  return data
 }
 
-export const getCountryById = (countryId) => {
-  return api.get('/geo/get-countries/', {
-    params: { country: countryId },
-  })
+export const getCountryById = async (countryId) => {
+  const { data } = await api.get(`/geo/countries/${countryId}/`)
+  return data
 }
 
-export const searchCities = (query, countryCode = null) => {
-    let url = `/geo/cities/?search=${query}`
-    if (countryCode) url += `&country_code=${countryCode}`
-    return api.get(url)
+export const searchCities = async (query, countryCode = null) => {
+  const params = { q: query }
+  if (countryCode) params.country_id= countryCode
+
+  const { data } = await api.get('/geo/cities/search/', { params })
+  return data
 }
