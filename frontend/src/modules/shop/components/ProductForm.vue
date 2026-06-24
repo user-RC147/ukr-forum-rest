@@ -105,7 +105,7 @@ const isUpdate = props.mode === 'update'
 
     <!-- Місто -->
     <div class="mt-6">
-      <CityAutocomplete :autocomplete="form.cityAutocomplete" />
+      <CityAutocomplete :autocomplete="form.cityAutocomplete" :country-name="form.countryAutocomplete.query" />
       <p v-if="form.fieldErrors.city_id" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.city_id }}</p>
     </div>
 

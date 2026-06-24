@@ -24,9 +24,20 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   let debounceTimer = null
 
   async function fetchAndShow(q) {
+    // Фиксируем страну на момент запроса — если пользователь успеет
+    // переключить страну пока летит запрос, устаревший ответ не применится.
+    const requestedCountryId = countryIdRef.value
     isLoading.value = true
     try {
-      suggestions.value = await searchCities(q, countryIdRef.value)
+      const results = await searchCities(q, requestedCountryId)
+
+      if (countryIdRef.value !== requestedCountryId) return
+
+      // "Защита от дурака": даже если backend вдруг вернёт город не из
+      // запрошенной країни — отфильтровываем его на фронте.
+      suggestions.value = results.filter(
+        (c) => String(c.country_id) === String(requestedCountryId),
+      )
       isOpen.value = suggestions.value.length > 0
     } finally {
       isLoading.value = false
@@ -56,7 +67,14 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   }
 
   function select(city) {
-    query.value = city.city ?? city.name
+    // "Защита от дурака": если city.country_id не совпадает с обраною
+    // країною (наприклад, бо список не встиг оновитися) — не дозволяємо вибір.
+    if (countryIdRef.value && city.country_id != null && String(city.country_id) !== String(countryIdRef.value)) {
+      showToast('Це місто не належить обраній країні, оберіть інше', 'error')
+      reset()
+      return
+    }
+    query.value = city.name_ua || city.name || city.city
     cityId.value = city.id ?? ''
     isOpen.value = false
   }

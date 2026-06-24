@@ -1,6 +1,9 @@
 <script setup>
 defineProps({
   autocomplete: { type: Object, required: true },
+  // Назва обраної країни — в відповіді API міста є лише country_id,
+  // самої назви країни там немає, тож беремо її з автокомпліту країни.
+  countryName: { type: String, default: '' },
 })
 </script>
 
@@ -31,8 +34,10 @@ defineProps({
         class="cursor-pointer px-4 py-2 text-sm text-gray-800 transition hover:bg-blue-50 hover:text-blue-700"
         @click="autocomplete.select(city)"
       >
-        {{ city.city ?? city.name }}
-        <span v-if="city.region" class="text-xs text-gray-400">({{ city.region }})</span>
+        {{ city.name_ua || city.name }}
+        <span v-if="city.region || countryName" class="text-xs text-gray-400">
+          — {{ city.region?.name_ua || city.region?.name }}<template v-if="city.region && countryName">, </template>{{ countryName }}
+        </span>
       </li>
       <li v-if="!autocomplete.suggestions.length" class="px-4 py-2 text-sm text-gray-500">
         Нічого не знайдено
