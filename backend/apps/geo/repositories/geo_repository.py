@@ -2,6 +2,10 @@
 from apps.geo.models import Country, Region, City
 from typing import Optional
 from django.db.models.manager import BaseManager
+from django.db.models.query import QuerySet
+from django.db.models import Q
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db.models.functions import Greatest
 
 class GeoRepository:
 
@@ -72,6 +76,43 @@ class GeoRepository:
     
     def get_cities(self, ids: list[int]) -> BaseManager[City]:
         return City.objects.filter(id__in=ids)
+    
+    def search_country(self, query: str, limit: int) -> QuerySet[Country]:
+        return (
+            Country.objects.all()
+            .only("id", "name", "name_ua")
+            .annotate(
+                similarity=Greatest(
+                    TrigramSimilarity("name", query),
+                    TrigramSimilarity("name_ua", query),
+                )
+            )
+            .filter(
+                Q(name__istartswith=query)
+                | Q(name_ua__istartswith=query)
+                | Q(similarity__gt=0.3)
+            )
+            .order_by("-similarity", "name")[:limit]
+        )
+    
+    def search_city(self, query: str, country_id: int, limit: int) -> QuerySet[City]:
+        return (
+            City.objects.all()
+            .only("id", "name", "name_ua")
+            .annotate(
+                similarity=Greatest(
+                    TrigramSimilarity("name", query),
+                    TrigramSimilarity("name_ua", query),
+                )
+            )
+            .filter(
+                Q(name__istartswith=query)
+                | Q(name_ua__istartswith=query)
+                | Q(similarity__gt=0.3)
+                | Q(country__id=country_id)
+            )
+            .order_by("-similarity", "name")[:limit]
+        )
 #=====
 
 
