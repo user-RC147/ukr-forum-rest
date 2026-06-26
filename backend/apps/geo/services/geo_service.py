@@ -154,13 +154,7 @@ class GeoService:
     def get_country(self, country_id: int) -> CountryDTO | None:
         try:
             c = Country.objects.get(id=country_id)
-            return CountryDTO(
-                id=c.id,
-                name=c.name,
-                name_ua=c.name_ua,
-                code=c.code,
-                flag_emoji=c.flag_emoji,
-            )
+            return _to_dto_country(c)
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
 
@@ -174,15 +168,7 @@ class GeoService:
     def get_city(self, city_id: int) -> CityDTO | None:
         try:
             c = City.objects.get(id=city_id)
-            return CityDTO(
-                id=c.id,
-                name=c.name,
-                name_ua=c.name_ua,
-                country_id=c.country_id,
-                region_id=c.region_id,
-                latitude=c.latitude,
-                longitude=c.longitude,
-            )
+            return _to_dto_city(c, self.get_region(c.region_id))
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist
 
