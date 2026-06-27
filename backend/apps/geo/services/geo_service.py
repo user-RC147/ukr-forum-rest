@@ -198,7 +198,7 @@ class GeoService:
 
         return regions
 
-    def get_cities(self, ids: list[int]) -> list[BaseManager[City]]:
+    def get_cities(self, ids: list[int]) -> dict[int, CityDTO]:
         if not ids:
             return []
 
@@ -209,7 +209,7 @@ class GeoService:
         if missing:
             logger.warning("Cities not found for ids: %s", missing)
 
-        return cities
+        return {c.id: _to_dto_city(c, self.get_region(c.region_id)) for c in cities}
     
     def search_countries(self, query: str, limit: int = 10) -> list[CountryDTO]:
         query = query.strip()
