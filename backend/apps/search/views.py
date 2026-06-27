@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .contracts import SearchParams, SortOrder
+from .dto import SearchParams, SortOrder
 from .serializers import SearchResultItemSerializer
 from .services import SearchService
 

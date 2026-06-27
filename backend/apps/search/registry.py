@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.module_loading import import_string
 
-from .contracts import Searchable
+from .contracts.protocols import Searchable
 
 
 class SearchRegistry:
