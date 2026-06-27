@@ -11,3 +11,4 @@ class CountryDTO:
     name_ua: str
     code: str
     flag_emoji: str
+    currency: str

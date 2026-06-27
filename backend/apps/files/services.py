@@ -65,7 +65,7 @@ class FileService:
             instance.delete()
         except ObjectDoesNotExist:
             logger.warning("Tried to delete non-existent file id:%s", file_id)
-            raise
+            raise FileNotFoundError
 
         def cleanup():
             default_storage.delete(file_path)
@@ -208,11 +208,9 @@ class FileService:
 
 
 def _to_dto(file: FileModel) -> FileDTO:
-    time = file.created_at.strftime("%d.%m.%Y %H:%M:%S")
     return FileDTO(
         owner_id=file.owner_id,
         id=file.id,
         file=f"{settings.BASE_URL}{file.file.url}",
         visible=file.visible,
-        created_at=time,
     )

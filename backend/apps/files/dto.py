@@ -8,4 +8,3 @@ class FileDTO:
     id: int
     file: str
     visible: bool
-    created_at: datetime

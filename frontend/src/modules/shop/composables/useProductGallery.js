@@ -1,13 +1,19 @@
-import { ref, computed } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 
 /**
  * Управление галереей картинок товара.
- * Вместо jQuery — просто Vue reactivity.
+ * reactive() на возврате — чтобы gallery.currentIndex / gallery.total
+ * разворачивались сами, без .value, и в script, и в template.
  */
 export function useProductGallery(images) {
   const currentIndex = ref(0)
 
   const total = computed(() => images.value?.length ?? 0)
+
+  // Сменился набор фото (другой товар) — индекс может выйти за границы
+  watch(total, () => {
+    currentIndex.value = 0
+  })
 
   function show(index) {
     if (!total.value) return
@@ -26,5 +32,5 @@ export function useProductGallery(images) {
     return index === currentIndex.value
   }
 
-  return { currentIndex, total, show, next, prev, isActive }
+  return reactive({ currentIndex, total, show, next, prev, isActive })
 }

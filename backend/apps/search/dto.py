@@ -1,6 +1,18 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Protocol, runtime_checkable
+
+
+@dataclass(frozen=True)
+class CategoryDTO:
+    id: int
+    name: str
+    tags: dict
+
+
+@dataclass(frozen=True)
+class TagDTO:
+    id: int
+    name: str
 
 
 class ResourceType(StrEnum):
@@ -39,8 +51,3 @@ class SearchResultItem:
     title: str
     description: str | None = None
     meta: dict = field(default_factory=dict)
-
-
-@runtime_checkable
-class Searchable(Protocol):
-    def search(self, params: SearchParams) -> list[SearchResultItem]: ...
