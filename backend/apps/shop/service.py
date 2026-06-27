@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import QuerySet
-
+from apps.search.contracts.category_contract import get_category_contract
 from apps.files.contracts import get_file_contract
 from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
@@ -25,6 +25,7 @@ class ProductService(BaseService[ProductModel]):
         self.region_contract = get_region_contract()
         self.city_contract = get_city_contract()
         self.file_contract = get_file_contract()
+        self.category_contract = get_category_contract()
 
     def _fetch_map(self, ids: list, contract) -> dict:
         """Deduplicate IDs and call get_many."""
@@ -39,19 +40,21 @@ class ProductService(BaseService[ProductModel]):
 
     def _attach_products(self, products: list) -> None:
         # Get all IDs
-        all_file_ids, all_city_ids, all_region_ids, all_country_ids = [], [], [], []
+        all_file_ids, all_city_ids, all_region_ids, all_country_ids, all_category_ids = [], [], [], [], []
 
         for p in products:
             all_file_ids.extend(p.files_ids or [])
             all_city_ids.append(p.city_id)
             all_region_ids.append(p.region_id)
             all_country_ids.append(p.country_id)
+            all_category_ids.append(p.category_id)
 
         # Patter for all contracts
         files_map    = self._fetch_map(all_file_ids,    self.file_contract)
         cities_map   = self._fetch_map(all_city_ids,    self.city_contract)
         regions_map  = self._fetch_map(all_region_ids,  self.region_contract)
         countries_map = self._fetch_map(all_country_ids, self.country_contract)
+        categories_map = self._fetch_map(all_category_ids, self.category_contract)
 
         # Set data
         for p in products:
@@ -63,6 +66,7 @@ class ProductService(BaseService[ProductModel]):
             p.city    = self._to_dict(cities_map.get(p.city_id))
             p.region  = self._to_dict(regions_map.get(p.region_id))
             p.country = self._to_dict(countries_map.get(p.country_id))
+            p.category = self._to_dict(categories_map.get(p.category_id))
 
 
     def get(self, id: int) -> ProductModel:

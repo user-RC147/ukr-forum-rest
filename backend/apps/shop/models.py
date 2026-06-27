@@ -11,7 +11,7 @@ class ProductModel(models.Model):
     visible = models.BooleanField(default=True)
 
     owner_id = models.PositiveIntegerField(blank=False)
-    # category_id = ArrayField(base_field=models.IntegerField())
+    category_id = models.IntegerField()
     files_ids = ArrayField(base_field=models.PositiveIntegerField())
 
     country_id = models.PositiveIntegerField(blank=False, null=True)
