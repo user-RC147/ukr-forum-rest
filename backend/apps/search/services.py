@@ -1,9 +1,11 @@
 # search/services.py
 import logging
+
 from django.core.exceptions import ObjectDoesNotExist
+
+from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .contracts.protocols import SearchResultItem
 from .dto import CategoryDTO, TagDTO
-from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .models import CategoryModel, TagModel
 from .registry import SearchRegistry
 
@@ -32,7 +34,9 @@ class SearchService:
         return results
 
     def get_categories(self, category_ids: list[int]) -> dict[int, CategoryDTO]:
-        result = self.category_model.objects.filter(id__in=category_ids).prefetch_related("tags")
+        result = self.category_model.objects.filter(
+            id__in=category_ids
+        ).prefetch_related("tags")
         return {r.id: _to_dto_category(r) for r in result}
 
     def get_category(self, category_id: int):
@@ -43,7 +47,7 @@ class SearchService:
             raise CategoryNotFoundError("Category with this id does not exist")
 
         return _to_dto_category(result)
-    
+
     def get_tag(self, tag_id: int) -> TagDTO:
         try:
             result = self.tag_model.objects.get(id=tag_id)
@@ -52,13 +56,17 @@ class SearchService:
             raise TagNotFoundError("Category with this id does not exist")
 
         return _to_dto_tag(result)
-    
+
     def get_tags(self, tag_ids: list[int]) -> dict[int, TagDTO]:
         result = self.tag_model.objects.filter(id__in=tag_ids)
         return {r.id: _to_dto_tag(r) for r in result}
 
+
 def _to_dto_category(data) -> CategoryDTO:
-    return CategoryDTO(id=data.id, name=data.name, tags={t.id: _to_dto_tag(t) for t in data.tags})
+    return CategoryDTO(
+        id=data.id, name=data.name, tags={t.id: _to_dto_tag(t) for t in data.tags}
+    )
+
 
 def _to_dto_tag(data) -> TagDTO:
     return TagDTO(id=data.id, name=data.name)

@@ -17,5 +17,6 @@ class PermissionAppError(AppError):
 class CategoryNotFoundError(NotFoundError):
     pass
 
+
 class TagNotFoundError(NotFoundError):
     pass
