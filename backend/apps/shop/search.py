@@ -9,7 +9,7 @@ from django.contrib.postgres.search import (
 from django.db.models import Q
 
 from apps.files.contracts import get_file_contract
-from apps.search.contracts import (
+from apps.search.dto import (
     ResourceType,
     SearchParams,
     SearchResultItem,
