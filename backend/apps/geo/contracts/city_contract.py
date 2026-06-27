@@ -30,7 +30,8 @@ class CityContract:
     def get_many(self, city_ids: list[int]) -> dict[int, CityDTO]:
         # self.service автоматично звертається до property вище
         data = self.service.get_cities(city_ids)
-        return {d.id: self._to_dto(d) for d in data}
+        # return {d.id: self._to_dto(d) for d in data}
+        return data
 
     def _to_dto(self, data) -> CityDTO:
         # Запобіжник на випадок, якщо місто не знайдено і повернувся None
