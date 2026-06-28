@@ -8,7 +8,8 @@ class CategoryContract:
         self.service = SearchService()
 
     def get_many(self, category_ids: list[int]) -> dict[int, CategoryDTO]:
-        return self.service.get_categories(category_ids)
+        result = self.service.get_categories(category_ids)
+        return {r.id: r for r in result}
 
     def get(self, category_id: int) -> CategoryDTO:
         return self.service.get_category(category_id)
