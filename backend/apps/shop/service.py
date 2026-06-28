@@ -12,7 +12,7 @@ from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.shop.base.service_base import BaseService
 
-from .exceptions import GeoNotFound, UnauthorizedException
+from .exceptions import GeoNotFound, ProductPermissionError
 from .models import ProductModel
 
 logger = logging.getLogger("shop")
@@ -125,7 +125,7 @@ class ProductService(BaseService[ProductModel]):
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
             )
-            raise UnauthorizedException
+            raise ProductPermissionError
 
     def delete(self, id: int, user_id: int) -> None:
 
@@ -138,7 +138,7 @@ class ProductService(BaseService[ProductModel]):
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
             )
-            raise UnauthorizedException
+            raise ProductPermissionError
 
         return result
 
