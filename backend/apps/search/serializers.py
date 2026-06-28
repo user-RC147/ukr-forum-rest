@@ -8,3 +8,13 @@ class SearchResultItemSerializer(serializers.Serializer):
     title = serializers.CharField()
     description = serializers.CharField(allow_null=True)
     meta = serializers.DictField()
+
+
+class CategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    tags = serializers.DictField()
+
+class TagSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
