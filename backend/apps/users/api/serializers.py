@@ -63,7 +63,7 @@ class UserProfileSerializer(serializers.Serializer):
     # age            = serializers.IntegerField(required=False, min_value=0, max_value=120,allow_null=True,)
     # social_network = serializers.CharField(required=False, allow_blank=True)
     # consent_given  = serializers.BooleanField(required=False)
-
+    id = serializers.IntegerField()
     display_name   = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     phone_number   = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     age            = serializers.IntegerField(required=False, min_value=0, max_value=120, allow_null=True)
