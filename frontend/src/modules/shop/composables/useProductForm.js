@@ -41,15 +41,24 @@ export function useProductForm({ mode, product = null }) {
     currency: product?.country?.currency ?? '',
   })
 
+  // region_id больше не выбирается отдельно — он "приклеен" к городу
+  // и приходит вместе с ним из /api/geo/cities/search/ (поле region).
+  // Поэтому передаём в useCityAutocomplete начальный region из товара,
+  // а сам composable обновит regionId/regionName при выборе нового города.
   const cityAutocomplete = useCityAutocomplete(
-    { id: product?.city?.id ?? '', name: product?.city?.name ?? '' },
+    {
+      id: product?.city?.id ?? '',
+      name: product?.city?.name ?? '',
+      regionId: product?.region?.id ?? '',
+      regionName: product?.region?.name ?? '',
+    },
     toRef(countryAutocomplete, 'countryId'),
   )
 
   const existingImages = (product?.images ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
   const imageUpload = useImageUpload(existingImages)
 
-  // При смене страны зависимый город обязательно сбрасывается —
+  // При смене страны зависимый город (а вместе с ним и регион) обязательно сбрасывается —
   // повторяет защиту от рассинхрона из оригинального product_list.js / create_product.js
   function onCountrySelect() {
     cityAutocomplete.reset()
@@ -84,6 +93,9 @@ export function useProductForm({ mode, product = null }) {
     if (!categoryId.value) return 'Оберіть категорію'
     if (!price.value || Number(price.value) <= 0) return 'Вкажіть коректну ціну'
     if (!cityAutocomplete.cityId) return 'Оберіть місто зі списку підказок'
+    // regionId приходить автоматично разом з містом — якщо його немає,
+    // значить місто вибрано "вручну" без кліку по підказці, треба перевибрати
+    if (!cityAutocomplete.regionId) return 'Не вдалося визначити регіон — оберіть місто ще раз зі списку'
     return ''
   }
 
@@ -111,13 +123,14 @@ export function useProductForm({ mode, product = null }) {
     if (!filesValid) return
 
     const formData = new FormData()
-    formData.append('name', name.value)
+    formData.append('title', name.value)
     formData.append('description', description.value)
-    formData.append('category', categoryId.value)
+    formData.append('category_id', categoryId.value)
     formData.append('price', price.value)
-    formData.append('status', status.value)
-    formData.append('country', countryAutocomplete.countryId)
+    // formData.append('status', status.value)
+    formData.append('country_id', countryAutocomplete.countryId)
     formData.append('city_id', cityAutocomplete.cityId)
+    formData.append('region_id', cityAutocomplete.regionId)
     imageUpload.appendToFormData(formData)
 
     isSubmitting.value = true
