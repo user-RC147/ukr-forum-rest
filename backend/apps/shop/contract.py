@@ -1,7 +1,9 @@
+from dataclasses import fields
+
+from shop.protocols import ProductContractProtocol
+
 from .dto import ProductDTO
 from .service import ProductService
-from dataclasses import fields
-from shop.protocols import ProductContractProtocol
 
 
 class ProductContract:

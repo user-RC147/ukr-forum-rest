@@ -10,7 +10,7 @@ from django.db.models import Q
 
 from apps.files.contracts import get_file_contract
 from apps.search.contracts.protocols import SearchParams, SearchResultItem
-from apps.search.dto import SortOrder, ResourceType
+from apps.search.dto import ResourceType, SortOrder
 from apps.shop.service import ProductService
 
 
