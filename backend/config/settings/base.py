@@ -150,6 +150,8 @@ DEFAULT_FROM_EMAIL = "noreply@ukr-forum.com"
 # --- Frontend URL (для посилань в email) ---
 FRONTEND_URL = "http://localhost:5173"
 
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+
 # --- Serving files uploaded---
 MEDIA_URL = '/files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя файлы
@@ -157,13 +159,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя фай
 
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
     # щоб користувач не переавторизовувався щодня
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     # Решта ваших поточних налаштувань SIMPLE_JWT (якщо вони є)
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 
     # httpOnly cookies
     "AUTH_COOKIE": "access_token",

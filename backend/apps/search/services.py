@@ -33,13 +33,14 @@ class SearchService:
 
         return results
 
-    def get_categories(self, category_ids: list[int]) -> dict[int, CategoryDTO]:
-        result = self.category_model.objects.filter(
-            id__in=category_ids
-        ).prefetch_related("tags")
-        return {r.id: _to_dto_category(r) for r in result}
+    def get_categories(self, category_ids: list[int] | None = None) -> list[CategoryDTO]:
+        result = self.category_model.objects.prefetch_related("tags")
+        if category_ids is not None:
+            result = result.filter(id__in=category_ids)
+        return [_to_dto_category(r) for r in result]
+    
 
-    def get_category(self, category_id: int):
+    def get_category(self, category_id: int) -> CategoryDTO:
         try:
             result = self.category_model.objects.get(id=category_id)
         except ObjectDoesNotExist:
@@ -57,14 +58,16 @@ class SearchService:
 
         return _to_dto_tag(result)
 
-    def get_tags(self, tag_ids: list[int]) -> dict[int, TagDTO]:
-        result = self.tag_model.objects.filter(id__in=tag_ids)
-        return {r.id: _to_dto_tag(r) for r in result}
+    def get_tags(self, tag_ids: list[int] | None = None) -> list[TagDTO]:
+        result = self.tag_model.objects.all()
+        if tag_ids is not None:
+            result.filter(id__in=tag_ids)
+        return [_to_dto_tag(r) for r in result]
 
 
 def _to_dto_category(data) -> CategoryDTO:
     return CategoryDTO(
-        id=data.id, name=data.name, tags={t.id: _to_dto_tag(t) for t in data.tags}
+        id=data.id, name=data.name, tags={t.id: _to_dto_tag(t) for t in data.tags.all()}
     )
 
 

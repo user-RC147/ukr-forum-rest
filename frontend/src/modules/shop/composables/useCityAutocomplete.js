@@ -9,7 +9,12 @@ const DEBOUNCE_MS = 250
  * Автокомплит міста. Завжди прив'язаний до обраної країни — без countryId
  * пошук не виконується (як і в оригінальному create_product.js / update_product.js).
  *
- * @param {{ id?: number|string, name?: string }} initial
+ * Регіон НЕ вибирається окремо користувачем — він "приклеєний" до міста
+ * і дістається з відповіді /api/geo/cities/search/ (поле city.region).
+ * Це аналог денормалізованого поля в Django: region_id заповнюється
+ * автоматично при збереженні залежно від вибраного міста.
+ *
+ * @param {{ id?: number|string, name?: string, regionId?: number|string, regionName?: string }} initial
  * @param {import('vue').Ref<string|number>} countryIdRef
  */
 export function useCityAutocomplete(initial = {}, countryIdRef) {
@@ -17,11 +22,29 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
 
   const query = ref(initial.name || '')
   const cityId = ref(initial.id || '')
+  const regionId = ref(initial.regionId ?? '')
+  const regionName = ref(initial.regionName ?? '')
   const suggestions = ref([])
   const isOpen = ref(false)
   const isLoading = ref(false)
 
   let debounceTimer = null
+
+  // Витягує region_id/region_name з об'єкта міста незалежно від того,
+  // в якому форматі бекенд його віддав (об'єкт {id, name} чи плоскі поля).
+  function extractRegion(city) {
+    const region = city.region
+    if (region && typeof region === 'object') {
+      return {
+        id: region.id ?? '',
+        name: region.name_ua || region.name || '',
+      }
+    }
+    return {
+      id: city.region_id ?? '',
+      name: typeof region === 'string' ? region : '',
+    }
+  }
 
   async function fetchAndShow(q) {
     // Фиксируем страну на момент запроса — если пользователь успеет
@@ -47,6 +70,8 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   function onInput(value) {
     query.value = value
     cityId.value = ''
+    regionId.value = ''
+    regionName.value = ''
 
     if (!countryIdRef.value) {
       showToast('Спочатку оберіть країну', 'warning')
@@ -74,8 +99,20 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
       reset()
       return
     }
+
+    const region = extractRegion(city)
+    if (!region.id) {
+      // Без region_id товар не збереже бекенд — краще одразу попередити,
+      // ніж дати дійти до помилки валідації на сабміті.
+      showToast('Не вдалося визначити регіон для цього міста', 'error')
+      reset()
+      return
+    }
+
     query.value = city.name_ua || city.name || city.city
     cityId.value = city.id ?? ''
+    regionId.value = region.id
+    regionName.value = region.name
     isOpen.value = false
   }
 
@@ -83,10 +120,12 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
     isOpen.value = false
   }
 
-  /** Сбросить город — вызывается при смене страны. */
+  /** Сбросить город (и регион) — вызывается при смене страны. */
   function reset() {
     query.value = ''
     cityId.value = ''
+    regionId.value = ''
+    regionName.value = ''
     suggestions.value = []
     isOpen.value = false
   }
@@ -94,6 +133,8 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   return reactive({
     query,
     cityId,
+    regionId,
+    regionName,
     suggestions,
     isOpen,
     isLoading,

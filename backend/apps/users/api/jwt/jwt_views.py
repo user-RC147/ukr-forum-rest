@@ -50,6 +50,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         # 2. Витягуємо новий access_token
         access_token = response.data.get('access')
+        refresh_token = response.data.get('refresh')
 
         if access_token:
             response.set_cookie(
@@ -59,6 +60,16 @@ class CustomTokenRefreshView(TokenRefreshView):
                 secure=settings.SIMPLE_JWT.get('AUTH_COOKIE_SECURE', False),
                 samesite=settings.SIMPLE_JWT.get('AUTH_COOKIE_SAMESITE', 'Lax'),
                 max_age=int(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()),
+            )
+
+        if refresh_token:
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
+                value=refresh_token,
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT.get('AUTH_COOKIE_SECURE', False),
+                samesite=settings.SIMPLE_JWT.get('AUTH_COOKIE_SAMESITE', 'Lax'),
+                max_age=int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()),
             )
 
         # 4. Видаляємо з JSON
