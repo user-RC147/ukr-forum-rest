@@ -18,7 +18,7 @@ export const getProductDetail = (id) =>
  * Аналог Django context-переменной {{ Category }}.
  */
 export async function getCategories() {
-  const { data } = await apiClient.get('/shop/categories/')
+  const { data } = await apiClient.get('/search/category/')
   return data?.results ?? data ?? []
 }
  

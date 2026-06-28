@@ -51,13 +51,13 @@ const routes = [
             // TODO: компонент ShopDeleteProductView.vue ещё не создан — см. отдельную
             // задачу "delete confirmation как отдельный route/view" (по аналогии
             // с delete_product.html). Когда будет готов, добавить сюда маршрут:
-            // {
-            //     path: 'shop/:pk/delete/:productSlug?',
-            //     name: 'shop-delete-product',
-            //     component: () => import('@/modules/shop/views/ShopDeleteProductView.vue'),
-            //     meta: { title: 'Видалення товару', requiresAuth: true },
-            //     props: true,
-            // },
+            {
+                path: 'shop/:pk/delete/:productSlug?',
+                name: 'shop-delete-product',
+                component: () => import('@/modules/shop/views/ShopDeleteProductView.vue'),
+                meta: { title: 'Видалення товару', requiresAuth: true },
+                props: true,
+            },
             {
                 path: 'shop/:pk/:productSlug?',
                 name: 'shop-product',

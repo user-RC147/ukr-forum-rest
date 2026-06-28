@@ -1,40 +1,34 @@
 import { reactive } from 'vue'
 
-/**
- * Глобальный стейт тостов — не Pinia-store, потому что это
- * чисто UI-состояние без бизнес-логики (как messages framework
- * в Django, только без перезагрузки страницы).
- */
+// Модульный singleton — стейт создаётся один раз при первом импорте
+// и переживает все вызовы useToast() в любых компонентах/composables.
 const toasts = reactive([])
+
 let idCounter = 0
 
-const ICONS = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' }
-const DURATIONS = { success: 4000, error: 6000, warning: 5000, info: 4000 }
-
-function show(message, type = 'info', duration) {
+function showToast(message, type = 'info', duration = null) {
   const id = ++idCounter
-  const ms = duration ?? DURATIONS[type] ?? 4000
+  const defaultDurations = { success: 4000, error: 8000, warning: 6000, info: 4000, loading: 0 }
+  const finalDuration = duration ?? defaultDurations[type] ?? 4000
 
-  toasts.push({ id, message, type, icon: ICONS[type] ?? ICONS.info })
+  const toast = { id, message, type, duration: finalDuration }
+  toasts.push(toast)
 
-  if (ms > 0) {
-    setTimeout(() => remove(id), ms)
+  if (finalDuration > 0) {
+    setTimeout(() => removeToast(id), finalDuration)
   }
-  return id
+
+  // Возвращаем объект с .remove() — submit() в useProductForm.js это ожидает
+  return { id, remove: () => removeToast(id) }
 }
 
-function remove(id) {
+function removeToast(id) {
   const index = toasts.findIndex((t) => t.id === id)
   if (index !== -1) toasts.splice(index, 1)
 }
 
 export function useToast() {
-  return {
-    toasts,
-    success: (msg, ms) => show(msg, 'success', ms),
-    error: (msg, ms) => show(msg, 'error', ms),
-    warning: (msg, ms) => show(msg, 'warning', ms),
-    info: (msg, ms) => show(msg, 'info', ms),
-    remove,
-  }
+  // Отдаём toasts как есть (это уже reactive-массив, не нужен toRefs)
+  // и функции — без всякой обёртки, прямыми ссылками
+  return { toasts, showToast, removeToast }
 }

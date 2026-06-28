@@ -179,7 +179,7 @@ export function useImageUpload(existingImages = []) {
   }
 
   function appendToFormData(formData) {
-    newFiles.value.forEach(({ file }) => formData.append('images', file))
+    newFiles.value.forEach(({ file }) => formData.append('files', file))
     if (deletedImageIds.value.length) {
       formData.append('deleted_images', JSON.stringify(deletedImageIds.value))
     }
