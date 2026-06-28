@@ -1,17 +1,26 @@
-class ShopException(Exception):
+class AppError(Exception):
     pass
 
 
-class ProductNotFound(ShopException):
+class NotFoundError(AppError):
     pass
+
+
+class ValidationError(AppError):
+    pass
+
+
+class PermissionAppError(AppError):
+    pass
+
+
+class ProductNotFoundError(NotFoundError):
+    pass
+
 
 class GeoNotFound(Exception):
     pass
 
 
-class ProductOutOfStock(ShopException):
-    pass
-
-
-class UnauthorizedException(Exception):
+class ProductPermissionError(PermissionAppError):
     pass
