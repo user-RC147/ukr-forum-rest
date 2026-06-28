@@ -5,11 +5,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import QuerySet
-from apps.search.contracts.category_contract import get_category_contract
+
 from apps.files.contracts import get_file_contract
 from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
+from apps.search.contracts.category_contract import get_category_contract
 from apps.shop.base.service_base import BaseService
 
 from .exceptions import GeoNotFound, ProductPermissionError
@@ -40,7 +41,13 @@ class ProductService(BaseService[ProductModel]):
 
     def _attach_products(self, products: list) -> None:
         # Get all IDs
-        all_file_ids, all_city_ids, all_region_ids, all_country_ids, all_category_ids = [], [], [], [], []
+        (
+            all_file_ids,
+            all_city_ids,
+            all_region_ids,
+            all_country_ids,
+            all_category_ids,
+        ) = [], [], [], [], []
 
         for p in products:
             all_file_ids.extend(p.files_ids or [])
@@ -50,9 +57,9 @@ class ProductService(BaseService[ProductModel]):
             all_category_ids.append(p.category_id)
 
         # Patter for all contracts
-        files_map    = self._fetch_map(all_file_ids,    self.file_contract)
-        cities_map   = self._fetch_map(all_city_ids,    self.city_contract)
-        regions_map  = self._fetch_map(all_region_ids,  self.region_contract)
+        files_map = self._fetch_map(all_file_ids, self.file_contract)
+        cities_map = self._fetch_map(all_city_ids, self.city_contract)
+        regions_map = self._fetch_map(all_region_ids, self.region_contract)
         countries_map = self._fetch_map(all_country_ids, self.country_contract)
         categories_map = self._fetch_map(all_category_ids, self.category_contract)
 
@@ -63,11 +70,10 @@ class ProductService(BaseService[ProductModel]):
                 for fid in (p.files_ids or [])
                 if fid in files_map
             ]
-            p.city    = self._to_dict(cities_map.get(p.city_id))
-            p.region  = self._to_dict(regions_map.get(p.region_id))
+            p.city = self._to_dict(cities_map.get(p.city_id))
+            p.region = self._to_dict(regions_map.get(p.region_id))
             p.country = self._to_dict(countries_map.get(p.country_id))
             p.category = self._to_dict(categories_map.get(p.category_id))
-
 
     def get(self, id: int) -> ProductModel:
         result = super().get(id)
@@ -116,7 +122,9 @@ class ProductService(BaseService[ProductModel]):
                 if "files" in data.keys():
                     files = data.pop("files")
                     target_ids = product.files_ids
-                    files_ids = self.file_contract.update_many(files, user_id, target_ids)
+                    files_ids = self.file_contract.update_many(
+                        files, user_id, target_ids
+                    )
                     data["files_ids"] = [f.id for f in files_ids]
                 result = super().update(id, data)
                 self._attach_products([result])
@@ -151,9 +159,7 @@ class ProductService(BaseService[ProductModel]):
     def geo_validate(self, data: dict) -> None:
         try:
             country = self.country_contract.get(data["country_id"])
-            region = self.region_contract.get(
-                data["region_id"]
-            )
+            region = self.region_contract.get(data["region_id"])
             city = self.city_contract.get(data["city_id"])
         except ObjectDoesNotExist:
             logger.info(

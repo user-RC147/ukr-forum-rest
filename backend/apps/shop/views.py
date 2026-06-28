@@ -46,7 +46,11 @@ class ProductViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         try:
             product = self.service.get(pk)
-        except (files_exceptions.NotFoundError, search_exceptions.NotFoundError, NotFoundError) as e:
+        except (
+            files_exceptions.NotFoundError,
+            search_exceptions.NotFoundError,
+            NotFoundError,
+        ) as e:
             raise NotFound(detail=str(e))
 
         serializer = ProductReadSerializer(product)
@@ -57,7 +61,11 @@ class ProductViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk):
         try:
             product = self.service.get(pk)
-        except (files_exceptions.NotFoundError, search_exceptions.NotFoundError, NotFoundError) as e:
+        except (
+            files_exceptions.NotFoundError,
+            search_exceptions.NotFoundError,
+            NotFoundError,
+        ) as e:
             raise NotFound(detail=str(e))
 
         serializer = ProductSerializer(product, data=request.data, partial=True)
@@ -82,7 +90,11 @@ class ProductViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         try:
             self.service.delete(pk, user_id=request.user.id)
-        except (files_exceptions.NotFoundError, search_exceptions.NotFoundError, NotFoundError) as e:
+        except (
+            files_exceptions.NotFoundError,
+            search_exceptions.NotFoundError,
+            NotFoundError,
+        ) as e:
             raise NotFound(detail=str(e))
         except ProductPermissionError:
             raise PermissionDenied(detail="Access denied")

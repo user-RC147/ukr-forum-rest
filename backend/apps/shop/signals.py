@@ -1,8 +1,10 @@
+import logging
+
+from django.contrib.auth import get_user_model
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+
 from apps.shop.service import ProductService
-from django.contrib.auth import get_user_model
-import logging
 
 logger = logging.getLogger("shop")
 
