@@ -24,7 +24,7 @@ export function useProductForm({ mode, product = null }) {
 
   const isUpdate = mode === 'update'
 
-  const name = ref(product?.name ?? '')
+  const name = ref(product?.title ?? '')
   const description = ref(product?.description ?? '')
   const categoryId = ref(product?.category?.id ?? '')
   const price = ref(product?.price ?? '')
@@ -55,7 +55,7 @@ export function useProductForm({ mode, product = null }) {
     toRef(countryAutocomplete, 'countryId'),
   )
 
-  const existingImages = (product?.images ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
+  const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
   const imageUpload = useImageUpload(existingImages)
 
   // При смене страны зависимый город (а вместе с ним и регион) обязательно сбрасывается —
