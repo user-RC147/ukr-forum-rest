@@ -97,9 +97,8 @@ AUTH_USER_MODEL = "users.CustomUser"
 # --- DRF + JWT ---
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        #"rest_framework_simplejwt.authentication.JWTAuthentication",
         'apps.users.api.jwt.authentication.CookieJWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
+        # 'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -160,7 +159,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя фай
 
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
     # щоб користувач не переавторизовувався щодня
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -169,6 +168,16 @@ SIMPLE_JWT = {
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'SIGNING_KEY': os.getenv('SIMPLE_JWT_SIGNING_KEY', default=None) or SECRET_KEY,
+    'ALGORITHM': 'HS256',
+    # Update user.last_login on every token issue.
+    'UPDATE_LAST_LOGIN': False,
+    # The user model field used as the identity claim in the token payload.
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    # The claim name that stores the JWT ID (used for blacklisting).
+    'JTI_CLAIM': 'jti',
+
 
     # httpOnly cookies
     "AUTH_COOKIE": "access_token",
