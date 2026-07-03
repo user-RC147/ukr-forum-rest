@@ -8,6 +8,7 @@ import { useAssetStore } from '../../stores/useAssetStore';
 import { useUserStore } from '@/shared/stores/useUserStore';
 import { useMarketStore } from '../../stores/useMarketStore';
 import {useProductStore} from '../../stores/useProductStore';
+import { useUnitOfMeasureStore } from '../../stores/useUnitOfMeasureStore';
 
 // Імпортуємо функції з geo.js
 import { getCountries, getRegions, getCities } from '@/modules/geo/api/geo';
@@ -18,6 +19,7 @@ const assetStore = useAssetStore();
 const userStore = useUserStore();
 const marketStore = useMarketStore();
 const productStore = useProductStore();
+//const unit_of_measureStore = useUnitOfMeasureStore();
 const route = useRoute();
 
 // Поля «шапки» чека
@@ -73,8 +75,10 @@ onMounted(async () => {
     await Promise.all([
         groupStore.fetchGroups(),
         assetStore.fetchAssets(),
-        userStore.fetchProfile(),
-        marketStore.fetchMarkets()
+        //userStore.fetchProfile(),
+        marketStore.fetchMarkets(),
+        productStore.fetchProducts(),
+        unit_of_measureStore.fetchUnitsOfMeasure()
     ]);
 });
 
@@ -292,10 +296,24 @@ watch(selectedGroup, (newGroupId) => {
                     <tbody>
                         <tr class="border-b text-center">
                             <td class="border-r py-4 px-2">1</td>
-                            <td class="border-r px-2"><input type="text" class="w-full text-center focus:outline-none"></td>
-                            <td class="border-r px-2"><input type="text" class="w-full text-center focus:outline-none"></td>
-                            <td class="border-r px-2"><input type="text" class="w-full text-center focus:outline-none"></td>
-                            <td class="border-r px-2"><input type="text" class="w-full text-center focus:outline-none"></td>
+                            <td class="border-r px-2">
+                                <select disabled="disabled">
+                                    <option value="">Хліб</option>
+                                    <option value="">Хліб2</option>
+                                </select>
+                            </td>
+                            <td class="border-r px-2">
+                                <select disabled="disabled">
+                                    <option value="">шт.</option>
+                                    <option value="">кг.</option>
+                                </select>
+                            </td>
+                            <td class="border-r px-2">
+                                <input type="text" class="w-full text-center focus:outline-none">
+                            </td>
+                            <td class="border-r px-2">
+                                <input type="text" class="w-full text-center focus:outline-none">
+                            </td>
                             <td class="px-2"><input type="text" class="w-full text-center focus:outline-none"></td>
                         </tr>
                     </tbody>

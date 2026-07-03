@@ -1,4 +1,3 @@
-import stat
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -67,14 +66,14 @@ class AssetViewSet(ViewSet):
 
         return Response({'id':data.id, 'name':data.name},status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk=None):
-        pass
+    # def retrieve(self, request, pk=None):
+    #     pass
 
-    def update(self, request, pk=None):
-        pass
+    # def update(self, request, pk=None):
+    #     pass
 
-    def partial_update(self, request, pk=None):
-        pass
+    # def partial_update(self, request, pk=None):
+    #     pass
 
-    def destroy(self, request, pk=None):
-        pass
+    # def destroy(self, request, pk=None):
+    #     pass

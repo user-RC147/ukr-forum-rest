@@ -3,6 +3,7 @@ from .asset_service import AssetService
 from .product_service import ProductService
 from .purchase_service import PurchaseService
 from .group_service import GroupService
+from .unit_of_measure_service import UnitOfMeasureService
 
 
 __all__=[
@@ -11,4 +12,5 @@ __all__=[
     'ProductService',
     'PurchaseService',
     'GroupService',
+    'UnitOfMeasureService',
 ]

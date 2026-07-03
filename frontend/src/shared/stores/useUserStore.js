@@ -55,7 +55,8 @@ export const useUserStore = defineStore('user', {
         /**
          * Скидання стану при виході або анулюванні сесії.
          */
-        logout() {
+       logout() {
+            localStorage.removeItem('access_token')
             this.user = null
         },
     },

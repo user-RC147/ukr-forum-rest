@@ -6,4 +6,6 @@ from typing import Optional
 class CreateProductInDTO:
     name:str
     unit_of_measure: str
+    created_by: int
     category_id:Optional[int]=None
+    

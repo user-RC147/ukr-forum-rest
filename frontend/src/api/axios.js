@@ -52,7 +52,7 @@ api.interceptors.response.use(
       localStorage.removeItem('access_token')
       
       // Примусово перенаправляємо на сторінку входу
-      window.location.href = '/auth/login'
+      //window.location.href = '/auth/login'
     }
     
     return Promise.reject(error)
