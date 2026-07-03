@@ -48,17 +48,17 @@ class HouseholdConfig(AppConfig):
             )
         return self._market_service
 
-    @property
-    def product_service(self):
-        if self._product_service is None:
-            from apps.household.repositories import ProductRepo
-            from apps.household.selectors import ProductSelector
-            from apps.household.services import ProductService
+    # @property
+    # def product_service(self):
+    #     if self._product_service is None:
+    #         from apps.household.repositories import ProductRepo
+    #         from apps.household.selectors import ProductSelector
+    #         from apps.household.services import ProductService
 
-            self._product_service = ProductService(
-                repository=ProductRepo(), selector=ProductSelector()
-            )
-        return self._product_service
+    #         self._product_service = ProductService(
+    #             repository=ProductRepo(), selector=ProductSelector()
+    #         )
+    #     return self._product_service
 
     @property
     def purchase_service(self):

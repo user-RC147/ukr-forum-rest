@@ -83,6 +83,11 @@ const routes = [
                         component: () => import('@/modules/household/views/OutlayAllView.vue'),
                     },
                     {
+                        path: 'unit_of_measure',
+                        name: 'unit-of-measure',
+                        component: () => import('@/modules/household/views/units/Units.vue'),
+                    },
+                    {
                         path: 'purchases/create',
                         name: 'household-purchases-create',
                         component: () => import('@/modules/household/views/purchases/PurchaseCreateView.vue'),
@@ -135,28 +140,22 @@ const router = createRouter({
  * Асинхронний Navigation Guard.
  * Запобігає передчасному пропуску користувача, доки триває перевірка сесії (initAuth).
  */
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
     const userStore = useUserStore()
 
-    // Якщо додаток тільки запустився (ready === false) і main.js прямо зараз виконує initAuth()
     if (!userStore.ready) {
-        // Створюємо реактивне очікування: чекаємо зміни прапорця ready на true
         await new Promise((resolve) => {
             const unwatch = userStore.$subscribe((mutation, state) => {
                 if (state.ready) {
-                    unwatch() // Відписуємось від спостереження, щоб не засмічувати пам'ять
-                    resolve()  // Виходимо з промісу, продовжуючи виконання Guard
+                    unwatch()
+                    resolve()
                 }
             })
         })
     }
 
-    // ТЕПЕР стан залізобетонно актуальний. Робимо перевірку доступу:
     if (to.meta.requiresAuth && !userStore.isAuthenticated) {
-        next({ name: 'login' })
-    } else {
-        next() // Пропускаємо на захищену сторінку, бо користувач успішно відновився
+        return { name: 'login' }
     }
 })
-
 export default router

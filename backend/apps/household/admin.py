@@ -6,6 +6,7 @@ from apps.household.models.product import Product
 from apps.household.models.purchase import Purchase
 from apps.household.models.purchase_item import PurchaseItem
 from apps.household.models.market import Market
+from apps.household.models.unit_of_measure import UnitOfMeasure
 
 # Імпортуємо ваш репозиторій для роботи з базою даних
 from apps.household.repositories.group_repo import GroupRepo
@@ -57,6 +58,9 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'unit_of_measure')
 
+@admin.register(UnitOfMeasure)
+class UnitOfMeasureAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name')
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):
