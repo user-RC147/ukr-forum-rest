@@ -6,10 +6,11 @@ class ShopConfig(AppConfig):
     verbose_name = "Барахолка"
 
     def ready(self):
-        from django.db.models.signals import pre_delete
+        from functools import partial
 
         from django.apps import apps
-        from functools import partial
+        from django.db.models.signals import pre_delete
+
         from apps.shop import signals
 
         senders = [

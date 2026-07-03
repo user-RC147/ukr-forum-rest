@@ -65,7 +65,7 @@ class FileService:
             instance.delete()
         except ObjectDoesNotExist:
             logger.warning("Tried to delete non-existent file id:%s", file_id)
-            raise
+            raise FileNotFoundError
 
         def cleanup():
             default_storage.delete(file_path)

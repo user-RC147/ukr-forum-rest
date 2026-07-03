@@ -8,6 +8,7 @@ class ProductSerializer(serializers.Serializer):
     country_id = serializers.IntegerField()
     region_id = serializers.IntegerField()
     city_id = serializers.IntegerField()
+    category_id = serializers.IntegerField()
     files = serializers.ListField(
         child=serializers.ImageField(allow_empty_file=True),
         allow_empty=True,
@@ -25,4 +26,5 @@ class ProductReadSerializer(serializers.Serializer):
     country = serializers.DictField()
     region = serializers.DictField()
     city = serializers.DictField()
+    category = serializers.DictField()
     files = serializers.ListField(child=serializers.DictField(), default=list)

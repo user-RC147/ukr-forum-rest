@@ -3,12 +3,12 @@ import logging
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
-
-from .contracts import SearchParams, SortOrder
-from .serializers import SearchResultItemSerializer
+from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
+from .dto import SearchParams, SortOrder
+from .serializers import SearchResultItemSerializer, CategorySerializer, TagSerializer
 from .services import SearchService
 
 logger = logging.getLogger(__name__)
@@ -74,3 +74,53 @@ class SearchView(viewsets.ViewSet):
         except ValueError:
             logger.info("Get param %s with non-int value: %s", key, value)
             raise ValidationError({key: f"Needs to be int: {value}"})
+
+
+
+class CategoryView(viewsets.ViewSet):
+    serializer_class = CategorySerializer
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service = SearchService()
+
+    def retrieve(self, request:Request, pk: int) -> Response:
+        try:
+            result = self.service.get_category(pk)
+        except CategoryNotFoundError:
+            raise NotFound(detail=str(e))
+        
+        serializer = CategorySerializer(result)
+
+        return Response(serializer.data)
+        
+    def list(self, request:Request) -> Response:
+        result = self.service.get_categories()
+
+        serializer = CategorySerializer(result, many=True)
+
+        return Response(serializer.data)
+    
+class TagView(viewsets.ViewSet):
+    serializer_class = TagSerializer
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service = SearchService()
+
+    def retrieve(self, request:Request, pk: int) -> Response:
+        try:
+            result = self.service.get_tag(pk)
+        except TagNotFoundError:
+            raise NotFound(detail=str(e))
+        
+        serializer = TagSerializer(result)
+
+        return Response(serializer.data)
+        
+    def list(self, request:Request) -> Response:
+        result = self.service.get_tags()
+
+        serializer = TagSerializer(result, many=True)
+
+        return Response(serializer.data)

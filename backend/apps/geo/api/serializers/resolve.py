@@ -10,6 +10,7 @@ class CountrySerializer(serializers.Serializer):
     name_ua=serializers.CharField()
     code=serializers.CharField()
     flag_emoji=serializers.CharField()
+    currency=serializers.CharField()
 
 
 class RegionSerializer(serializers.Serializer):
@@ -24,3 +25,5 @@ class CitySerializer(serializers.Serializer):
     id=serializers.IntegerField()
     name=serializers.CharField()
     name_ua=serializers.CharField()
+    region = serializers.DictField()
+    country_id = serializers.IntegerField()

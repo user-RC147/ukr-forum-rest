@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Type
 from django.core.exceptions import ObjectDoesNotExist
 import logging
-from apps.shop.exceptions import ProductNotFound
+from apps.shop.exceptions import ProductNotFoundError
 
 logger = logging.getLogger("shop")
 

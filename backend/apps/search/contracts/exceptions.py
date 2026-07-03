@@ -14,13 +14,9 @@ class PermissionAppError(AppError):
     pass
 
 
-class ProductNotFoundError(NotFoundError):
+class CategoryNotFoundError(NotFoundError):
     pass
 
 
-class GeoNotFound(Exception):
-    pass
-
-
-class ProductPermissionError(PermissionAppError):
+class TagNotFoundError(NotFoundError):
     pass

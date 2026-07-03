@@ -24,28 +24,46 @@ const routes = [
                 component: () => import('@/modules/geo/views/LocationView.vue'),
                 meta: { requiresAuth: true },
             },
+            // ВАЖНО: маршруты shop — плоские сиблинги, а НЕ children с ShopIndexView
+            // в роли родителя. ShopIndexView — это просто страница списка товаров,
+            // в ней нет <router-view>, поэтому она не может быть "обёрткой" для
+            // вложенных маршрутов (детальная страница, создание, редактирование
+            // никогда бы не отрендерились внутри неё).
             {
                 path: 'shop',
+                name: 'shop-index',
                 component: () => import('@/modules/shop/views/ShopIndexView.vue'),
                 meta: { title: 'Оголошення', requiresAuth: true },
-                children:[
-                    {
-                        path: '',
-                        name: 'shop-index',
-                        component: () => import('@/modules/shop/views/ShopIndexView.vue'),
-                    },
-                    {
-                        path: 'shop/:pk',  
-                        name: 'shop-product',
-                        component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
-                    },
-                    {
-                        path: 'shop/create',  
-                        name: 'shop-create-product',
-                        component: () => import('@/modules/shop/views/ShopIndexView.vue'),
-                    },
-
-                ],
+            },
+            {
+                path: 'shop/create',
+                name: 'shop-create-product',
+                component: () => import('@/modules/shop/views/ShopCreateProductView.vue'),
+                meta: { title: 'Новий товар', requiresAuth: true },
+            },
+            {
+                path: 'shop/:pk/update/:productSlug?',
+                name: 'shop-update-product',
+                component: () => import('@/modules/shop/views/ShopUpdateProductView.vue'),
+                meta: { title: 'Редагування товару', requiresAuth: true },
+                props: true,
+            },
+            // TODO: компонент ShopDeleteProductView.vue ещё не создан — см. отдельную
+            // задачу "delete confirmation как отдельный route/view" (по аналогии
+            // с delete_product.html). Когда будет готов, добавить сюда маршрут:
+            {
+                path: 'shop/:pk/delete/:productSlug?',
+                name: 'shop-delete-product',
+                component: () => import('@/modules/shop/views/ShopDeleteProductView.vue'),
+                meta: { title: 'Видалення товару', requiresAuth: true },
+                props: true,
+            },
+            {
+                path: 'shop/:pk/:productSlug?',
+                name: 'shop-product',
+                component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
+                meta: { title: 'Товар', requiresAuth: true },
+                props: true,
             },
             
             {

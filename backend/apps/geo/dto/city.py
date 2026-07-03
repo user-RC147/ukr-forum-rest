@@ -11,6 +11,6 @@ class CityDTO:
     name: str
     name_ua: str
     country_id: int
-    region_id: int
+    region: dict
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
