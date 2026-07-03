@@ -113,6 +113,9 @@ class AuthService:
             fail_silently=False,
         )
 
+    def to_blacklist_tokens(self, user_id: int):
+        user_repository.to_blacklist_tokens(user_id)
+
 
 # Один екземпляр на весь проект — не створюємо новий об'єкт щоразу
 auth_service = AuthService()
