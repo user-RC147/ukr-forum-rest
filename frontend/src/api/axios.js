@@ -43,20 +43,36 @@ api.interceptors.request.use(
  * Спрацьовує автоматично при отриманні будь-якої відповіді від Django.
  */
 api.interceptors.response.use(
-  (response) => response, // Якщо HTTP-статус успішний (200-299), просто повертаємо дані далі
-  (error) => {
-    // Глобальний Гвард безпеки: якщо токен застарів або недійсний (401 Unauthorized)
-    if (error.response?.status === 401) {
-      // Видаляємо лише локальний access_token. 
-      // refresh_token лежить у куках, тому JavaScript його не чіпає — його видалить бекенд при logout запиті.
-      localStorage.removeItem('access_token')
-      
-      // Примусово перенаправляємо на сторінку входу
-      //window.location.href = '/auth/login'
+  (response) => response,
+
+  async (error) => {
+    const originalRequest = error.config
+
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true
+
+      try {
+        // browser send refresh cookie
+        await api.post("/users/token/refresh/", {}, {
+        withCredentials: true
+        })
+
+        // retry original request
+        return api(originalRequest)
+
+      } catch (refreshError) {
+        // refresh not valid
+        // window.location.href = "/auth/login"
+
+        return Promise.reject(refreshError)
+      }
     }
-    
+
     return Promise.reject(error)
   }
 )
-
 export default api
