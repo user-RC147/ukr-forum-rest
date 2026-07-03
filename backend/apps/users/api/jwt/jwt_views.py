@@ -42,15 +42,20 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     
 
 
-class CustomTokenRefreshView(TokenRefreshView):
-
+class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
-         # 1. Викликаємо батьківський post()
-        response = super().post(request, *args, **kwargs)
+        refresh = request.COOKIES.get("refresh_token")
 
-        # 2. Витягуємо новий access_token
-        access_token = response.data.get('access')
-        refresh_token = response.data.get('refresh')
+        if not refresh:
+            return Response({"detail": "No refresh token"}, status=400)
+
+        serializer = self.get_serializer(data={"refresh": refresh})
+        serializer.is_valid(raise_exception=True)
+
+        access_token = serializer.validated_data["access"]
+        refresh_token = serializer.validated_data.get("refresh")
+
+        response = Response({"detail": "Token refreshed"})
 
         if access_token:
             response.set_cookie(
@@ -71,8 +76,5 @@ class CustomTokenRefreshView(TokenRefreshView):
                 samesite=settings.SIMPLE_JWT.get('AUTH_COOKIE_SAMESITE', 'Lax'),
                 max_age=int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()),
             )
-
-        # 4. Видаляємо з JSON
-        response.data = {"detail": "Токен оновлено"}
 
         return response

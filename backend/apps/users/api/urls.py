@@ -2,9 +2,8 @@
 from django.urls import path
 from apps.users.api.jwt.jwt_views import (
     CustomTokenObtainPairView,
-    CustomTokenRefreshView,
+    CookieTokenRefreshView,
 )
-
 from apps.users.api import views
 
 app_name = 'users'
@@ -15,6 +14,7 @@ urlpatterns = [
     # -------------------------------------------------------
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     # -------------------------------------------------------
     # Акаунт
     # -------------------------------------------------------
