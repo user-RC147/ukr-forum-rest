@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.RequestIDMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",  # ← вище CommonMiddleware!
@@ -102,6 +103,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "config.exceptions.custom_exception_handler",
 }
 
 # DEFAULT_PERMISSION_CLASSES=[
@@ -197,13 +199,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 # --- Logger conf---
-from apps.files.logging import LOGGING as FILES_LOGGING
-from apps.shop.logging import LOGGING as SHOP_LOGGING
-from apps.search.logging import LOGGING as SEARCH_LOGGING
-from apps.geo.logging import LOGGING as GEO_LOGGING
-from config.logging import merge_logging_configs
+from config.logging import BASE_LOGGING
 
-LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING, SEARCH_LOGGING, GEO_LOGGING)
+LOGGING = BASE_LOGGING
 
 # --- Modules for search---
 SEARCH_HANDLERS = {
