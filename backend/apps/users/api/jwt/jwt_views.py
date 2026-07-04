@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.response import Response
 from django.conf import settings
-
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 class CustomTokenObtainPairView(TokenObtainPairView):
 
@@ -47,10 +47,14 @@ class CookieTokenRefreshView(TokenRefreshView):
         refresh = request.COOKIES.get("refresh_token")
 
         if not refresh:
-            return Response({"detail": "No refresh token"}, status=400)
+            return Response({"detail": "No refresh token"}, status=401)
 
         serializer = self.get_serializer(data={"refresh": refresh})
-        serializer.is_valid(raise_exception=True)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0]) from e
 
         access_token = serializer.validated_data["access"]
         refresh_token = serializer.validated_data.get("refresh")
