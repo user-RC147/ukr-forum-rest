@@ -3,6 +3,7 @@ from .group_serializer import GroupMemberOutSerializer,GroupOutSerializer,Create
 from .market_serializer import MarketSerializer,MarketFullSerializer,MarketLocationSerializer
 from .product_serializer import ProductInSerializer,ProductOutSerializer,CreateProductSerializer
 from .purchase_serializer import PurchaseCreateSerializer,PurchaseItemCreateSerializer
+from .category_serializer import CategoryInSerializer
 
 
 __all__=[
@@ -18,6 +19,7 @@ __all__=[
     'PurchaseItemCreateSerializer',
     'AssetListFilterSerializer',
     'MarketFullSerializer',
-    'MarketLocationSerializer'
+    'MarketLocationSerializer',
+    'CategoryInSerializer'
     
 ]
