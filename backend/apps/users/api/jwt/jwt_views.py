@@ -1,7 +1,24 @@
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.response import Response
 from django.conf import settings
+from django.middleware.csrf import CsrfViewMiddleware
+from rest_framework import exceptions
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
+
+def enforce_csrf(request):
+    """
+    check SCRF token for refresh
+    """
+    def dummy_get_response(request):
+        return None
+
+    check = CsrfViewMiddleware(dummy_get_response)
+    result = check.process_view(request, None, (), {})
+
+    if result is not None:
+        raise exceptions.PermissionDenied('CSRF Failed: CSRF token missing or incorrect.')
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
 
@@ -44,7 +61,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
-        refresh = request.COOKIES.get("refresh_token")
+
+        enforce_csrf(request)
+
+        refresh = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
 
         if not refresh:
             return Response({"detail": "No refresh token"}, status=401)
