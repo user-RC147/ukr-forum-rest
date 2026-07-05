@@ -1,54 +1,67 @@
 import { reactive } from 'vue'
 
-// Модульный singleton — стейт создаётся один раз при первом импорте
-// и переживает все вызовы useToast() в любых компонентах/composables.
+// Модульний singleton — стейт створюється один раз при першому імпорті
+// і переживає всі виклики useToast() у будь-яких компонентах/composables.
 const toasts = reactive([])
 
 let idCounter = 0
+const timers = new Map()
+
+function clearTimer(id) {
+  const timer = timers.get(id)
+  if (timer) {
+    clearTimeout(timer)
+    timers.delete(id)
+  }
+}
+
+function scheduleRemoval(id, duration) {
+  clearTimer(id)
+  if (duration > 0) {
+    timers.set(id, setTimeout(() => removeToast(id), duration))
+  }
+}
 
 function showToast(message, type = 'info', duration = null) {
-  const id = ++idCounter
   const defaultDurations = { success: 4000, error: 8000, warning: 6000, info: 4000, loading: 0 }
   const finalDuration = duration ?? defaultDurations[type] ?? 4000
 
-  const toast = { id, message, type, duration: finalDuration }
-  toasts.push(toast)
-
-  if (finalDuration > 0) {
-    setTimeout(() => removeToast(id), finalDuration)
+  // Дедуплікація: однакова помилка (напр. від подвійного кліку, поки триває
+  // валідація) не повинна плодити десятки копій одного й того самого тосту —
+  // замість цього продовжуємо його показ і рахуємо повтори.
+  const existing = toasts.find((t) => t.message === message && t.type === type)
+  if (existing) {
+    existing.count += 1
+    scheduleRemoval(existing.id, finalDuration)
+    return { id: existing.id, remove: () => removeToast(existing.id) }
   }
 
-  // Возвращаем объект с .remove() — submit() в useProductForm.js это ожидает
+  const id = ++idCounter
+  toasts.push({ id, message, type, count: 1 })
+  scheduleRemoval(id, finalDuration)
+
   return { id, remove: () => removeToast(id) }
 }
 
 function removeToast(id) {
+  clearTimer(id)
   const index = toasts.findIndex((t) => t.id === id)
   if (index !== -1) toasts.splice(index, 1)
 }
 
-// Удобные ярлыки поверх showToast — многие компоненты (ShopDeleteProductView,
-// ShopProductDetailView и т.д.) деструктурируют { success, error } из useToast(),
-// а не универсальную showToast(message, type). Без этих методов деструктуризация
-// давала undefined и падала при вызове (TypeError: showError is not a function).
 function success(message, duration) {
   return showToast(message, 'success', duration)
 }
-
 function error(message, duration) {
   return showToast(message, 'error', duration)
 }
-
 function warning(message, duration) {
   return showToast(message, 'warning', duration)
 }
-
 function info(message, duration) {
   return showToast(message, 'info', duration)
 }
 
 export function useToast() {
-  // Отдаём toasts как есть (это уже reactive-массив, не нужен toRefs)
-  // и функции — без всякой обёртки, прямыми ссылками
   return { toasts, showToast, removeToast, success, error, warning, info }
 }
