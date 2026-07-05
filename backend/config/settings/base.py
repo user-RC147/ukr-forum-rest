@@ -211,3 +211,16 @@ LOGGING = BASE_LOGGING
 SEARCH_HANDLERS = {
     "shop": "apps.shop.search.ProductSearchHandler",
 }
+
+
+#CENTRY
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=0.2,  # percentage requests for performance monitoring
+    send_default_pii=False,  # Not send personal identifiable info
+    # environment=os.getenv("ENVIRONMENT", "production"),
+)
