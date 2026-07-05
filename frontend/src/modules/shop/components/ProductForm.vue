@@ -12,6 +12,15 @@ const props = defineProps({
 const form = useProductForm({ mode: props.mode, product: props.product })
 
 const isUpdate = props.mode === 'update'
+
+// Єдиний набір класів для поля з помилкою/без — щоб не дублювати в кожному інпуті
+const baseFieldClass =
+  'w-full rounded-xl border-2 px-4 py-3 text-gray-800 transition focus:outline-none focus:ring-2'
+function fieldClass(hasError) {
+  return hasError
+    ? `${baseFieldClass} border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-200`
+    : `${baseFieldClass} border-gray-300 focus:border-blue-500 focus:ring-blue-200`
+}
 </script>
 
 <template>
@@ -32,9 +41,11 @@ const isUpdate = props.mode === 'update'
       v-model="form.name"
       type="text"
       maxlength="150"
-      class="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-gray-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      :class="fieldClass(!!form.fieldErrors.name)"
     />
-    <p v-if="form.fieldErrors.name" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.name }}</p>
+    <p v-if="form.fieldErrors.name" class="mt-1 text-sm font-medium text-red-600">
+      ⚠ {{ form.fieldErrors.name }}
+    </p>
     <p class="mt-1 text-sm text-gray-400">Максимум 150 символів</p>
 
     <!-- Опис -->
@@ -45,9 +56,11 @@ const isUpdate = props.mode === 'update'
       v-model="form.description"
       maxlength="1500"
       rows="5"
-      class="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-gray-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      :class="fieldClass(!!form.fieldErrors.description)"
     ></textarea>
-    <p v-if="form.fieldErrors.description" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.description }}</p>
+    <p v-if="form.fieldErrors.description" class="mt-1 text-sm font-medium text-red-600">
+      ⚠ {{ form.fieldErrors.description }}
+    </p>
     <p class="mt-1 text-sm text-gray-400">Максимум 1500 символів</p>
 
     <!-- Категорія -->
@@ -56,14 +69,16 @@ const isUpdate = props.mode === 'update'
     </label>
     <select
       v-model="form.categoryId"
-      class="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-gray-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      :class="fieldClass(!!form.fieldErrors.category)"
     >
       <option value="" disabled>Оберіть категорію</option>
       <option v-for="category in form.categories" :key="category.id" :value="category.id">
         {{ category.name }}
       </option>
     </select>
-    <p v-if="form.fieldErrors.category" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.category }}</p>
+    <p v-if="form.fieldErrors.category" class="mt-1 text-sm font-medium text-red-600">
+      ⚠ {{ form.fieldErrors.category }}
+    </p>
 
     <!-- Ціна -->
     <label class="mb-2 mt-6 block font-medium text-gray-700">
@@ -74,18 +89,17 @@ const isUpdate = props.mode === 'update'
       type="number"
       min="0"
       step="0.01"
-      class="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-gray-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      :class="fieldClass(!!form.fieldErrors.price)"
     />
-    <p v-if="form.fieldErrors.price" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.price }}</p>
+    <p v-if="form.fieldErrors.price" class="mt-1 text-sm font-medium text-red-600">
+      ⚠ {{ form.fieldErrors.price }}
+    </p>
 
     <!-- Стан -->
     <label class="mb-2 mt-6 block font-medium text-gray-700">
       Стан <span class="text-red-500">*</span>
     </label>
-    <select
-      v-model="form.status"
-      class="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-gray-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-    >
+    <select v-model="form.status" :class="fieldClass(false)">
       <option v-for="option in form.statusOptions" :key="option.value" :value="option.value">
         {{ option.label }}
       </option>
@@ -99,14 +113,28 @@ const isUpdate = props.mode === 'update'
 
     <!-- Країна -->
     <div class="mt-6">
-      <CountryAutocomplete :autocomplete="form.countryAutocomplete" @select="form.onCountrySelect" />
-      <p v-if="form.fieldErrors.country" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.country }}</p>
+      <div
+        class="rounded-xl transition"
+        :class="form.fieldErrors.country ? 'ring-2 ring-red-400' : ''"
+      >
+        <CountryAutocomplete :autocomplete="form.countryAutocomplete" @select="form.onCountrySelect" />
+      </div>
+      <p v-if="form.fieldErrors.country" class="mt-1 text-sm font-medium text-red-600">
+        ⚠ {{ form.fieldErrors.country }}
+      </p>
     </div>
 
     <!-- Місто -->
     <div class="mt-6">
-      <CityAutocomplete :autocomplete="form.cityAutocomplete" :country-name="form.countryAutocomplete.query" />
-      <p v-if="form.fieldErrors.city_id" class="mt-1 text-sm text-red-500">{{ form.fieldErrors.city_id }}</p>
+      <div
+        class="rounded-xl transition"
+        :class="form.fieldErrors.city_id ? 'ring-2 ring-red-400' : ''"
+      >
+        <CityAutocomplete :autocomplete="form.cityAutocomplete" :country-name="form.countryAutocomplete.query" />
+      </div>
+      <p v-if="form.fieldErrors.city_id" class="mt-1 text-sm font-medium text-red-600">
+        ⚠ {{ form.fieldErrors.city_id }}
+      </p>
     </div>
 
     <!-- Фото -->
