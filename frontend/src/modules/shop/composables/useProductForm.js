@@ -55,7 +55,7 @@ export function useProductForm({ mode, product = null }) {
     toRef(countryAutocomplete, 'countryId'),
   )
 
-  const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
+  const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.file }))
   const imageUpload = useImageUpload(existingImages)
 
   // При смене страны зависимый город (а вместе с ним и регион) обязательно сбрасывается —
