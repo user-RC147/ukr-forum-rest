@@ -7,6 +7,17 @@ const toasts = reactive([])
 let idCounter = 0
 const timers = new Map()
 
+// Заголовок автоматично підбирається за типом тосту — виклики на кшталт
+// showToast('Товар успішно додано!', 'success') не потребують зміни
+// сигнатури по всьому проєкту, просто отримують гарний title "з коробки".
+const TITLES = {
+  success: 'Успіх',
+  error: 'Помилка',
+  warning: 'Увага',
+  info: 'Інформація',
+  loading: 'Зачекайте',
+}
+
 function clearTimer(id) {
   const timer = timers.get(id)
   if (timer) {
@@ -23,21 +34,24 @@ function scheduleRemoval(id, duration) {
 }
 
 function showToast(message, type = 'info', duration = null) {
-  const defaultDurations = { success: 4000, error: 8000, warning: 6000, info: 4000, loading: 0 }
+  const defaultDurations = { success: 4000, error: 6000, warning: 5000, info: 4000, loading: 0 }
   const finalDuration = duration ?? defaultDurations[type] ?? 4000
+  const title = TITLES[type] ?? TITLES.info
 
-  // Дедуплікація: однакова помилка (напр. від подвійного кліку, поки триває
-  // валідація) не повинна плодити десятки копій одного й того самого тосту —
-  // замість цього продовжуємо його показ і рахуємо повтори.
+  // Дедуплікація: однакова помилка (напр. кілька невдалих спроб сабміту
+  // поспіль) не створює нову картку, а продовжує показ існуючої — інакше
+  // екран за секунди перетворюється на стіну однакових банерів.
   const existing = toasts.find((t) => t.message === message && t.type === type)
   if (existing) {
     existing.count += 1
+    existing.duration = finalDuration
+    existing.resetKey += 1 // сигнал для ToastItem перезапустити прогрес-бар
     scheduleRemoval(existing.id, finalDuration)
     return { id: existing.id, remove: () => removeToast(existing.id) }
   }
 
   const id = ++idCounter
-  toasts.push({ id, message, type, count: 1 })
+  toasts.push({ id, title, message, type, duration: finalDuration, count: 1, resetKey: 0 })
   scheduleRemoval(id, finalDuration)
 
   return { id, remove: () => removeToast(id) }
