@@ -59,19 +59,17 @@ class FileService:
         return {f.id: _to_dto(f) for f in files}
 
     def delete(self, file_id: int) -> None:
-        try:
-            instance = self.model.objects.get(id=file_id)
-            file_path = instance.file
-            instance.delete()
-        except ObjectDoesNotExist:
-            logger.warning("Tried to delete non-existent file id:%s", file_id)
-            raise FileNotFoundError
+        with transaction.atomic():
+            try:
+                instance = self.model.objects.get(id=file_id)
+                file_path = instance.file
+                instance.delete()
+            except ObjectDoesNotExist:
+                logger.warning("Tried to delete non-existent file id:%s", file_id)
+                raise FileNotFoundError
 
-        def cleanup():
-            default_storage.delete(file_path)
-            _cleanup_empty_parent_dirs(file_path)
+            transaction.on_commit(lambda: _cleanup_disk(file_path))
 
-        transaction.on_commit(cleanup)
         logger.debug("File with id:%s was deleted", file_id)
 
     def delete_many(self, file_ids: list[int]) -> None:
@@ -80,14 +78,11 @@ class FileService:
         data = self.model.objects.filter(id__in=file_ids)
         file_paths = list(data.values_list("file", flat=True))
 
-        deleted_count, _ = data.delete()
+        with transaction.atomic():
+            deleted_count, _ = data.delete()
 
-        def cleanup_disk():
-            for path in file_paths:
-                default_storage.delete(path)
-                _cleanup_empty_parent_dirs(str(path))
-
-        transaction.on_commit(cleanup_disk)
+            transaction.on_commit(lambda: _cleanup_disk(file_paths))
+            
         logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
 
     def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileDTO]:
@@ -157,17 +152,10 @@ class FileService:
                 else:
                     logger.debug("Updated files with ids: %s", target_ids)
 
-                def cleanup_disk():
-                    for path in old_file_paths:
-                        default_storage.delete(path)
-                        _cleanup_empty_parent_dirs(str(path))
-
-                transaction.on_commit(cleanup_disk)
+                transaction.on_commit(lambda: _cleanup_disk(old_file_paths))
 
         except Exception:
-            for path in new_file_paths:
-                default_storage.delete(path)
-                _cleanup_empty_parent_dirs(str(path))
+            _cleanup_disk(new_file_paths)
             raise
 
         return result
@@ -214,3 +202,13 @@ def _to_dto(file: FileModel) -> FileDTO:
         file=f"{settings.BASE_URL}{file.file.url}",
         visible=file.visible,
     )
+
+
+def _cleanup_disk(data: list[str] | str):
+    if isinstance(data, list):
+        for path in data:
+            default_storage.delete(path)
+            _cleanup_empty_parent_dirs(str(path))
+    else:
+        default_storage.delete(data)
+        _cleanup_empty_parent_dirs(str(data))
