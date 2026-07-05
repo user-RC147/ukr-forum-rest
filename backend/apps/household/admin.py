@@ -14,12 +14,12 @@ from apps.household.repositories.group_repo import GroupRepo
 
 @admin.register(Market)
 class MarketAdmin(admin.ModelAdmin):
-    list_display = ('name', 'address_line')
+    list_display = ('id','name', 'address_line')
 
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_by', 'created_at')
+    list_display = ('id','name', 'created_by', 'created_at')
 
     def save_model(self, request, obj: Group, form, change):
         """
@@ -41,26 +41,26 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(GroupMember)
 class GroupMemberAdmin(admin.ModelAdmin):
-    list_display = ('group', 'user', 'role', 'joined_at')
+    list_display = ('id','group', 'user', 'role', 'joined_at')
 
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group')
+    list_display = ('id','name','group')
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent', 'is_active')
+    list_display = ('id','name', 'parent', 'is_active')
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'unit_of_measure')
+    list_display = ('id', 'name', 'category', 'unit_of_measure','created_by')
 
 @admin.register(UnitOfMeasure)
 class UnitOfMeasureAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name')
+    list_display = ('id','code', 'name')
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):
