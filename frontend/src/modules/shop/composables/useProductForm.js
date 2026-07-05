@@ -43,8 +43,6 @@ export function useProductForm({ mode, product = null }) {
 
   // region_id больше не выбирается отдельно — он "приклеен" к городу
   // и приходит вместе с ним из /api/geo/cities/search/ (поле region).
-  // Поэтому передаём в useCityAutocomplete начальный region из товара,
-  // а сам composable обновит regionId/regionName при выборе нового города.
   const cityAutocomplete = useCityAutocomplete(
     {
       id: product?.city?.id ?? '',
@@ -55,11 +53,9 @@ export function useProductForm({ mode, product = null }) {
     toRef(countryAutocomplete, 'countryId'),
   )
 
-  const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.image ?? img.url }))
+  const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.file }))
   const imageUpload = useImageUpload(existingImages)
 
-  // При смене страны зависимый город (а вместе с ним и регион) обязательно сбрасывается —
-  // повторяет защиту от рассинхрона из оригинального product_list.js / create_product.js
   function onCountrySelect() {
     cityAutocomplete.reset()
   }
@@ -87,71 +83,91 @@ export function useProductForm({ mode, product = null }) {
     })
   }
 
+  /**
+   * Повертає об'єкт помилок по кожному полю окремо (а не першу-ліпшу),
+   * щоб можна було підсвітити ВСІ проблемні поля одразу, а не змушувати
+   * користувача виправляти форму по одній помилці за раз.
+   */
   function validateLocally() {
-    if (!name.value.trim()) return 'Вкажіть назву товару'
-    if (!description.value.trim()) return 'Вкажіть опис товару'
-    if (!categoryId.value) return 'Оберіть категорію'
-    if (!price.value || Number(price.value) <= 0) return 'Вкажіть коректну ціну'
-    if (!cityAutocomplete.cityId) return 'Оберіть місто зі списку підказок'
-    // regionId приходить автоматично разом з містом — якщо його немає,
-    // значить місто вибрано "вручну" без кліку по підказці, треба перевибрати
-    if (!cityAutocomplete.regionId) return 'Не вдалося визначити регіон — оберіть місто ще раз зі списку'
-    return ''
+    const errors = {}
+
+    if (!name.value.trim()) errors.name = 'Вкажіть назву товару'
+    if (!description.value.trim()) errors.description = 'Вкажіть опис товару'
+    if (!categoryId.value) errors.category = 'Оберіть категорію'
+    if (!price.value || Number(price.value) <= 0) errors.price = 'Вкажіть коректну ціну'
+
+    if (!cityAutocomplete.cityId) {
+      errors.city_id = 'Оберіть місто зі списку підказок'
+    } else if (!cityAutocomplete.regionId) {
+      // regionId приходить автоматично разом із містом — якщо його немає,
+      // значить місто вибрано без кліку по підказці, треба перевибрати
+      errors.city_id = 'Не вдалося визначити регіон — оберіть місто ще раз зі списку'
+    }
+
+    return errors
   }
 
   async function submit() {
+    // Захист від повторних кліків: без цього кожен клік по кнопці, поки
+    // ще триває перевірка чи запит, породжував ще одну спробу і ще один
+    // toast — як подвійний POST без блокування кнопки в Django-admin.
+    if (isSubmitting.value) return
+    isSubmitting.value = true
     clearErrors()
 
-    if (!isUpdate && !imageUpload.hasAnyImage) {
-      showToast('Додайте хоча б одне фото', 'error')
-      return
-    }
-
-    const countryOk = await countryAutocomplete.ensureSelected()
-    if (!countryOk) {
-      showToast('Оберіть країну зі списку підказок', 'error')
-      return
-    }
-
-    const validationError = validateLocally()
-    if (validationError) {
-      showToast(validationError, 'error')
-      return
-    }
-
-    const filesValid = await imageUpload.validateAllBeforeSubmit()
-    if (!filesValid) return
-
-    const formData = new FormData()
-    formData.append('title', name.value)
-    formData.append('description', description.value)
-    formData.append('category_id', categoryId.value)
-    formData.append('price', price.value)
-    // formData.append('status', status.value)
-    formData.append('country_id', countryAutocomplete.countryId)
-    formData.append('city_id', cityAutocomplete.cityId)
-    formData.append('region_id', cityAutocomplete.regionId)
-    imageUpload.appendToFormData(formData)
-
-    isSubmitting.value = true
-    const loadingMessage = isUpdate ? 'Збереження змін...' : 'Відправка на сервер...'
-    const toastId = showToast(loadingMessage, 'loading')
-
     try {
-      if (isUpdate) {
-        await updateProduct(product.id, formData)
-        showToast('✓ Зміни успішно збережено!', 'success')
-      } else {
-        await createProduct(formData)
-        showToast('✓ Товар успішно додано!', 'success')
+      if (!isUpdate && !imageUpload.hasAnyImage) {
+        showToast('Додайте хоча б одне фото', 'error')
+        return
       }
-      router.push({ name: 'shop-index' })
-    } catch (error) {
-      applyServerErrors(error.response?.data)
-      showToast('Перевірте дані форми та спробуйте ще раз', 'error')
+
+      const countryOk = await countryAutocomplete.ensureSelected()
+      if (!countryOk) {
+        fieldErrors.country = 'Оберіть країну зі списку підказок'
+        showToast('Перевірте позначені поля форми', 'error')
+        return
+      }
+
+      const localErrors = validateLocally()
+      if (Object.keys(localErrors).length > 0) {
+        Object.assign(fieldErrors, localErrors)
+        showToast('Перевірте позначені поля форми', 'error')
+        return
+      }
+
+      const filesValid = await imageUpload.validateAllBeforeSubmit()
+      if (!filesValid) return
+
+      const formData = new FormData()
+      formData.append('title', name.value)
+      formData.append('description', description.value)
+      formData.append('category_id', categoryId.value)
+      formData.append('price', price.value)
+      formData.append('country_id', countryAutocomplete.countryId)
+      formData.append('city_id', cityAutocomplete.cityId)
+      formData.append('region_id', cityAutocomplete.regionId)
+      imageUpload.appendToFormData(formData)
+
+      const loadingMessage = isUpdate ? 'Збереження змін...' : 'Відправка на сервер...'
+      const toastId = showToast(loadingMessage, 'loading')
+
+      try {
+        if (isUpdate) {
+          await updateProduct(product.id, formData)
+          showToast('✓ Зміни успішно збережено!', 'success')
+        } else {
+          await createProduct(formData)
+          showToast('✓ Товар успішно додано!', 'success')
+        }
+        router.push({ name: 'shop-index' })
+      } catch (error) {
+        applyServerErrors(error.response?.data)
+        showToast('Перевірте дані форми та спробуйте ще раз', 'error')
+      } finally {
+        if (toastId?.remove) toastId.remove()
+      }
     } finally {
       isSubmitting.value = false
-      if (toastId?.remove) toastId.remove()
     }
   }
 

@@ -12,3 +12,5 @@ psycopg[binary]==3.3.3
 # Utils
 python-dotenv==1.2.2
 Pillow  # для зображень пізніше
+python-json-logger
+sentry-sdk
