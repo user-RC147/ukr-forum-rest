@@ -192,9 +192,16 @@ from apps.files.logging import LOGGING as FILES_LOGGING
 from apps.shop.logging import LOGGING as SHOP_LOGGING
 from apps.search.logging import LOGGING as SEARCH_LOGGING
 from apps.geo.logging import LOGGING as GEO_LOGGING
+from apps.household.logging import LOGGING as HOUSEHOLD_LOGGING
 from config.logging import merge_logging_configs
 
-LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING, SEARCH_LOGGING, GEO_LOGGING)
+LOGGING = merge_logging_configs(
+    SHOP_LOGGING, 
+    FILES_LOGGING, 
+    SEARCH_LOGGING, 
+    GEO_LOGGING,
+    HOUSEHOLD_LOGGING
+    )
 
 # --- Modules for search---
 SEARCH_HANDLERS = {

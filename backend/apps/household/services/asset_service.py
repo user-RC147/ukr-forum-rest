@@ -5,9 +5,9 @@ from apps.household.repositories.asset_repo import AssetRepo
 
 class AssetService:
 
-    def __init__(self,selector:AssetSelector,repository:AssetRepo)->None:
-        self._selector=selector
-        self._repository=repository
+    def __init__(self)->None:
+        self._selector=AssetSelector()
+        self._repository=AssetRepo()
 
     def get_user_assets(self,user_id:int):
         return self._selector.get_available_assets(user_id)

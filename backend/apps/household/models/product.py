@@ -11,19 +11,17 @@ class Product(models.Model):
         max_length=150,
         verbose_name="Найменування товару")
 
-
-
     unit_of_measure = models.ForeignKey(
         'UnitOfMeasure',
         on_delete=models.PROTECT,
-        related_name='products'
+        related_name='unit_products'
     )
     
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True, blank=True,
-        related_name="products"
+        related_name="cat_products"
     )
 
     created_by: models.ForeignKey[Any | None] = models.ForeignKey(
@@ -32,6 +30,8 @@ class Product(models.Model):
         null=True,
         blank=True,
     )
+
+    create_date=models.DateField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Товар"
