@@ -5,6 +5,7 @@ from apps.users.api.jwt.jwt_views import (
     CookieTokenRefreshView,
 )
 from apps.users.api import views
+from apps.users.api.views import views as file_views
 
 app_name = 'users'
 
@@ -15,6 +16,7 @@ urlpatterns = [
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
+    path('csrf/', file_views.get_csrf_token, name='get-csrf-token'),
     # -------------------------------------------------------
     # Акаунт
     # -------------------------------------------------------

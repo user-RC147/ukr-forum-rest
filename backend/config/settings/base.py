@@ -188,7 +188,11 @@ SIMPLE_JWT = {
 }
 
 
+#---CSRF---
+CSRF_COOKIE_HTTPONLY = False  # For JS
 
+CSRF_COOKIE_SECURE = False    #True in prod
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN' 
 
 
 

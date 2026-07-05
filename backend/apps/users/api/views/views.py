@@ -1,23 +1,25 @@
-from rest_framework import status, permissions
+from django.middleware.csrf import get_token
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.api.serializers import (
-    UserRegisterSerializer,
-    UserProfileSerializer,
-    PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer,
     ChangePasswordSerializer,
     LocationUpdateSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    UserProfileSerializer,
+    UserRegisterSerializer,
 )
+from apps.users.exceptions import InvalidPasswordError, InvalidTokenError
+from apps.users.selectors import get_profile
 from apps.users.services import (
     auth_service,
-    update_profile,
     update_location,
+    update_profile,
 )
-
-from apps.users.selectors import get_profile
-from apps.users.exceptions import InvalidPasswordError,InvalidTokenError
 
 
 class RegisterView(APIView):
@@ -26,7 +28,7 @@ class RegisterView(APIView):
     Реєстрація нового користувача.
     Доступно всім — без авторизації.
     """
-    
+
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -52,11 +54,12 @@ class ProfileView(APIView):
     PATCH /api/users/profile/ — оновити профіль
     Тільки для авторизованих користувачів.
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         # request.user — поточний авторизований користувач (з JWT токена)
-        
+
         user = get_profile(request.user)
 
         # серіалізатор для відповіді — перетворює об'єкт користувача в JSON
@@ -85,6 +88,7 @@ class DeleteAccountView(APIView):
     DELETE /api/users/delete/
     Видалення акаунту поточного користувача.
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request):
@@ -100,6 +104,7 @@ class ChangePasswordView(APIView):
     POST /api/users/change-password/
     Зміна паролю — користувач знає старий пароль.
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -131,6 +136,7 @@ class PasswordResetRequestView(APIView):
     Крок 1 — запит на відновлення паролю.
     Відправляє email з посиланням.
     """
+
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -138,9 +144,7 @@ class PasswordResetRequestView(APIView):
         serializer.is_valid(raise_exception=True)
 
         # сервіс мовчки ігнорує невідомий email (з міркувань безпеки)
-        auth_service.request_password_reset(
-            email=serializer.validated_data['email']
-        )
+        auth_service.request_password_reset(email=serializer.validated_data["email"])
 
         # завжди повертаємо однакову відповідь —
         # не розкриваємо чи існує такий email
@@ -156,6 +160,7 @@ class PasswordResetConfirmView(APIView):
     Крок 2 — підтвердження відновлення паролю.
     Приймає uid, token і новий пароль.
     """
+
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -179,8 +184,6 @@ class PasswordResetConfirmView(APIView):
             {"detail": "Пароль успішно відновлено."},
             status=status.HTTP_200_OK,
         )
-    
-
 
 
 class LocationUpdateView(APIView):
@@ -188,6 +191,7 @@ class LocationUpdateView(APIView):
     POST /api/users/location/
     Зберігає локацію користувача в локальну БД.
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -205,9 +209,10 @@ class LocationUpdateView(APIView):
             {"detail": "Локацію успішно збережено."},
             status=status.HTTP_200_OK,
         )
-    
 
 
-
-
-
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_csrf_token(request):
+    token = get_token(request)
+    return Response({"csrfToken": token})
