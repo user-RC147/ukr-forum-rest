@@ -27,8 +27,28 @@ function removeToast(id) {
   if (index !== -1) toasts.splice(index, 1)
 }
 
+// Удобные ярлыки поверх showToast — многие компоненты (ShopDeleteProductView,
+// ShopProductDetailView и т.д.) деструктурируют { success, error } из useToast(),
+// а не универсальную showToast(message, type). Без этих методов деструктуризация
+// давала undefined и падала при вызове (TypeError: showError is not a function).
+function success(message, duration) {
+  return showToast(message, 'success', duration)
+}
+
+function error(message, duration) {
+  return showToast(message, 'error', duration)
+}
+
+function warning(message, duration) {
+  return showToast(message, 'warning', duration)
+}
+
+function info(message, duration) {
+  return showToast(message, 'info', duration)
+}
+
 export function useToast() {
   // Отдаём toasts как есть (это уже reactive-массив, не нужен toRefs)
   // и функции — без всякой обёртки, прямыми ссылками
-  return { toasts, showToast, removeToast }
+  return { toasts, showToast, removeToast, success, error, warning, info }
 }
