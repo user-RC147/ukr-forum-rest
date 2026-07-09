@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
     # Third party
     "rest_framework",
     "rest_framework_simplejwt",
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.RequestIDMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",  # ← вище CommonMiddleware!
@@ -96,12 +98,12 @@ AUTH_USER_MODEL = "users.CustomUser"
 # --- DRF + JWT ---
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        #"rest_framework_simplejwt.authentication.JWTAuthentication",
         'apps.users.api.jwt.authentication.CookieJWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
+        # 'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "config.exceptions.custom_exception_handler",
 }
 
 # DEFAULT_PERMISSION_CLASSES=[
@@ -159,7 +161,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя фай
 
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
     # щоб користувач не переавторизовувався щодня
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -168,6 +170,16 @@ SIMPLE_JWT = {
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'SIGNING_KEY': os.getenv('SIMPLE_JWT_SIGNING_KEY', default=None) or SECRET_KEY,
+    'ALGORITHM': 'HS256',
+    # Update user.last_login on every token issue.
+    'UPDATE_LAST_LOGIN': False,
+    # The user model field used as the identity claim in the token payload.
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    # The claim name that stores the JWT ID (used for blacklisting).
+    'JTI_CLAIM': 'jti',
+
 
     # httpOnly cookies
     "AUTH_COOKIE": "access_token",
@@ -176,7 +188,11 @@ SIMPLE_JWT = {
 }
 
 
+#---CSRF---
+CSRF_COOKIE_HTTPONLY = False  # For JS
 
+CSRF_COOKIE_SECURE = False    #True in prod
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN' 
 
 
 
@@ -187,15 +203,24 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 # --- Logger conf---
-from apps.files.logging import LOGGING as FILES_LOGGING
-from apps.shop.logging import LOGGING as SHOP_LOGGING
-from apps.search.logging import LOGGING as SEARCH_LOGGING
-from apps.geo.logging import LOGGING as GEO_LOGGING
-from config.logging import merge_logging_configs
+from config.logging import BASE_LOGGING
 
-LOGGING = merge_logging_configs(SHOP_LOGGING, FILES_LOGGING, SEARCH_LOGGING, GEO_LOGGING)
+LOGGING = BASE_LOGGING
 
 # --- Modules for search---
 SEARCH_HANDLERS = {
     "shop": "apps.shop.search.ProductSearchHandler",
 }
+
+
+#CENTRY
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=0.2,  # percentage requests for performance monitoring
+    send_default_pii=False,  # Not send personal identifiable info
+    # environment=os.getenv("ENVIRONMENT", "production"),
+)

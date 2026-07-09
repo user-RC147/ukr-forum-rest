@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import models
 from django.conf import settings
 
@@ -10,39 +11,27 @@ class Product(models.Model):
         max_length=150,
         verbose_name="Найменування товару")
 
-    # Одиниця вимірювання
-    UNIT_CHOICES = [
-        ('шт', 'Штуки (шт)'),
-        ('кг', 'Кілограми (кг)'),
-        ('г', 'Грами (г)'),
-        ('л', 'Літри (л)'),
-        ('мл', 'Мілілітри (мл)'),
-        ('м', 'Метри (м)'),
-        ('уп', 'Упаковка (уп)'),
-        ('кор', 'Коробка (кор)'),
-    ]
-
-    unit_of_measure = models.CharField(
-        max_length=10,
-        choices=UNIT_CHOICES,
-        default='шт',
-        verbose_name="Одиниця вимірювання",
-        help_text="В якій одиниці продається товар"
+    unit_of_measure = models.ForeignKey(
+        'UnitOfMeasure',
+        on_delete=models.PROTECT,
+        related_name='unit_products'
     )
     
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True, blank=True,
-        related_name="products"
+        related_name="cat_products"
     )
 
-    created_by = models.ForeignKey(
+    created_by: models.ForeignKey[Any | None] = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
+    create_date=models.DateField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Товар"

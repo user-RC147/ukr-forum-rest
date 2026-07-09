@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useUserStore } from '@/shared/stores/useUserStore.js'
+import ToastContainer from '@/shared/composables/ToastContainer.vue'
 
 const userStore = useUserStore()
 
@@ -13,4 +14,5 @@ onMounted(() => {
 
 <template>
   <RouterView />
+  <ToastContainer />
 </template>

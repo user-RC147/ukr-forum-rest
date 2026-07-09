@@ -4,21 +4,33 @@ from apps.household.dto import CreateGroupInDTO,GroupOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
 
+from apps.users.contracts.user_contract import get_user_contract  
 
 
 class GroupService:
     """
     Сервіс для управління бізнес-логікою груп користувачів.
     """
-    def __init__(self,group_repo:GroupRepo,group_selector: GroupSelector):
-        self._group_repo=group_repo
-        self._group_selector= group_selector
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self._group_repo=GroupRepo()
+        self._group_selector= GroupSelector()
+        self._get_user_contract = get_user_contract()
+
+    def get_user_in_group_exists(self,user_id:int)->bool:
+        user = self._get_user_contract.get(user_id=user_id)
+        return user
+
+
+
 
     def get_all_list(self,user_id:int)->Sequence[GroupOutDTO]:
         """
         Отримання переліку груп, у яких користувач є учасником.
         СТРОГО ЧЕРЕЗ СЕЛЕКТОР (Шар читання).
         """
+        self.get_user_in_group_exists(user_id)
+
         return self._group_selector.get_groups_for_user(user_id=user_id)
 
     def create_new_group(self,dto:CreateGroupInDTO,creator_id:int)->int:

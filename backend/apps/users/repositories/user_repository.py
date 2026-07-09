@@ -1,9 +1,14 @@
-from apps.users.models import CustomUser
+from django.db import transaction
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
+
 from apps.users.dto import RegisterDTO
+from apps.users.models import CustomUser
 
 
 class UserRepository:
-
     def create(self, dto: RegisterDTO) -> CustomUser:
         return CustomUser.objects.create_user(
             username=dto.username,
@@ -26,6 +31,14 @@ class UserRepository:
     def save(self, user: CustomUser) -> CustomUser:
         user.save()
         return user
+
+    def to_blacklist_tokens(self, user_id: int):
+        user = self.get_by_pk(user_id)
+        tokens = OutstandingToken.objects.filter(user=user)
+
+        with transaction.atomic():
+            for token in tokens:
+                BlacklistedToken.objects.get_or_create(token=token)
 
 
 user_repository = UserRepository()

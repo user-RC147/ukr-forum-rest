@@ -2,12 +2,10 @@ from email.headerregistry import Group
 from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.apps import apps
 
 from apps.household.api.serializers import GroupMemberOutSerializer,GroupOutSerializer,CreateGroupInSerializer
-from apps.household.selectors import GroupSelector
-from apps.household.apps import HouseholdConfig
-from apps.household.services import GroupService
+
+from apps.household.services.group_service import GroupService
 from apps.household.dto import GroupOutDTO
 from drf_spectacular.utils import extend_schema
 
@@ -23,14 +21,7 @@ class GroupViewSet(viewsets.ViewSet):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-
-        
-        # 1. Отримуємо живий екземпляр конфігу додатка з реєстру Django
-        household_config = apps.get_app_config('household')
-
-        
-        # 2. Тепер властивість спрацює правильно і поверне зібраний GroupService
-        self._service = household_config.group_service
+        self._service = GroupService()
 
 
     #чи є користувач частиною групи
@@ -89,14 +80,14 @@ class GroupViewSet(viewsets.ViewSet):
         )
 
 
-    def retrieve(self, request, pk=None):
-        pass
+    # def retrieve(self, request, pk=None):
+    #     pass
 
-    def update(self, request, pk=None):
-        pass
+    # def update(self, request, pk=None):
+    #     pass
 
-    def partial_update(self, request, pk=None):
-        pass
+    # def partial_update(self, request, pk=None):
+    #     pass
 
-    def destroy(self, request, pk=None):
-        pass
+    # def destroy(self, request, pk=None):
+    #     pass

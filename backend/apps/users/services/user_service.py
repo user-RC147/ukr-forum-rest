@@ -1,6 +1,7 @@
 
 from apps.users.dto.user import UserDTO
 from apps.users.models import CustomUser
+from apps.users.exceptions import UserNotFoundException
 
 
 class UserService:
@@ -10,14 +11,14 @@ class UserService:
     """
 
     def get_user(self,user_id:int)->UserDTO:
+        try:
+            data = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            raise UserNotFoundException(user_id)
 
-        u=CustomUser.objects.get(id=user_id)
-        return UserDTO(
-            id=u.id,
-            username=u.username,
-            display_name=u.get_public_name(),
-        )
-
+        return _to_dto(data)
+    
+    
 
     def get_users(self, ids: list[int]) -> dict[int, UserDTO]:
         if not ids:

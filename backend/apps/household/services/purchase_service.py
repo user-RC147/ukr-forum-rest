@@ -2,8 +2,8 @@ from apps.household.dto.purchase_dto import CreatePurchaseInDTO
 
 # ПОЯСНЕННЯ ДІЇ: Використовуємо створені нами точки входу (__init__.py -> __all__)
 # Тепер нам не треба писати довжелезні шляхи до кожного окремого файлу.
-from apps.household.repositories import PurchaseRepo
-from apps.household.selectors import GroupSelector
+from apps.household.repositories.purchase_repo import PurchaseRepo
+from apps.household.selectors.group_selector import GroupSelector
 
 # Моделі залишаємо через пряме посилання, щоб уникнути циклічних імпортів Django
 from apps.household.models.purchase import Purchase
@@ -15,12 +15,10 @@ class PurchaseService:
     Об'єднує перевірку прав доступу групи та запис чека в базу даних.
     """
 
-    def __init__(self,repository:PurchaseRepo,group_selector:GroupSelector):
-        # Пояснення дії: Через конструктор впроваджуємо залежності (Dependency Injection)
-        # ПОЯСНЕННЯ ДІЇ: Використовуємо приватні змінні з підкресленням.
-        # Тепер ці інструменти захищені всередині сервісу..
-        self._repository=repository
-        self._group_selector=group_selector
+    def __init__(self,*args, **kwargs):
+        super().__init__(**kwargs)       
+        self._repository=PurchaseRepo()
+        self._group_selector=GroupSelector()
 
 
     def create_purchase(self,dto:CreatePurchaseInDTO,user)->Purchase:

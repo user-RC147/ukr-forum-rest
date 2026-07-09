@@ -1,27 +1,25 @@
-import stat
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.apps import apps
-from rest_framework import status
 
-from apps.household.apps import HouseholdConfig
+from rest_framework import status
+ 
+from drf_spectacular.utils import extend_schema
+
 from apps.household.api.serializers.asset_serializer import AssetListFilterSerializer, AssetSerializer
 from apps.household.dto.asset_dto import CreateAssetDTO, ListAssetDTO
-from apps.household.services import AssetService
-from apps.shop import serializers
+from apps.household.services.asset_service import AssetService
 
 
 class AssetViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def __init__(self, **kwargs):
+    def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        household_config = apps.get_app_config('household')
-        self.service = household_config.asset_service
+        self._service = AssetService()
 
 
-
+    #@extend_schema(request=AssetListFilterSerializer, responses=AssetListFilterSerializer)
     def list(self, request):
         """
         GET /api/household/assets/?group=5
@@ -40,7 +38,7 @@ class AssetViewSet(ViewSet):
         )
         
         # 3. Викликаємо бізнес-логику
-        asset_list = self.service.get_list_asset(dto)
+        asset_list = self._service.get_list_asset(dto)
         
         # 4. ОБОВ'ЯЗКОВО СЕРІАЛІЗУЄМО список моделей перед відповіддю
         # Використовуємо many=True, бо передаємо список об'єктів
@@ -49,7 +47,7 @@ class AssetViewSet(ViewSet):
         return Response({'results': output_serializer.data}, status=status.HTTP_200_OK)
             
         
-
+    @extend_schema(request=AssetSerializer, responses=AssetSerializer)
     def create(self, request):
         serializer =AssetSerializer(data=request.data)
         if not serializer.is_valid():
@@ -63,18 +61,18 @@ class AssetViewSet(ViewSet):
             address_line=serializer.validated_data.get('address_line')
         )
 
-        data=self.service.create(dto)      
+        data=self._service.create(dto)      
 
         return Response({'id':data.id, 'name':data.name},status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk=None):
-        pass
+    # def retrieve(self, request, pk=None):
+    #     pass
 
-    def update(self, request, pk=None):
-        pass
+    # def update(self, request, pk=None):
+    #     pass
 
-    def partial_update(self, request, pk=None):
-        pass
+    # def partial_update(self, request, pk=None):
+    #     pass
 
-    def destroy(self, request, pk=None):
-        pass
+    # def destroy(self, request, pk=None):
+    #     pass
