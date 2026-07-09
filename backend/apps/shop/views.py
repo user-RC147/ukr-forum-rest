@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -8,7 +8,7 @@ from apps.search.contracts import exceptions as search_exceptions
 from apps.shop.exceptions import GeoNotFound, NotFoundError, ProductPermissionError
 from apps.shop.schemas import product_create_schema, product_update_schema
 
-from .serializers import ProductReadSerializer, ProductSerializer
+from .serializers import ProductReadSerializer, ProductSerializer, ProductUpdateSerializer
 from .service import ProductService
 
 
@@ -68,7 +68,7 @@ class ProductViewSet(viewsets.ViewSet):
         ) as e:
             raise NotFound(detail=str(e))
 
-        serializer = ProductSerializer(product, data=request.data, partial=True)
+        serializer = ProductUpdateSerializer(product, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -77,6 +77,10 @@ class ProductViewSet(viewsets.ViewSet):
             )
         except ProductPermissionError:
             raise PermissionDenied(detail="Access denied")
+        except files_exceptions.NotFoundError as e:
+            raise NotFound(detail=str(e))
+        except files_exceptions.ValidationError as e:
+            raise ValidationError(detail=str(e))
 
         return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
