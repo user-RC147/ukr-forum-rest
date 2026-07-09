@@ -36,10 +36,21 @@ product_update_schema = extend_schema(
                 "country_id": {"type": "integer"},
                 "region_id": {"type": "integer"},
                 "city_id": {"type": "integer"},
-                "files": {
+                "update_ids": {
+                "type": "array",
+                "items": {"type": "integer"},
+                "description": "Id файлів для оновлення, порядок відповідає update_files",
+                },
+                "update_files": {
+                "type": "array",
+                "items": {"type": "string", "format": "binary"},
+                "description": "Нові файли для оновлення, порядок відповідає update_ids",
+                },
+                "create_files": {
                     "type": "array",
                     "items": {"type": "string", "format": "binary"},
                 },
+                "keep_files_ids": {"type": "array", "items": {"type": "integer"},}
             },
         }
     },

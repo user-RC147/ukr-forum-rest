@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.files.contracts import get_file_contract
+from apps.files.dto import FileUpdatePlan
 from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
@@ -119,13 +120,33 @@ class ProductService(BaseService[ProductModel]):
         product = self.get(id)
         if int(user_id) == product.owner_id:
             with transaction.atomic():
-                if "files" in data.keys():
-                    files = data.pop("files")
-                    target_ids = product.files_ids
-                    files_ids = self.file_contract.update_many(
-                        files, user_id, target_ids
-                    )
-                    data["files_ids"] = [f.id for f in files_ids]
+                update_files = None
+                update_files_ids = []
+                create_files = None
+                keep_ids = []
+                key_check = data.keys()
+
+                if "update_files" in key_check and "update_ids" in key_check:
+                    update_files = data.pop("update_files")
+                    update_files_ids = data.pop("update_ids")
+
+                if "create_files" in key_check:
+                    create_files = data.pop("create_files")
+
+                if "keep_files_ids" in key_check:
+                    keep_ids = data.pop("keep_files_ids")
+
+                item_ids = product.files_ids
+
+                files_ids = self.file_contract.update_many(
+                    user_id=user_id,
+                    item_ids=item_ids,
+                    plan=FileUpdatePlan(keep_ids=keep_ids, update_ids=update_files_ids),
+                    update_files=dict(zip(update_files_ids, update_files, strict=True)) if update_files else None,
+                    create_files=create_files,
+                )
+
+                data["files_ids"] = [f.id for f in files_ids]
                 result = super().update(id, data)
                 self._attach_products([result])
                 return result

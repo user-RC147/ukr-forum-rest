@@ -16,6 +16,17 @@ class ProductSerializer(serializers.Serializer):
     )
 
 
+class ProductUpdateSerializer(ProductSerializer):
+    files = None
+
+    update_ids = serializers.ListField(child=serializers.IntegerField(), max_length=10)
+    update_files = serializers.ListField(child=serializers.ImageField(allow_empty_file=True), max_length=10)
+    create_files = serializers.ListField(
+        child=serializers.ImageField(allow_empty_file=True), max_length=10
+    )
+    keep_files_ids = serializers.ListField(child=serializers.IntegerField(), max_length=10)
+
+
 class ProductReadSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     owner_id = serializers.IntegerField()
