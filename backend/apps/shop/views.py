@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -79,6 +79,8 @@ class ProductViewSet(viewsets.ViewSet):
             raise PermissionDenied(detail="Access denied")
         except files_exceptions.NotFoundError as e:
             raise NotFound(detail=str(e))
+        except files_exceptions.ValidationError as e:
+            raise ValidationError(detail=str(e))
 
         return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
