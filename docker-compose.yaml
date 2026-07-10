@@ -1,0 +1,72 @@
+
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ukr-forum-backend:dev
+    ports:
+      - "8080:8080"
+    env_file:
+      - backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ukr-forum-frontend:dev
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8080
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:18.4-trixie
+    env_file:
+      - backend/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql
+
+  loki:
+    image: grafana/loki:3.7.3
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+  grafana:
+    image: grafana/grafana:13.0.3
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+
+volumes:
+  db-data:
+  loki_data:
+  grafana_data:
