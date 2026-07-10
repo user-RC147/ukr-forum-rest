@@ -12,6 +12,7 @@ services:
       - backend/.env
     volumes:
       - ./backend:/app
+      - django_logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -53,16 +54,31 @@ services:
     ports:
       - "3100:3100"
     volumes:
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
       - loki_data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  promtail:
+    image: grafana/promtail:3.6.10
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
+
   grafana:
     image: grafana/grafana:13.0.3
     ports:
       - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+    env_file:
+      - backend/.env
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - loki
 
@@ -70,3 +86,4 @@ volumes:
   db-data:
   loki_data:
   grafana_data:
+  django_logs:

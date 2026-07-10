@@ -1,0 +1,195 @@
+{
+  "title": "Django — ukr-forum-rest",
+  "uid": "django-ukr-forum",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "log_type",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({job=\"backend\"}, log_type)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "level",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({job=\"backend\"}, level)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "module",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({job=\"backend\"}, module)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Log rate by level",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(rate({job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"$level\" [1m])) by (level)",
+          "legendFormat": "{{level}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "WARNING" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "INFO" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Log rate by module",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(rate({job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | module=~\"$module\" [1m])) by (module)",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Errors (last 1h)",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"ERROR\" [1h]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Warnings (last 1h)",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"WARNING\" [1h]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total log lines (last 1h)",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"backend\", log_type=~\"$log_type\"} [1h]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "piechart",
+      "title": "Errors by module (last 1h)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"ERROR\" [1h])) by (module)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "Live errors",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"WARNING|ERROR\" | line_format \"{{.timestamp}} [{{.level}}] {{.module}} req_id={{.request_id}} — {{.message}}\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "logs",
+      "title": "All logs (filtered)",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"$level\" | module=~\"$module\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}
