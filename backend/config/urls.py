@@ -7,7 +7,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,  # Swagger UI — зручний інтерфейс для тестування API
 )
 from rest_framework_simplejwt.views import TokenBlacklistView
-
+from .views import HealthView
 urlpatterns = [
     path("admin/", admin.site.urls),
     # Всі ендпоінти users під префіксом /api/users/
@@ -21,6 +21,8 @@ urlpatterns = [
     path("api/shop/", include("apps.shop.urls")),
     # Search
     path("api/search/", include("apps.search.urls")),
+    # Health endpoints
+    path("health/", HealthView.as_view(), name="health_check"),
     # OpenAPI документація — відкрий http://localhost:8000/api/docs/
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
