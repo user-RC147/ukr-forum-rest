@@ -22,7 +22,7 @@ urlpatterns = [
     # Search
     path("api/search/", include("apps.search.urls")),
     # Health endpoints
-    path("health/", HealthView.as_view(), name="health_check"),
+    path("api/health/", HealthView.as_view(), name="health_check"),
     # OpenAPI документація — відкрий http://localhost:8000/api/docs/
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

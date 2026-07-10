@@ -34,7 +34,7 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f http://localhost:8080/api/health || exit 1
 
 EXPOSE 8080
 
