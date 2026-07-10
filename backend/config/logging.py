@@ -1,9 +1,11 @@
 # config/logging.py
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+LOG_DIR = Path("/app/logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-COMMON_HANDLERS = ["console", "general_file"]
+# COMMON_HANDLERS = ["console", "general_file"]
+COMMON_HANDLERS = ["general_file"]
 
 BASE_LOGGING = {
     "version": 1,
@@ -34,18 +36,14 @@ BASE_LOGGING = {
             "filters": ["request_id", "drop_request_obj"],
         },
         "general_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(BASE_DIR / "general.log"),
-            "maxBytes": 10 * 1024 * 1024,  # 10 MB
-            "backupCount": 5,
-            "encoding": "utf-8",
+            "class": "logging.StreamHandler",
             "level": "INFO",
             "formatter": "json",
             "filters": ["request_id", "drop_request_obj"],
         },
         "core_errors": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(BASE_DIR / "core_errors.log"),
+            "filename": str(LOG_DIR / "core_errors.log"),
             "maxBytes": 10 * 1024 * 1024,
             "backupCount": 5,
             "encoding": "utf-8",

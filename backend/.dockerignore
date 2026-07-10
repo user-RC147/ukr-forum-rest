@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# Django
+*.log
+local_settings.py
+files/
+staticfiles/
+static_collected/
+
+# Tests and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nose2junit.xml
+coverage.xml
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# CI/CD and linters
+.github/
+.gitlab-ci.yml
+.pre-commit-config.yaml
+.flake8
+.mypy_cache/
+.ruff_cache/
+.git/
+
+# Security scan reports (ZAP, semgrep, gitleaks, etc.)
+zap-report*
+semgrep-report*
+gitleaks-report*
+*.sarif
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+
+# OS
+.DS_Store
+Thumbs.db
