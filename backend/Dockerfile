@@ -31,6 +31,9 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
@@ -38,4 +41,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
