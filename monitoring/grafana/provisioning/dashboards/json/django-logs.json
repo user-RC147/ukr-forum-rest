@@ -8,16 +8,6 @@
   "templating": {
     "list": [
       {
-        "name": "log_type",
-        "type": "query",
-        "datasource": { "type": "loki", "uid": "loki" },
-        "query": "label_values({job=\"backend\"}, log_type)",
-        "refresh": 2,
-        "includeAll": true,
-        "multi": true,
-        "current": { "text": "All", "value": "$__all" }
-      },
-      {
         "name": "level",
         "type": "query",
         "datasource": { "type": "loki", "uid": "loki" },
@@ -36,6 +26,13 @@
         "includeAll": true,
         "multi": true,
         "current": { "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "request_id",
+        "type": "textbox",
+        "label": "Request ID (для трассировки)",
+        "query": "",
+        "current": { "text": "", "value": "" }
       }
     ]
   },
@@ -48,7 +45,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "sum(rate({job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"$level\" [1m])) by (level)",
+          "expr": "sum(rate({job=\"backend\", level=~\"$level\"}[$__auto])) by (level)",
           "legendFormat": "{{level}}",
           "refId": "A"
         }
@@ -70,7 +67,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "sum(rate({job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | module=~\"$module\" [1m])) by (module)",
+          "expr": "sum(rate({job=\"backend\", module=~\"$module\"}[$__auto])) by (module)",
           "legendFormat": "{{module}}",
           "refId": "A"
         }
@@ -79,14 +76,12 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Errors (last 1h)",
+      "title": "Errors",
+      "description": "За выбранный диапазон времени (time picker сверху)",
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        {
-          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"ERROR\" [1h]))",
-          "refId": "A"
-        }
+        { "expr": "sum(count_over_time({job=\"backend\", level=\"ERROR\"}[$__range]))", "refId": "A", "instant": true }
       ],
       "fieldConfig": {
         "defaults": {
@@ -104,14 +99,12 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Warnings (last 1h)",
+      "title": "Warnings",
+      "description": "За выбранный диапазон времени (time picker сверху)",
       "gridPos": { "h": 4, "w": 4, "x": 4, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        {
-          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"WARNING\" [1h]))",
-          "refId": "A"
-        }
+        { "expr": "sum(count_over_time({job=\"backend\", level=\"WARNING\"}[$__range]))", "refId": "A", "instant": true }
       ],
       "fieldConfig": {
         "defaults": {
@@ -128,26 +121,55 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "Total log lines (last 1h)",
+      "title": "Total log lines",
+      "description": "За выбранный диапазон времени (time picker сверху)",
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
+        { "expr": "sum(count_over_time({job=\"backend\"}[$__range]))", "refId": "A", "instant": true }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Top exception types",
+      "description": "Только через custom_exception_handler (module=exceptions)",
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
         {
-          "expr": "sum(count_over_time({job=\"backend\", log_type=~\"$log_type\"} [1h]))",
-          "refId": "A"
+          "expr": "topk(10, sum by (exception_type) (count_over_time({job=\"backend\", level=\"ERROR\"} | json | exception_type!=\"\" [$__range])))",
+          "refId": "A",
+          "instant": true
         }
       ]
     },
     {
       "id": 6,
       "type": "piechart",
-      "title": "Errors by module (last 1h)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "title": "Errors by module",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "sum(count_over_time({job=\"backend\"} | json | __error__=\"\" | level=\"ERROR\" [1h])) by (module)",
-          "refId": "A"
+          "expr": "sum(count_over_time({job=\"backend\", level=\"ERROR\"}[$__range])) by (module)",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Top views with 5xx",
+      "description": "Пусто/без колонки view = ошибка не прошла через custom_exception_handler (см. django.server вместо config.exceptions)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (view) (count_over_time({job=\"backend\", level=\"ERROR\"} | json | status_code >= 500 [$__range])))",
+          "refId": "A",
+          "instant": true
         }
       ]
     },
@@ -155,7 +177,7 @@
       "id": 7,
       "type": "logs",
       "title": "Live errors",
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
       "datasource": { "type": "loki", "uid": "loki" },
       "options": {
         "showTime": true,
@@ -166,7 +188,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"WARNING|ERROR\" | line_format \"{{.timestamp}} [{{.level}}] {{.module}} req_id={{.request_id}} — {{.message}}\"",
+          "expr": "{job=\"backend\", level=~\"WARNING|ERROR\"} | json | line_format \"{{.timestamp}} [{{.level}}] {{.module}} req_id={{.request_id}} — {{.message}}\"",
           "refId": "A"
         }
       ]
@@ -175,7 +197,7 @@
       "id": 8,
       "type": "logs",
       "title": "All logs (filtered)",
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 26 },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 30 },
       "datasource": { "type": "loki", "uid": "loki" },
       "options": {
         "showTime": true,
@@ -186,7 +208,28 @@
       },
       "targets": [
         {
-          "expr": "{job=\"backend\", log_type=~\"$log_type\"} | json | __error__=\"\" | level=~\"$level\" | module=~\"$module\"",
+          "expr": "{job=\"backend\", level=~\"$level\", module=~\"$module\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "logs",
+      "title": "Trace by Request ID",
+      "description": "Заполни переменную request_id сверху, чтобы увидеть все логи одного запроса",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 42 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Ascending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"backend\"} | json | request_id=\"$request_id\" | line_format \"{{.timestamp}} [{{.level}}] {{.module}} — {{.message}}\"",
           "refId": "A"
         }
       ]
