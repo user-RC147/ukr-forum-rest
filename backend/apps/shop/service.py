@@ -1,10 +1,8 @@
 import dataclasses
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import QuerySet
 
 from apps.files.contracts import get_file_contract
 from apps.files.dto import FileUpdatePlan
@@ -12,147 +10,162 @@ from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
-from apps.shop.base.service_base import BaseService
 
-from .exceptions import GeoNotFound, ProductPermissionError
-from .models import ProductModel
+from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO
+from .exceptions import ProductPermissionError
+from .repository import get_repo, ProductRepository
 
 logger = logging.getLogger("shop")
 
 
-class ProductService(BaseService[ProductModel]):
-    def __init__(self, model=ProductModel) -> None:
-        super().__init__(model)
+class ProductService:
+    def __init__(self, repo: ProductRepository | None = None) -> None:
+        self.repo = repo or get_repo()
         self.country_contract = get_country_contract()
         self.region_contract = get_region_contract()
         self.city_contract = get_city_contract()
         self.file_contract = get_file_contract()
         self.category_contract = get_category_contract()
 
-    def _fetch_map(self, ids: list, contract) -> dict:
-        """Deduplicate IDs and call get_many."""
-        unique_ids = list(set(filter(None, ids)))  # take away None and doubles
+    def _fetch_map(self, ids: list[int | None], contract) -> dict:
+        """Deduplicate ids and 1 batch-request via get_many"""
+        unique_ids = {i for i in ids if i is not None}
         if not unique_ids:
             return {}
-        return contract.get_many(unique_ids)
+        return contract.get_many(list(unique_ids))
 
     @staticmethod
     def _to_dict(obj) -> dict | None:
         return dataclasses.asdict(obj) if obj is not None else None
 
-    def _attach_products(self, products: list) -> None:
-        # Get all IDs
-        (
-            all_file_ids,
-            all_city_ids,
-            all_region_ids,
-            all_country_ids,
-            all_category_ids,
-        ) = [], [], [], [], []
+    def _attach_products(self, products: list[dict]) -> None:
+        if not products:
+            return
+
+        # (field with ids in product, contract, name field, is_many)
+        relations = [
+            ("country_id", self.country_contract, "country", False),
+            ("region_id", self.region_contract, "region", False),
+            ("city_id", self.city_contract, "city", False),
+            ("category_id", self.category_contract, "category", False),
+            ("file_ids", self.file_contract, "files", True),
+        ]
+
+        maps = {}
+        for id_field, contract, result_field, is_many in relations:
+            if is_many:
+                ids = [i for p in products for i in (p[id_field] or [])]
+            else:
+                ids = [p[id_field] for p in products]
+            maps[result_field] = self._fetch_map(ids, contract)
 
         for p in products:
-            all_file_ids.extend(p.files_ids or [])
-            all_city_ids.append(p.city_id)
-            all_region_ids.append(p.region_id)
-            all_country_ids.append(p.country_id)
-            all_category_ids.append(p.category_id)
+            p["country"] = self._to_dict(maps["country"].get(p["country_id"]))
+            p["region"] = self._to_dict(maps["region"].get(p["region_id"]))
+            p["city"] = self._to_dict(maps["city"].get(p["city_id"]))
+            p["category"] = self._to_dict(maps["category"].get(p["category_id"]))
+            p["files"] = {
+                fid: self._to_dict(maps["files"][fid])
+                for fid in (p["file_ids"] or [])
+                if fid in maps["files"]
+            }
 
-        # Patter for all contracts
-        files_map = self._fetch_map(all_file_ids, self.file_contract)
-        cities_map = self._fetch_map(all_city_ids, self.city_contract)
-        regions_map = self._fetch_map(all_region_ids, self.region_contract)
-        countries_map = self._fetch_map(all_country_ids, self.country_contract)
-        categories_map = self._fetch_map(all_category_ids, self.category_contract)
-
-        # Set data
-        for p in products:
-            p.files = [
-                self._to_dict(files_map[fid])
-                for fid in (p.files_ids or [])
-                if fid in files_map
-            ]
-            p.city = self._to_dict(cities_map.get(p.city_id))
-            p.region = self._to_dict(regions_map.get(p.region_id))
-            p.country = self._to_dict(countries_map.get(p.country_id))
-            p.category = self._to_dict(categories_map.get(p.category_id))
-
-    def get(self, id: int) -> ProductModel:
-        result = super().get(id)
-
-        if not result:
-            return result
+    def get(self, id:int) -> ProductDTO:
+        result = dataclasses.asdict(self.repo.get(id))
 
         self._attach_products([result])
 
-        return result
+        return _to_dto(result)
 
-    def get_all(self, user_id=None, page: int = 1, page_size: int = 20):
-        qs = (
-            self.model.objects.filter(owner_id=user_id)
-            if user_id
-            else self.model.objects.all()
-        )
+    def get_all(self, user_id=None, page: int = 1, page_size: int = 20) -> list[ProductDTO]:
 
-        paginator = Paginator(qs, page_size)
+        result = self.repo.get_many(user_id)
+
+        paginator = Paginator(result, page_size)
         page_products = list(paginator.page(page).object_list)
 
         if not page_products:
             return page_products
 
-        self._attach_products(page_products)
+        result = [dataclasses.asdict(p) for p in page_products]
 
-        return page_products
+        self._attach_products(result)
 
-    def create(self, user_id: int, data: dict) -> ProductModel:
-        self.geo_validate(data)
+        return [_to_dto(p) for p in result]
 
-        data["owner_id"] = user_id
-        files = data.pop("files")
-        file_list = self.file_contract.create_many(files, user_id)
+    def create(self, data: ProductCreateDTO) -> ProductDTO:
+        # validate geo
+        self.country_contract.get(data.country_id)
+        self.region_contract.get(data.region_id)
+        self.city_contract.get(data.city_id)
+
+        files = data.files
+
+        data: dict = dataclasses.asdict(
+            dataclasses.replace(data, files=[])
+        )
+
+        file_list = self.file_contract.create_many(files, data["owner_id"])
         file_ids = [i.id for i in file_list]
-        data["files_ids"] = file_ids
-        result = super().create(data)
+        data["file_ids"] = file_ids
+        data.pop("files")
+
+        result = dataclasses.asdict(self.repo.create(data))
         self._attach_products([result])
-        return result
+        return _to_dto(result)
 
-    def update(self, id: int, user_id: int, data: dict) -> ProductModel:
-        self.geo_validate(data)
-        product = self.get(id)
-        if int(user_id) == product.owner_id:
+    def update(self, user_id: int, data: ProductUpdateDTO) -> ProductDTO:
+
+        product = self.get(data.id)
+        fields = {
+            f.name: getattr(data, f.name)
+            for f in dataclasses.fields(data)
+            if f.name != "id" and getattr(data, f.name) is not None
+        }
+
+        update_files, create_files = fields.pop("update_files", None), fields.pop("create_files", None)
+        update_file_ids, keep_files_ids = fields.pop("update_file_ids", None), fields.pop("keep_files_ids", None)
+
+        if user_id == product.owner_id:
             with transaction.atomic():
-                update_files = None
-                update_files_ids = []
-                create_files = None
-                keep_ids = []
-                key_check = data.keys()
-
-                if "update_files" in key_check and "update_ids" in key_check:
-                    update_files = data.pop("update_files")
-                    update_files_ids = data.pop("update_ids")
-
-                if "create_files" in key_check:
-                    create_files = data.pop("create_files")
-
-                if "keep_files_ids" in key_check:
-                    keep_ids = data.pop("keep_files_ids")
-
-                item_ids = product.files_ids
-
-                files_ids = self.file_contract.update_many(
-                    user_id=user_id,
-                    item_ids=item_ids,
-                    plan=FileUpdatePlan(keep_ids=keep_ids, update_ids=update_files_ids),
-                    update_files=dict(zip(update_files_ids, update_files, strict=True)) if update_files else None,
-                    create_files=create_files,
+                has_file_changes = any(
+                    v is not None
+                    for v in (
+                        update_files,
+                        create_files,
+                        update_file_ids,
+                        keep_files_ids,
+                    )
                 )
 
-                data["files_ids"] = [f.id for f in files_ids]
-                result = super().update(id, data)
+                if has_file_changes:
+                    item_ids = list(product.files.keys())
+                    plan = FileUpdatePlan(
+                        keep_ids=keep_files_ids or [],
+                        update_ids=update_file_ids or [],
+                    )
+
+                    update_files_map = dict(
+                        zip(update_file_ids or [], update_files or [], strict=True)
+                    )
+
+                    updated_file_dtos = self.file_contract.update_many(
+                        user_id=user_id,
+                        item_ids=item_ids,
+                        plan=plan,
+                        update_files=update_files_map,
+                        create_files=create_files,
+                    )
+
+                    fields["file_ids"] = [f.id for f in updated_file_dtos]
+
+                product_id = data.id
+                result = dataclasses.asdict(self.repo.update(product_id, fields))
                 self._attach_products([result])
-                return result
+                return _to_dto(result)
         else:
             logger.warning(
-                "Access denied to product id: %s with user_id: %s", product.id, user_id
+                "Access denied to product id: %s with user_id: %s", product.id, fields["owner_id"]
             )
             raise ProductPermissionError
 
@@ -161,8 +174,9 @@ class ProductService(BaseService[ProductModel]):
         product = self.get(id)
         if int(user_id) == product.owner_id:
             with transaction.atomic():
-                self.file_contract.delete_many(product.files_ids)
-                result = super().delete(id)
+                if product.files:
+                    self.file_contract.delete_many(list(product.files.keys()))
+                result = self.repo.delete(id)
         else:
             logger.warning(
                 "Access denied to product id: %s with user_id: %s", product.id, user_id
@@ -173,33 +187,28 @@ class ProductService(BaseService[ProductModel]):
 
     def nullify_geo(self, field_name: str, geo_id: int) -> int:
 
-        return self.model.objects.filter(**{field_name: geo_id}).update(
-            **{field_name: None}
-        )
-
-    def geo_validate(self, data: dict) -> None:
-        try:
-            country = self.country_contract.get(data["country_id"])
-            region = self.region_contract.get(data["region_id"])
-            city = self.city_contract.get(data["city_id"])
-        except ObjectDoesNotExist:
-            logger.info(
-                "Geo data with country: %s, region: %s, city: %s not found!",
-                data["country_id"],
-                data["region_id"],
-                data["city_id"],
-            )
-            raise GeoNotFound("Geo data with this params not found!")
+        return self.repo.nullify_geo(field_name, geo_id)
 
     def delete_all_by_user(self, user_id: int) -> int:
-        deleted, _ = self.model.objects.filter(owner_id=user_id).delete()
-        return deleted
+        return self.repo.delete_by_user(user_id)
 
-    @staticmethod
-    def get_searchable_queryset() -> QuerySet[ProductModel]:
-        return ProductModel.objects.filter(
-            visible=True,
-        )
+
+def _to_dto(data) -> ProductDTO:
+    return ProductDTO(
+        id=data["id"],
+        owner_id=data["owner_id"],
+        title=data["title"],
+        description=data["description"],
+        created_at=data["created_at"],
+        country=data["country"],
+        region=data["region"],
+        city=data["city"],
+        category=data["category"],
+        price=data["price"],
+        visible=data["visible"],
+        files=data["files"],
+    )
+
 
 
 def get_service() -> ProductService:
