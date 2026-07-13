@@ -12,7 +12,7 @@ class ProductModel(models.Model):
 
     owner_id = models.PositiveIntegerField(blank=False)
     category_id = models.IntegerField()
-    files_ids = ArrayField(base_field=models.PositiveIntegerField())
+    file_ids = ArrayField(base_field=models.PositiveIntegerField())
 
     country_id = models.PositiveIntegerField(blank=False, null=True)
     region_id = models.PositiveIntegerField(null=True)
