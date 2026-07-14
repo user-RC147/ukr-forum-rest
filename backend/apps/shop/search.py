@@ -11,7 +11,7 @@ from django.db.models import Q
 from apps.files.contracts import get_file_contract
 from apps.search.contracts.protocols import SearchParams, SearchResultItem
 from apps.search.dto import ResourceType, SortOrder
-from apps.shop.service import ProductService
+from apps.shop.repository import get_repo
 
 
 class ProductSearchHandler:
@@ -21,10 +21,11 @@ class ProductSearchHandler:
         raw_query = " & ".join(f"{w}:*" for w in params.query.split())
         query = SearchQuery(raw_query, search_type="raw", config="simple")
         vector = SearchVector("title", weight="A", config="simple")
+        repo = get_repo()
 
         qs = (
-            ProductService.get_searchable_queryset()
-            .only("id", "title", "description", "price", "created_at", "files_ids")
+            repo.searchable_queryset()
+            .only("id", "title", "description", "price", "created_at", "file_ids")
             .annotate(
                 rank=SearchRank(vector, query),
                 similarity=TrigramSimilarity("title", params.query),
@@ -42,7 +43,7 @@ class ProductSearchHandler:
 
         products = list(qs[: params.limit])
 
-        all_file_ids = [fid for obj in products for fid in (obj.files_ids or [])]
+        all_file_ids = [fid for obj in products for fid in (obj.file_ids or [])]
         files_map = get_file_contract().get_many(all_file_ids) if all_file_ids else {}
 
         return [self._to_dto(obj, files_map) for obj in products]
@@ -51,7 +52,7 @@ class ProductSearchHandler:
     def _to_dto(obj, files_map: dict) -> SearchResultItem:
         files = [
             dataclasses.asdict(files_map[fid])
-            for fid in (obj.files_ids or [])
+            for fid in (obj.file_ids or [])
             if fid in files_map
         ]
 
