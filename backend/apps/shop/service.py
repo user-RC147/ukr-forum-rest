@@ -64,11 +64,11 @@ class ProductService:
             p["region"] = self._to_dict(maps["region"].get(p["region_id"]))
             p["city"] = self._to_dict(maps["city"].get(p["city_id"]))
             p["category"] = self._to_dict(maps["category"].get(p["category_id"]))
-            p["files"] = {
-                fid: self._to_dict(maps["files"][fid])
+            p["files"] = [
+                self._to_dict(maps["files"][fid])
                 for fid in (p["file_ids"] or [])
                 if fid in maps["files"]
-            }
+            ]
 
     def get(self, id:int) -> ProductDTO:
         result = dataclasses.asdict(self.repo.get(id))
