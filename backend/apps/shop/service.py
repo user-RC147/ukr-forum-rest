@@ -11,7 +11,7 @@ from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 
-from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO
+from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
 from .repository import get_repo, ProductRepository
 
@@ -93,7 +93,7 @@ class ProductService:
 
         return [_to_dto(p) for p in result]
 
-    def create(self, data: ProductCreateDTO) -> ProductDTO:
+    def create(self, user: RequestUserDTO, data: ProductCreateDTO) -> ProductDTO:
         # validate geo
         self.country_contract.get(data.country_id)
         self.region_contract.get(data.region_id)
@@ -104,7 +104,7 @@ class ProductService:
         data: dict = dataclasses.asdict(
             dataclasses.replace(data, files=[])
         )
-
+        data["owner_id"] = user.id
         file_list = self.file_contract.create_many(files, data["owner_id"])
         file_ids = [i.id for i in file_list]
         data["file_ids"] = file_ids
@@ -114,7 +114,7 @@ class ProductService:
         self._attach_products([result])
         return _to_dto(result)
 
-    def update(self, user_id: int, data: ProductUpdateDTO) -> ProductDTO:
+    def update(self, user: RequestUserDTO, data: ProductUpdateDTO) -> ProductDTO:
 
         product = self.get(data.id)
         fields = {
@@ -126,7 +126,7 @@ class ProductService:
         update_files, create_files = fields.pop("update_files", None), fields.pop("create_files", None)
         update_file_ids, keep_files_ids = fields.pop("update_file_ids", None), fields.pop("keep_files_ids", None)
 
-        if user_id == product.owner_id:
+        if user.id == product.owner_id:
             with transaction.atomic():
                 has_file_changes = any(
                     v is not None
@@ -139,7 +139,7 @@ class ProductService:
                 )
 
                 if has_file_changes:
-                    item_ids = list(product.files.keys())
+                    item_ids = [p["id"] for p in product.files]
                     plan = FileUpdatePlan(
                         keep_ids=keep_files_ids or [],
                         update_ids=update_file_ids or [],
@@ -150,7 +150,7 @@ class ProductService:
                     )
 
                     updated_file_dtos = self.file_contract.update_many(
-                        user_id=user_id,
+                        user_id=user.id,
                         item_ids=item_ids,
                         plan=plan,
                         update_files=update_files_map,
@@ -169,19 +169,17 @@ class ProductService:
             )
             raise ProductPermissionError
 
-    def delete(self, id: int, user_id: int) -> None:
+    def delete(self, user: RequestUserDTO, id: int) -> None:
 
         product = self.get(id)
-        if int(user_id) == product.owner_id:
-            with transaction.atomic():
-                if product.files:
-                    self.file_contract.delete_many(list(product.files.keys()))
-                result = self.repo.delete(id)
-        else:
-            logger.warning(
-                "Access denied to product id: %s with user_id: %s", product.id, user_id
-            )
-            raise ProductPermissionError
+
+        self._ensure_can_edit(user, product)
+
+
+        with transaction.atomic():
+            if product.files:
+                self.file_contract.delete_many([p["id"] for p in product.files])
+            result = self.repo.delete(id)
 
         return result
 
@@ -192,6 +190,13 @@ class ProductService:
     def delete_all_by_user(self, user_id: int) -> int:
         return self.repo.delete_by_user(user_id)
 
+    @staticmethod
+    def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
+        if user.id != product.owner_id and not user.is_staff:
+            logger.warning(
+                "Access denied to item", extra={"user_id": user.id, "item_id": product.id, "event": "file_validation"}
+            )
+            raise ProductPermissionError
 
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(

@@ -8,7 +8,7 @@ from apps.files import exceptions as files_exceptions
 from apps.search.contracts import exceptions as search_exceptions
 from apps.shop.exceptions import GeoNotFound, NotFoundError, ProductPermissionError
 from apps.shop.schemas import product_create_schema, product_update_schema
-from .dto import ProductCreateDTO, ProductUpdateDTO
+from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 
 from .serializers import ProductReadSerializer, ProductSerializer, ProductUpdateSerializer
 from .service import ProductService
@@ -35,9 +35,11 @@ class ProductViewSet(viewsets.ViewSet):
         serializer = ProductSerializer(data=data)
         serializer.is_valid(raise_exception=True)  # 400 if not valid
 
-        data = _to_dto_create(request.user.id, serializer.validated_data)
+        user = _to_dto_user(request.user)
+
+        data = _to_dto_create(serializer.validated_data)
         try:
-            product = self.service.create(data)
+            product = self.service.create(user, data)
         except GeoNotFound as e:
             raise NotFound(detail=str(e))
 
@@ -65,10 +67,11 @@ class ProductViewSet(viewsets.ViewSet):
         serializer = ProductUpdateSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
+        user = _to_dto_user(request.user)
         data = _to_dto_update(pk, serializer.validated_data)
 
         try:
-            product = self.service.update(request.user.id, data)
+            product = self.service.update(user, data)
         except ProductPermissionError:
             raise PermissionDenied(detail="Access denied")
         except files_exceptions.NotFoundError as e:
@@ -85,9 +88,10 @@ class ProductViewSet(viewsets.ViewSet):
 
         return Response(serializer.data)
 
-    def destroy(self, request, pk=None):
+    def destroy(self, request, pk: int):
+        user = _to_dto_user(request.user)
         try:
-            self.service.delete(pk, user_id=request.user.id)
+            self.service.delete(user, pk)
         except (
             files_exceptions.NotFoundError,
             search_exceptions.NotFoundError,
@@ -99,11 +103,12 @@ class ProductViewSet(viewsets.ViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+def _to_dto_user(user) -> RequestUserDTO:
+    return RequestUserDTO(id=user.id, is_staff=user.is_staff)
 
-def _to_dto_create(owner_id: int, data) -> ProductCreateDTO:
+def _to_dto_create(data) -> ProductCreateDTO:
     return ProductCreateDTO(
         title=data["title"],
-        owner_id=owner_id,
         description=data["description"],
         country_id=data["country_id"],
         region_id=data["region_id"],

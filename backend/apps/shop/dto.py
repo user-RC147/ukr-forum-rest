@@ -3,11 +3,16 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import UploadedFile
 
-from apps.files.dto import FileDTO
 from apps.geo.dto.city import CityDTO
 from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.search.dto import CategoryDTO
+
+
+@dataclass(frozen=True)
+class RequestUserDTO:
+    id: int
+    is_staff: bool
 
 
 @dataclass(frozen=True)
@@ -29,7 +34,6 @@ class ProductUpdateDTO:
 @dataclass(frozen=True)
 class ProductCreateDTO:
     title: str
-    owner_id: int
     description: str
     country_id: int
     region_id: int
@@ -68,4 +72,4 @@ class ProductDTO:
     category: CategoryDTO
     price: int
     visible: bool
-    files: dict[int, FileDTO]
+    files: list[dict]
