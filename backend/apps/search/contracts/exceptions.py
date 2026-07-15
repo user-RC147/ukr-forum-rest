@@ -1,22 +1,15 @@
-class AppError(Exception):
-    pass
+from config.exceptions import NotFoundError, PermissionDeniedError
 
 
-class NotFoundError(AppError):
-    pass
-
-
-class ValidationError(AppError):
-    pass
-
-
-class PermissionAppError(AppError):
+class PermissionAppError(PermissionDeniedError):
     pass
 
 
 class CategoryNotFoundError(NotFoundError):
-    pass
+    default_message = "Category not found"
+    default_code = "category_not_found"
 
 
 class TagNotFoundError(NotFoundError):
-    pass
+    default_message = "Tag not found"
+    default_code = "tag_not_found"
