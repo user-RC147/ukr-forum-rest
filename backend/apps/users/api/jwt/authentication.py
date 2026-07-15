@@ -3,6 +3,8 @@ from django.middleware.csrf import CsrfViewMiddleware
 from rest_framework import exceptions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from config.middleware import user_id_var
+
 
 class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
@@ -16,6 +18,8 @@ class CookieJWTAuthentication(JWTAuthentication):
         user = self.get_user(validated_token)
 
         self._enforce_csrf_if_needed(request)
+
+        user_id_var.set(user.id)
 
         return user, validated_token
 
