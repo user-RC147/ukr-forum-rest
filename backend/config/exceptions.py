@@ -1,79 +1,49 @@
-import logging
+class AppError(Exception):
+    """Base exception for service
+    Extra logging in custom_exception_handler.py.
+    """
 
-from rest_framework.response import Response
-from rest_framework.views import exception_handler as drf_exception_handler
+    default_message = "Application error occurred"
+    default_code = "app_error"
 
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-
-logger = logging.getLogger(__name__)
-
-EXPECTED_AUTH_NOISE = (NotAuthenticated, InvalidToken, TokenError)
-
-def custom_exception_handler(exc, context):
-    response = drf_exception_handler(exc, context)
-    request = context.get("request")
-    view = context.get("view")
-
-    user_id = getattr(getattr(request, "user", None), "id", None)
-    path = getattr(request, "path", None)
-    method = getattr(request, "method", None)
-    view_name = view.__class__.__name__ if view else None
-
-    if response is not None:
-            log_extra = {
-                "user_id": user_id,
-                "status_code": response.status_code,
-                "path": path,
-                "method": method,
-                "view": view_name,
-                "exception_type": type(exc).__name__,
-            }
-            if response.status_code >= 500:
-                logger.error("Server error handled by DRF", extra=log_extra, exc_info=True)
-            elif isinstance(exc, EXPECTED_AUTH_NOISE):
-                logger.info("Expected auth failure (token refresh flow)", extra=log_extra)
-            else:
-                logger.warning(
-                    "Client error",
-                    extra={**log_extra, "detail": _sanitize_errors(response.data)},
-                )
-            return response
-
-    logger.error(
-        "Unhandled exception",
-        extra={
-            "user_id": user_id,
-            "status_code": 500,
-            "path": path,
-            "method": method,
-            "view": view_name,
-            "exception_type": type(exc).__name__,
-        },
-        exc_info=True,
-    )
-    return Response({"detail": "Internal server error"}, status=500)
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        code: str | None = None,
+        extra: dict | None = None,
+    ):
+        self.message = message or self.default_message
+        self.code = code or self.default_code
+        self.extra = extra or {}
+        super().__init__(self.message)
 
 
-SENSITIVE_FIELD_NAMES = {
-    "password", "password1", "password2", "new_password", "old_password",
-    "token", "access", "refresh", "secret", "api_key",
-    "card_number", "cvv", "ssn",
-}
+class NotFoundError(AppError):
+    '''Auto logging in custom_exception_handler.py'''
+    default_message = "Resource not found"
+    default_code = "not_found"
 
 
-def _sanitize_errors(data):
-    """Delete privat client info in DRF error payload."""
-    if isinstance(data, dict):
-        sanitized = {}
-        for key, value in data.items():
-            if str(key).lower() in SENSITIVE_FIELD_NAMES:
-                sanitized[key] = (
-                    f"<{len(value)} error(s) redacted>" if isinstance(value, list) else "<redacted>"
-                )
-            else:
-                sanitized[key] = _sanitize_errors(value)
-        return sanitized
-    if isinstance(data, list):
-        return [_sanitize_errors(item) for item in data]
-    return data
+class ValidationError(AppError):
+    '''Auto logging in custom_exception_handler.py'''
+    default_message = "Validation failed"
+    default_code = "validation_error"
+
+    def __init__(
+        self, message=None, *, errors: dict[str, list[str]] | None = None, **kwargs
+    ):
+        super().__init__(message, **kwargs)
+        self.errors = errors or {}
+
+
+class PermissionDeniedError(AppError):
+    '''Auto logging in custom_exception_handler.py'''
+    default_message = "Permission denied"
+    default_code = "permission_denied"
+
+
+class ConflictError(AppError):
+    '''Auto logging in custom_exception_handler.py'''
+    default_message = "Conflict with current state"
+    default_code = "conflict"
