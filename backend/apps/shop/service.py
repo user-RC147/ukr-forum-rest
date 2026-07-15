@@ -15,7 +15,7 @@ from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
 from .repository import get_repo, ProductRepository
 
-logger = logging.getLogger("shop")
+logger = logging.getLogger(__name__)
 
 
 class ProductService:
@@ -110,13 +110,21 @@ class ProductService:
         data["file_ids"] = file_ids
         data.pop("files")
 
-        result = dataclasses.asdict(self.repo.create(data))
+        product = self.repo.create(data)
+
+        result = dataclasses.asdict(product)
         self._attach_products([result])
-        return _to_dto(result)
+
+        dto = _to_dto(result)
+
+        logger.info("Product was created", extra={"product_id": product.id, "event": "create_product"})
+
+        return dto
 
     def update(self, user: RequestUserDTO, data: ProductUpdateDTO) -> ProductDTO:
 
         product = self.get(data.id)
+        self._ensure_can_edit(user, product)
         fields = {
             f.name: getattr(data, f.name)
             for f in dataclasses.fields(data)
@@ -126,8 +134,7 @@ class ProductService:
         update_files, create_files = fields.pop("update_files", None), fields.pop("create_files", None)
         update_file_ids, keep_files_ids = fields.pop("update_file_ids", None), fields.pop("keep_files_ids", None)
 
-        if user.id == product.owner_id:
-            with transaction.atomic():
+        with transaction.atomic():
                 has_file_changes = any(
                     v is not None
                     for v in (
@@ -162,12 +169,11 @@ class ProductService:
                 product_id = data.id
                 result = dataclasses.asdict(self.repo.update(product_id, fields))
                 self._attach_products([result])
-                return _to_dto(result)
-        else:
-            logger.warning(
-                "Access denied to product id: %s with user_id: %s", product.id, fields["owner_id"]
-            )
-            raise ProductPermissionError
+                result = _to_dto(result)
+
+                logger.info("Product was updated", extra={"product_id": product_id, "event": "update_product"})
+
+                return result
 
     def delete(self, user: RequestUserDTO, id: int) -> None:
 
@@ -181,6 +187,8 @@ class ProductService:
                 self.file_contract.delete_many([p["id"] for p in product.files])
             result = self.repo.delete(id)
 
+        logger.info("Deleted product", extra={"product_id": product.id, "event": "delete_product"})
+
         return result
 
     def nullify_geo(self, field_name: str, geo_id: int) -> int:
@@ -193,10 +201,7 @@ class ProductService:
     @staticmethod
     def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
         if user.id != product.owner_id and not user.is_staff:
-            logger.warning(
-                "Access denied to item", extra={"user_id": user.id, "item_id": product.id, "event": "file_validation"}
-            )
-            raise ProductPermissionError
+            raise ProductPermissionError(extra={"item_id": product.id, "event": "file_validation"})
 
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(

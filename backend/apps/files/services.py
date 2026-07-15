@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
 from apps.files.dto import FileDTO, FileUpdatePlan
-from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError, ValidationError
+from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError, AppValidationError, FileNotFoundError
 from apps.files.models import FileModel
 from apps.files.utils import _cleanup_empty_parent_dirs
 
@@ -33,15 +33,14 @@ class FileService:
         self._validate_file(data, user_id)
 
         result = self.model.objects.create(name=data.name, file=data, owner_id=user_id)
-
+        logger.info("File created", extra={"file_id": result.id, "event": "create_file"})
         return _to_dto(result)
 
     def get(self, file_id: int) -> FileDTO:
         try:
             result = self.model.objects.get(id=file_id)
         except ObjectDoesNotExist:
-            logger.info("Object with id:%s not found!", file_id)
-            raise FileNotFoundError
+            raise FileNotFoundError(extra={"file_id": file_id, "event": "get_file"})
 
         return _to_dto(result)
 
@@ -54,7 +53,7 @@ class FileService:
         found_ids = {f.id for f in files}
         missing = set(file_ids) - found_ids
         if missing:
-            logger.warning("Files not found for ids: %s", missing)
+            logger.warning("Files not found", extra={"not_found_ids": missing, "event": "get_many_file"})
 
         return {f.id: _to_dto(f) for f in files}
 
@@ -65,12 +64,11 @@ class FileService:
                 file_path = instance.file
                 instance.delete()
             except ObjectDoesNotExist:
-                logger.warning("Tried to delete non-existent file id:%s", file_id)
-                raise FileNotFoundError
+                raise FileNotFoundError(extra={"file_id": file_id, "event": "delete_file"})
 
             transaction.on_commit(lambda: _cleanup_disk(file_path))
 
-        logger.debug("File with id:%s was deleted", file_id)
+        logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
     def delete_many(self, file_ids: list[int]) -> None:
         if not file_ids:
@@ -82,8 +80,15 @@ class FileService:
             deleted_count, _ = data.delete()
 
             transaction.on_commit(lambda: _cleanup_disk(file_paths))
-            
-        logger.debug("Deleted %d files with ids: %s", deleted_count, file_ids)
+
+        logger.info(
+            "Files was deleted",
+            extra={
+                "file_ids": file_ids,
+                "amount": deleted_count,
+                "event": "delete_many_file",
+            },
+        )
 
     def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileDTO]:
 
@@ -100,7 +105,11 @@ class FileService:
 
         with transaction.atomic():
             result = self.model.objects.bulk_create(instances)
-            return [_to_dto(r) for r in result]
+        dto = [_to_dto(r) for r in result]
+
+        logger.info("Files was created", extra={"file_ids": [d.id for d in dto], "event": "create_many_file"})
+
+        return dto
 
     def update_many(
         self,
@@ -138,9 +147,20 @@ class FileService:
                 self._apply_deletes(user_id, item_ids, plan)
         except Exception:
             _cleanup_disk(new_file_paths)
+            logger.error(
+                "Unexpected error when try update many files. New files was deleted.",
+                extra={
+                    "item_file_ids": item_ids,
+                    "update_file_ids": plan.update_ids,
+                    "create_file_amount": len(create_files),
+                    "update_file_amount": len(update_files),
+                    "keep_file_ids": plan.keep_ids,
+                    "event": "file_validation",
+                },
+            )
             raise
         return result
-    
+
     def _validate_ids(self, user_id: int, item_ids: list[int], plan: FileUpdatePlan) -> None:
         check = set(item_ids) | plan.touched_ids()
         existing_ids = set(
@@ -148,25 +168,26 @@ class FileService:
         )
         invalid_ids = check - existing_ids
         if invalid_ids:
-            logger.error(
-                "Some ids not match with existing ids in db",
-                extra={"user_id": user_id, "invalid_ids": list(invalid_ids), "event": "file_validation"},
+            raise AppValidationError(
+                "File ids invalid!",
+                extra={
+                    "invalid_ids": list(invalid_ids),
+                    "event": "file_validation",
+                },
             )
-            raise ValidationError("File ids invalid!")
-
 
     def _validate_update_mapping(self, user_id: int, plan: FileUpdatePlan, update_files: dict[int, UploadedFile]) -> None:
         expected = set(plan.update_ids)
         got = set(update_files.keys())
         if expected != got:
-            logger.error(
-                "update_files keys not match update_ids exactly",
-                extra={"user_id": user_id, "expected": list(expected), "got": list(got), "event": "file_validation"},
+            raise AppValidationError(
+                f"update_files keys must match update_ids exactly: expected {expected}, got {got}",
+                extra={
+                    "expected": list(expected),
+                    "got": list(got),
+                    "event": "file_validation",
+                },
             )
-            raise ValidationError(
-                f"update_files keys must match update_ids exactly: expected {expected}, got {got}"
-            )
-
 
     def _apply_updates(
         self, user_id: int, plan: FileUpdatePlan, update_files: dict[int, UploadedFile]
@@ -188,7 +209,7 @@ class FileService:
         self.model.objects.bulk_update(updated, fields=["name", "file"])
         logger.info(
             "Updated files",
-            extra={"user_id": user_id, "update_ids": plan.update_ids, "event": "update_files"},
+            extra={"update_ids": plan.update_ids, "event": "update_files"},
         )
         return updated, old_paths
 
@@ -199,7 +220,7 @@ class FileService:
         created = self.create_many(create_files, user_id)
         logger.info(
             "Created files",
-            extra={"user_id": user_id, "create_ids": [i.id for i in created], "event": "update_files"},
+            extra={"create_ids": [i.id for i in created], "event": "update_files"},
         )
         return created
 
@@ -218,41 +239,37 @@ class FileService:
         self.delete_many(delete_ids)
         logger.info(
             "Deleted files",
-            extra={"user_id": user_id, "delete_ids": delete_ids, "event": "update_files"},
+            extra={"delete_ids": delete_ids, "event": "update_files"},
         )
 
     @staticmethod
     def _validate_file(data: UploadedFile, user_id: int) -> None:
         if "." not in data.name:
-            raise FileExtensionError("File has no extension.")
+            raise FileExtensionError("File has no extension", extra={"event": "file_validation"})
 
         ext = data.name.split(".")[-1].lower()
         if ext not in ALLOWED_EXTENSIONS:
-            logger.info(
-                "Upload rejected - unsupported extension: %s, from user_id: %s",
-                ext,
-                user_id,
-            )
             raise FileExtensionError(
-                f"Extension is not supported! Try: {ALLOWED_EXTENSIONS}"
+                f"Extension is not supported! Try: {ALLOWED_EXTENSIONS}",
+                extra={"file_ext": ext, "event": "file_validation"},
             )
+
         if data.size > ALLOWED_SIZE:
-            logger.info(
-                "Upload rejected - large file weight: %s, from user_id: %s",
-                data.size,
-                user_id,
-            )
             raise FileSizeError(
-                f"File size is too big (size: {data.size}! Try this size: {ALLOWED_SIZE})!"
+                f"File size is too big! Try with size: {ALLOWED_SIZE} MB!",
+                extra={
+                    "file_size": data.size,
+                    "event": "file_validation",
+                },
             )
+
         if len(data.name) > ALLOWED_NAMESIZE:
-            logger.info(
-                "Upload rejected - long name: %s, from user_id: %s",
-                len(data.name),
-                user_id,
-            )
             raise FileNameError(
-                f"File name is too long ({len(data.name)})! Try with max name size: {ALLOWED_NAMESIZE}"
+                f"File name is too long! Try with name size: {ALLOWED_NAMESIZE} symbols",
+                extra={
+                    "file_name_size": len(data.name),
+                    "event": "file_validation",
+                },
             )
 
 

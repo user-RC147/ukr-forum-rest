@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.files import exceptions as files_exceptions
 from apps.search.contracts import exceptions as search_exceptions
-from apps.shop.exceptions import GeoNotFound, NotFoundError, ProductPermissionError
+from apps.shop.exceptions import NotFoundError, ProductPermissionError
 from apps.shop.schemas import product_create_schema, product_update_schema
 from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 
@@ -35,27 +35,27 @@ class ProductViewSet(viewsets.ViewSet):
         serializer = ProductSerializer(data=data)
         serializer.is_valid(raise_exception=True)  # 400 if not valid
 
+        data = _to_dto_create(serializer.validated_data)
+
         user = _to_dto_user(request.user)
 
-        data = _to_dto_create(serializer.validated_data)
-        try:
-            product = self.service.create(user, data)
-        except GeoNotFound as e:
-            raise NotFound(detail=str(e))
+        product = self.service.create(user, data)
+
 
         return Response(
             ProductReadSerializer(product).data, status=status.HTTP_201_CREATED
         )
 
     def retrieve(self, request, pk: int):
-        try:
-            product = self.service.get(pk)
-        except (
-            files_exceptions.NotFoundError,
-            search_exceptions.NotFoundError,
-            NotFoundError,
-        ) as e:
-            raise NotFound(detail=str(e))
+        product = self.service.get(pk)
+        # try:
+
+        # except (
+        #     files_exceptions.NotFoundError,
+        #     search_exceptions.NotFoundError,
+        #     NotFoundError,
+        # ) as e:
+        #     raise NotFound(detail=str(e))
 
         serializer = ProductReadSerializer(product)
 
@@ -67,17 +67,17 @@ class ProductViewSet(viewsets.ViewSet):
         serializer = ProductUpdateSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        user = _to_dto_user(request.user)
         data = _to_dto_update(pk, serializer.validated_data)
 
-        try:
-            product = self.service.update(user, data)
-        except ProductPermissionError:
-            raise PermissionDenied(detail="Access denied")
-        except files_exceptions.NotFoundError as e:
-            raise NotFound(detail=str(e))
-        except files_exceptions.ValidationError as e:
-            raise ValidationError(detail=str(e))
+        user = _to_dto_user(request.user)
+        product = self.service.update(user, data)
+        # try:
+        # except ProductPermissionError:
+        #     raise PermissionDenied(detail="Access denied")
+        # except files_exceptions.NotFoundError as e:
+        #     raise NotFound(detail=str(e))
+        # except files_exceptions.ValidationError as e:
+        #     raise ValidationError(detail=str(e))
 
         return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
@@ -90,16 +90,16 @@ class ProductViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk: int):
         user = _to_dto_user(request.user)
-        try:
-            self.service.delete(user, pk)
-        except (
-            files_exceptions.NotFoundError,
-            search_exceptions.NotFoundError,
-            NotFoundError,
-        ) as e:
-            raise NotFound(detail=str(e))
-        except ProductPermissionError:
-            raise PermissionDenied(detail="Access denied")
+        self.service.delete(user, pk)
+        # try:
+        # except (
+        #     files_exceptions.NotFoundError,
+        #     search_exceptions.NotFoundError,
+        #     NotFoundError,
+        # ) as e:
+        #     raise NotFound(detail=str(e))
+        # except ProductPermissionError:
+        #     raise PermissionDenied(detail="Access denied")
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

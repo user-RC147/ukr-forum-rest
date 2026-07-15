@@ -3,10 +3,9 @@ import logging
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
-from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .dto import SearchParams, SortOrder
 from .serializers import SearchResultItemSerializer, CategorySerializer, TagSerializer
 from .services import SearchService
@@ -46,8 +45,10 @@ class SearchView(viewsets.ViewSet):
 
     def _parse_sort(self, request: Request) -> SortOrder:
         try:
-            return SortOrder(request.query_params.get("sort", SortOrder.RELEVANCE))
+            params = request.query_params.get("sort", SortOrder.RELEVANCE)
+            return SortOrder(params)
         except ValueError:
+            logger.info("Invalid sort params", extra={"params": params, "event": "search_validation"})
             raise ValidationError(
                 {"sort": f"Allowed values: {[s.value for s in SortOrder]}"}
             )
@@ -72,7 +73,7 @@ class SearchView(viewsets.ViewSet):
         try:
             return int(value)
         except ValueError:
-            logger.info("Get param %s with non-int value: %s", key, value)
+            logger.info("Get param with non-int value", extra={"key": key, "value": value, "event": "search_validation"})
             raise ValidationError({key: f"Needs to be int: {value}"})
 
 
@@ -85,10 +86,8 @@ class CategoryView(viewsets.ViewSet):
         self.service = SearchService()
 
     def retrieve(self, request:Request, pk: int) -> Response:
-        try:
-            result = self.service.get_category(pk)
-        except CategoryNotFoundError:
-            raise NotFound(detail=str(e))
+
+        result = self.service.get_category(pk)
         
         serializer = CategorySerializer(result)
 
@@ -109,10 +108,8 @@ class TagView(viewsets.ViewSet):
         self.service = SearchService()
 
     def retrieve(self, request:Request, pk: int) -> Response:
-        try:
-            result = self.service.get_tag(pk)
-        except TagNotFoundError:
-            raise NotFound(detail=str(e))
+
+        result = self.service.get_tag(pk)
         
         serializer = TagSerializer(result)
 
