@@ -5,6 +5,9 @@ import uuid
 request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "request_id", default=None
 )
+user_id_var: contextvars.ContextVar[int | None] = contextvars.ContextVar(
+    "user_id", default=None
+)
 
 
 class RequestIDMiddleware:
@@ -13,11 +16,13 @@ class RequestIDMiddleware:
 
     def __call__(self, request):
         request_id = str(uuid.uuid4())
-        token = request_id_var.set(request_id)
+        rid_token = request_id_var.set(request_id)
+        uid_token = user_id_var.set(None)
         request.request_id = request_id
         try:
             response = self.get_response(request)
         finally:
-            request_id_var.reset(token)
+            request_id_var.reset(rid_token)
+            user_id_var.reset(uid_token)
         response["X-Request-ID"] = request_id
         return response

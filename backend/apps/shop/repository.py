@@ -19,11 +19,7 @@ class ProductRepository:
         try:
             return self.model.objects.get(id=id)
         except ObjectDoesNotExist:
-            logger.info(
-                "Product by id not found",
-                extra={"product_id": id, "event": "get_product"},
-            )
-            raise ProductNotFoundError("Product not found!")
+            raise ProductNotFoundError(extra={"product_id": id, "event": "get_product"})
 
     def get(self, id: int) -> ProductRepoDTO:
         result = self._get_model(id)
