@@ -85,29 +85,37 @@ async function validateImageFile(file) {
   return validateDimensions(file)
 }
 
+function readAsDataUrl(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target.result)
+    reader.readAsDataURL(file)
+  })
+}
+
 /**
- * @param {Array<{id: number|string, url: string}>} existingImages — только для режима редактирования
+ * @param {Array<{id: number|string, url: string}>} existingImages — тільки для режиму update
+ * @param {'create'|'update'} mode
+ *
+ * UI не змінюється: як і раніше — один хрестик на існуючому фото = "прибрати".
+ * А от ЩО це означає для бекенду (пряме видалення чи заміна вмісту при
+ * збереженому id) фронт вирішує сам, автоматично, у appendToFormData:
+ * "видалене старе" + "щойно додане нове" паруються в update_files[id],
+ * поки вистачає або тих, або тих. Клієнту думати про це не потрібно.
  */
-export function useImageUpload(existingImages = []) {
+export function useImageUpload(existingImages = [], mode = 'create') {
   const { showToast, showToastList } = useToast()
 
   const newFiles = ref([]) // [{ file: File, previewUrl: string }]
-  const remainingExisting = ref([...existingImages]) // [{ id, url }]
-  const deletedImageIds = ref([])
+  const remainingExisting = ref([...existingImages]) // [{ id, url }] — те, що лишилось видимим у галереї
+  const deletedImageIds = ref([]) // id фото, які користувач прибрав хрестиком
+
   const isDragging = ref(false)
   const isValidating = ref(false)
 
   const totalCount = computed(() => newFiles.value.length + remainingExisting.value.length)
   const slotsLeft = computed(() => IMAGE_CONFIG.MAX_FILES - totalCount.value)
   const hasAnyImage = computed(() => totalCount.value > 0)
-
-  function readAsDataUrl(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.readAsDataURL(file)
-    })
-  }
 
   async function addFiles(fileList) {
     const incoming = Array.from(fileList || [])
@@ -154,7 +162,7 @@ export function useImageUpload(existingImages = []) {
     if (removed) showToast(`Видалено: ${removed.file.name}`, 'info', 2500)
   }
 
-  /** Помечает существующее фото на удаление (физически удалится после сохранения формы). */
+  /** Той самий хрестик, що й раніше. Що з цим станеться на бекенді — вирішується пізніше, автоматично. */
   function removeExistingImage(imageId) {
     remainingExisting.value = remainingExisting.value.filter((img) => img.id !== imageId)
     deletedImageIds.value.push(imageId)
@@ -166,7 +174,6 @@ export function useImageUpload(existingImages = []) {
     addFiles(event.dataTransfer.files)
   }
 
-  /** Финальная асинхронная проверка всех файлов перед отправкой — как в оригинальном JS. */
   async function validateAllBeforeSubmit() {
     for (const { file } of newFiles.value) {
       const result = await validateImageFile(file)
@@ -178,10 +185,33 @@ export function useImageUpload(existingImages = []) {
     return true
   }
 
+  /**
+   * Авто-парування delete+create → update_files[id].
+   * Не міняє поведінку для користувача, лише оптимізує запит до бекенду:
+   * замість "видалити стару картку + створити нову" (втрата id/позиції),
+   * там де можливо — "оновити вміст картки за тим самим id".
+   */
   function appendToFormData(formData) {
-    newFiles.value.forEach(({ file }) => formData.append('files', file))
-    if (deletedImageIds.value.length) {
-      formData.append('deleted_images', JSON.stringify(deletedImageIds.value))
+    if (mode === 'update') {
+      const pendingNewFiles = [...newFiles.value]
+      const pendingDeletedIds = [...deletedImageIds.value]
+
+      const pairCount = Math.min(pendingNewFiles.length, pendingDeletedIds.length)
+      for (let i = 0; i < pairCount; i++) {
+        const { file } = pendingNewFiles.shift()
+        const id = pendingDeletedIds.shift()
+        formData.append(`update_files[${id}]`, file)
+      }
+
+      // Залишок нових файлів (якщо додали більше, ніж видалили) — справді нові фото
+      pendingNewFiles.forEach(({ file }) => formData.append('create_files', file))
+
+      // Залишок видалених id без пари (якщо видалили більше, ніж додали) —
+      // нікуди не потрапляє: бек видалить їх сам, бо їх немає ні в keep, ні в update
+
+      remainingExisting.value.forEach((img) => formData.append('keep_files_ids', img.id))
+    } else {
+      newFiles.value.forEach(({ file }) => formData.append('files', file))
     }
   }
 

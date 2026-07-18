@@ -54,7 +54,7 @@ export function useProductForm({ mode, product = null }) {
   )
 
   const existingImages = (product?.files ?? []).map((img) => ({ id: img.id, url: img.file }))
-  const imageUpload = useImageUpload(existingImages)
+  const imageUpload = useImageUpload(existingImages, mode)
 
   function onCountrySelect() {
     cityAutocomplete.reset()
