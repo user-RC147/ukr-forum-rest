@@ -131,8 +131,9 @@ class ProductService:
             if f.name != "id" and getattr(data, f.name) is not None
         }
 
-        update_files, create_files = fields.pop("update_files", None), fields.pop("create_files", None)
-        update_file_ids, keep_files_ids = fields.pop("update_file_ids", None), fields.pop("keep_files_ids", None)
+        update_files = fields.pop("update_files", None)
+        create_files = fields.pop("create_files", None)
+        keep_files_ids = fields.pop("keep_files_ids", None)
 
         with transaction.atomic():
                 has_file_changes = any(
@@ -140,7 +141,6 @@ class ProductService:
                     for v in (
                         update_files,
                         create_files,
-                        update_file_ids,
                         keep_files_ids,
                     )
                 )
@@ -149,18 +149,15 @@ class ProductService:
                     item_ids = [p["id"] for p in product.files]
                     plan = FileUpdatePlan(
                         keep_ids=keep_files_ids or [],
-                        update_ids=update_file_ids or [],
+                        update_ids=list(update_files.keys()) or [],
                     )
 
-                    update_files_map = dict(
-                        zip(update_file_ids or [], update_files or [], strict=True)
-                    )
 
                     updated_file_dtos = self.file_contract.update_many(
                         user_id=user.id,
                         item_ids=item_ids,
                         plan=plan,
-                        update_files=update_files_map,
+                        update_files=update_files,
                         create_files=create_files,
                     )
 
@@ -214,6 +211,7 @@ def _to_dto(data) -> ProductDTO:
         region=data["region"],
         city=data["city"],
         category=data["category"],
+        status=data["status"],
         price=data["price"],
         visible=data["visible"],
         files=data["files"],
