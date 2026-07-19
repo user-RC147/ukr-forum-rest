@@ -119,6 +119,7 @@ def _to_dto_create(data) -> ProductCreateDTO:
         city_id=data["city_id"],
         category_id=data["category_id"],
         price=data["price"],
+        status=data["status"],
         files=data["files"],
     )
 

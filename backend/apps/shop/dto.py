@@ -8,6 +8,8 @@ from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.search.dto import CategoryDTO
 
+from .enums import ProductStatus
+
 
 @dataclass(frozen=True)
 class RequestUserDTO:
@@ -25,6 +27,7 @@ class ProductUpdateDTO:
     city_id: int | None = None
     category_id: int | None = None
     price: int | None = None
+    status: ProductStatus = ProductStatus.NEW
     update_files: dict[int, UploadedFile] | None = None
     create_files: list[UploadedFile] | None = None
     keep_files_ids: list[int] | None = None
@@ -40,6 +43,7 @@ class ProductCreateDTO:
     category_id: int
     price: int
     files: list[UploadedFile]
+    status: ProductStatus = ProductStatus.NEW
 
 
 @dataclass(frozen=True)
@@ -56,6 +60,7 @@ class ProductRepoDTO:
     price: int
     visible: bool
     file_ids: list[int]
+    status: ProductStatus = ProductStatus.NEW
 
 
 @dataclass(frozen=True)
@@ -72,3 +77,4 @@ class ProductDTO:
     price: int
     visible: bool
     files: list[dict]
+    status: ProductStatus = ProductStatus.NEW

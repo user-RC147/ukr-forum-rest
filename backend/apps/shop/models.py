@@ -1,6 +1,8 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from .enums import PRODUCT_STATUS_LABELS, ProductStatus
+
 
 class ProductModel(models.Model):
     title = models.CharField(max_length=300, blank=False)
@@ -9,6 +11,12 @@ class ProductModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     visible = models.BooleanField(default=True)
+
+    status = models.CharField(
+        max_length=10,
+        choices=[(s.value, PRODUCT_STATUS_LABELS[s]) for s in ProductStatus],
+        default=ProductStatus.NEW.value,
+    )
 
     owner_id = models.PositiveIntegerField(blank=False)
     category_id = models.IntegerField()

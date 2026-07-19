@@ -211,6 +211,7 @@ def _to_dto(data) -> ProductDTO:
         region=data["region"],
         city=data["city"],
         category=data["category"],
+        status=data["status"],
         price=data["price"],
         visible=data["visible"],
         files=data["files"],
