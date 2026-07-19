@@ -25,8 +25,7 @@ class ProductUpdateDTO:
     city_id: int | None = None
     category_id: int | None = None
     price: int | None = None
-    update_file_ids: list[int] | None = None
-    update_files: list[UploadedFile] | None = None
+    update_files: dict[int, UploadedFile] | None = None
     create_files: list[UploadedFile] | None = None
     keep_files_ids: list[int] | None = None
 

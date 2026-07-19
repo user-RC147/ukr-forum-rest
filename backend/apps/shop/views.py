@@ -1,8 +1,10 @@
 import dataclasses
+import re
 from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.core.files.uploadedfile import UploadedFile
 
 from apps.files import exceptions as files_exceptions
 from apps.search.contracts import exceptions as search_exceptions
@@ -67,7 +69,9 @@ class ProductViewSet(viewsets.ViewSet):
         serializer = ProductUpdateSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        data = _to_dto_update(pk, serializer.validated_data)
+        data = serializer.validated_data
+        data["update_files"] = _extract_update_files(request)
+        data = _to_dto_update(pk, data)
 
         user = _to_dto_user(request.user)
         product = self.service.update(user, data)
@@ -122,3 +126,15 @@ def _to_dto_update(id: int, data) -> ProductUpdateDTO:
     allowed = {f.name for f in dataclasses.fields(ProductUpdateDTO)} - {"id"}
     kwargs = {k: v for k, v in data.items() if k in allowed}
     return ProductUpdateDTO(id=id, **kwargs)
+
+
+UPDATE_FILE_KEY_RE = re.compile(r'^update_files\[(\d+)\]$')
+
+def _extract_update_files(request) -> dict[int, UploadedFile]:
+    result = {}
+    for key, file in request.FILES.items():
+        match = UPDATE_FILE_KEY_RE.match(key)
+        if match:
+            image_id = int(match.group(1))
+            result[image_id] = file
+    return result
