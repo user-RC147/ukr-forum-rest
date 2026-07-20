@@ -143,6 +143,7 @@ export function useProductForm({ mode, product = null }) {
       formData.append('description', description.value)
       formData.append('category_id', categoryId.value)
       formData.append('price', price.value)
+      formData.append('status', status.value)
       formData.append('country_id', countryAutocomplete.countryId)
       formData.append('city_id', cityAutocomplete.cityId)
       formData.append('region_id', cityAutocomplete.regionId)
