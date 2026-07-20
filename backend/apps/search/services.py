@@ -44,8 +44,7 @@ class SearchService:
         try:
             result = self.category_model.objects.get(id=category_id)
         except ObjectDoesNotExist:
-            logger.info("Category with id: %s not found!", category_id)
-            raise CategoryNotFoundError("Category with this id does not exist")
+            raise CategoryNotFoundError(extra={"category_id": category_id, "event": "category_get"})
 
         return _to_dto_category(result)
 
@@ -53,8 +52,7 @@ class SearchService:
         try:
             result = self.tag_model.objects.get(id=tag_id)
         except ObjectDoesNotExist:
-            logger.info("Tag with id: %s not found!", tag_id)
-            raise TagNotFoundError("Category with this id does not exist")
+            raise TagNotFoundError(extra={"tag_id": tag_id, "event": "tag_get"})
 
         return _to_dto_tag(result)
 

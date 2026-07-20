@@ -1,29 +1,30 @@
-# config/logging.py
+import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() in ("1", "true", "yes")
 
-COMMON_HANDLERS = ["console", "general_file"]
+LOG_DIR = Path("/app/logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+COMMON_HANDLERS = ["console", "json_stream"] if DEBUG else ["json_stream"]
 
 BASE_LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {
-        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
-        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
         "request_id": {"()": "config.logging_filters.RequestIDFilter"},
+        "user_id": {"()": "config.logging_filters.UserIDFilter"},
         "drop_request_obj": {"()": "config.logging_filters.DropNonSerializableFilter"},
     },
     "formatters": {
-        "simple": {
-            "format": "{levelname} {name} {message}",
-            "style": "{",
-        },
+        "simple": {"format": "{levelname} {name} {message}", "style": "{"},
         "json": {
             "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-            "format": "%(asctime)s %(name)s %(levelname)s %(module)s %(message)s %(request_id)s",
+            "format": "%(asctime)s %(name)s %(levelname)s %(module)s %(message)s %(request_id)s %(user_id)s",
             "rename_fields": {"asctime": "timestamp", "levelname": "level"},
             "json_ensure_ascii": False,
+            "defaults": {"request_id": None, "user_id": None},
         },
     },
     "handlers": {
@@ -31,39 +32,29 @@ BASE_LOGGING = {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filters": ["request_id", "drop_request_obj"],
+            "filters": ["request_id", "drop_request_obj", "user_id"],
         },
-        "general_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(BASE_DIR / "general.log"),
-            "maxBytes": 10 * 1024 * 1024,  # 10 MB
-            "backupCount": 5,
-            "encoding": "utf-8",
+        "json_stream": {
+            "class": "logging.StreamHandler",
             "level": "INFO",
             "formatter": "json",
-            "filters": ["request_id", "drop_request_obj"],
+            "filters": ["request_id", "drop_request_obj", "user_id"],
         },
+        # backup logs, NOT FOR PROMTAIL
         "core_errors": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(BASE_DIR / "core_errors.log"),
+            "filename": str(LOG_DIR / "core_errors.log"),
             "maxBytes": 10 * 1024 * 1024,
             "backupCount": 5,
             "encoding": "utf-8",
             "level": "WARNING",
             "formatter": "json",
-            "filters": ["request_id", "drop_request_obj"],
+            "filters": ["request_id", "drop_request_obj", "user_id"],
         },
     },
-    "root": {
-        "level": "WARNING",
-        "handlers": COMMON_HANDLERS,
-    },
+    "root": {"level": "WARNING", "handlers": COMMON_HANDLERS},
     "loggers": {
-        "django": {
-            "level": "INFO",
-            "handlers": COMMON_HANDLERS,
-            "propagate": False,
-        },
+        "django": {"level": "INFO", "handlers": COMMON_HANDLERS, "propagate": False},
         "django.request": {
             "level": "ERROR",
             "handlers": COMMON_HANDLERS,
@@ -74,29 +65,11 @@ BASE_LOGGING = {
             "handlers": COMMON_HANDLERS,
             "propagate": False,
         },
-        "apps": {
-            "level": "DEBUG",
-            "handlers": COMMON_HANDLERS,
-            "propagate": False,
-        },
-        "config.exceptions": {
+        "apps": {"level": "DEBUG", "handlers": COMMON_HANDLERS, "propagate": False},
+        "config.drf_err_handler": {
             "level": "WARNING",
             "handlers": COMMON_HANDLERS + ["core_errors"],
             "propagate": False,
         },
     },
 }
-
-
-def merge_logging_configs(*module_configs) -> dict:
-    from copy import deepcopy
-
-    result = deepcopy(BASE_LOGGING)
-
-    for module_config in module_configs:
-        for section in ("handlers", "loggers", "formatters", "filters"):
-            result[section].update(module_config.get(section, {}))
-        if "root" in module_config:
-            result["root"].update(module_config["root"])
-
-    return result

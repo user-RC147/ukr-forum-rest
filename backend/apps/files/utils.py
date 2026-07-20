@@ -6,7 +6,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 # core - never del
-_UPLOAD_ROOT = os.path.join(settings.MEDIA_ROOT, "files")
+_UPLOAD_ROOT = settings.MEDIA_ROOT
 
 
 def _cleanup_empty_parent_dirs(file_path: str) -> None:

@@ -63,3 +63,13 @@ export const createComplaint = (productId) =>
     model_name: 'product',
     object_id: productId,
   })
+
+// GET /api/search/list_shop/ 
+export function searchProducts(params = {}) {
+  return api.get('/search/list_shop/', { params })
+}
+
+// GET /api/search/category/
+export function fetchCategories() {
+  return api.get('/search/category/')
+}

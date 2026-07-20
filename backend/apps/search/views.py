@@ -3,18 +3,23 @@ import logging
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
-from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
-from .dto import SearchParams, SortOrder
+from .dto import SearchParams, SortOrder, SortParams
 from .serializers import SearchResultItemSerializer, CategorySerializer, TagSerializer
 from .services import SearchService
+from .registry import SearchRegistry
 
 logger = logging.getLogger(__name__)
 
 
 class SearchView(viewsets.ViewSet):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.registry = SearchRegistry
+
     serializer_class = SearchResultItemSerializer
 
     def list(self, request: Request) -> Response:
@@ -25,12 +30,20 @@ class SearchView(viewsets.ViewSet):
         return self._search(request, scope="shop")
 
     def _search(self, request: Request, scope: str | None) -> Response:
-        query = request.query_params.get("q", "").strip()
-        if len(query) < 3:
-            return Response({"results": [], "query": query})
+        query = request.query_params.get("q", None)
 
-        sort_order = self._parse_sort(request)
-        params = self._build_params(request, query, sort_order)
+        if query is not None:
+            query = query.strip()
+            if len(query) < 3:
+                return Response({"results": [], "query": query})
+
+        sort_params = self._parse_sort(request)
+
+        handler = self.registry.all()[scope] if scope else None
+        extra_filters = handler.parse_extra_filters(request.query_params) if handler else {}
+
+
+        params = self._build_params(request, query, sort_params, extra_filters)
 
         service = SearchService()
         results = (
@@ -44,25 +57,27 @@ class SearchView(viewsets.ViewSet):
             }
         )
 
-    def _parse_sort(self, request: Request) -> SortOrder:
+    def _parse_sort(self, request: Request) -> SortParams:
+        raw = request.query_params.get("sort", SortOrder.RELEVANCE)
         try:
-            return SortOrder(request.query_params.get("sort", SortOrder.RELEVANCE))
+            order = SortOrder(raw)
         except ValueError:
+            logger.info(
+                "Invalid sort param",
+                extra={"value": raw, "event": "search_validation"},
+            )
             raise ValidationError(
                 {"sort": f"Allowed values: {[s.value for s in SortOrder]}"}
             )
+        return SortParams(order=order)
 
     def _build_params(
-        self, request: Request, query: str, sort_order: SortOrder
+        self, request: Request, query: str | None, sort_params: SortParams, extra_filters: dict
     ) -> SearchParams:
-        qp = request.query_params
         return SearchParams(
             query=query,
-            sort_order=sort_order,
-            country_id=self._parse_int_param("country_id", qp.get("country_id", "")),
-            city_id=self._parse_int_param("city_id", qp.get("city_id", "")),
-            region_id=self._parse_int_param("region_id", qp.get("region_id", "")),
-            category_id=self._parse_int_param("category_id", qp.get("category_id", "")),
+            sort_params=sort_params,
+            scope_filters=extra_filters,
         )
 
     @staticmethod
@@ -72,7 +87,7 @@ class SearchView(viewsets.ViewSet):
         try:
             return int(value)
         except ValueError:
-            logger.info("Get param %s with non-int value: %s", key, value)
+            logger.info("Get param with non-int value", extra={"key": key, "value": value, "event": "search_validation"})
             raise ValidationError({key: f"Needs to be int: {value}"})
 
 
@@ -85,10 +100,8 @@ class CategoryView(viewsets.ViewSet):
         self.service = SearchService()
 
     def retrieve(self, request:Request, pk: int) -> Response:
-        try:
-            result = self.service.get_category(pk)
-        except CategoryNotFoundError:
-            raise NotFound(detail=str(e))
+
+        result = self.service.get_category(pk)
         
         serializer = CategorySerializer(result)
 
@@ -109,10 +122,8 @@ class TagView(viewsets.ViewSet):
         self.service = SearchService()
 
     def retrieve(self, request:Request, pk: int) -> Response:
-        try:
-            result = self.service.get_tag(pk)
-        except TagNotFoundError:
-            raise NotFound(detail=str(e))
+
+        result = self.service.get_tag(pk)
         
         serializer = TagSerializer(result)
 

@@ -1,4 +1,3 @@
-import dataclasses
 
 from django.contrib.postgres.search import (
     SearchQuery,
@@ -8,61 +7,142 @@ from django.contrib.postgres.search import (
 )
 from django.db.models import Q
 
-from apps.files.contracts import get_file_contract
 from apps.search.contracts.protocols import SearchParams, SearchResultItem
 from apps.search.dto import ResourceType, SortOrder
-from apps.shop.service import ProductService
-
+from apps.shop.repository import get_repo
+from .service import get_service
+from apps.shop.exceptions import ProductValidationError
+from django.http import QueryDict
+from .enums import ProductStatus
 
 class ProductSearchHandler:
+    STATUS_PARAM = "status"
+
+    def parse_extra_filters(self, query_params: QueryDict) -> dict:
+        int_param = {"country_id", "city_id", "region_id", "category_id", "radius"}
+
+        result = {i: _parse_int_param(i, query_params.get(i, "")) for i in int_param}
+
+        status = query_params.get(self.STATUS_PARAM, None)
+
+        if status:
+            try:
+                result[self.STATUS_PARAM] = ProductStatus(status)
+            except ValueError:
+                raise ProductValidationError(
+                    {self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"},
+                    extra={"invalid_value": status, "event": "search_validaton"}
+                )
+
+        return result
+        
+
     def search(self, params: SearchParams) -> list[SearchResultItem]:
 
+        repo = get_repo()
+        qs = repo.searchable_queryset().only("id", "title", "description", "price", "created_at", "file_ids")
         # FTS
-        raw_query = " & ".join(f"{w}:*" for w in params.query.split())
-        query = SearchQuery(raw_query, search_type="raw", config="simple")
-        vector = SearchVector("title", weight="A", config="simple")
+        if params.query:
+            raw_query = " & ".join(f"{w}:*" for w in params.query.split())
+            query = SearchQuery(raw_query, search_type="raw", config="simple")
+            vector = SearchVector("title", weight="A", config="simple")
 
-        qs = (
-            ProductService.get_searchable_queryset()
-            .only("id", "title", "description", "price", "created_at", "files_ids")
-            .annotate(
-                rank=SearchRank(vector, query),
-                similarity=TrigramSimilarity("title", params.query),
+            qs = (
+                qs
+                .only("id", "title", "description", "price", "created_at", "file_ids")
+                .annotate(
+                    rank=SearchRank(vector, query),
+                    similarity=TrigramSimilarity("title", params.query),
+                )
+                .filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
             )
-            .filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
-        )
-        # sort
-        match params.sort_order:
+
+        to_sort = dict()
+        category_id = params.scope_filters.get("category_id")
+        if category_id:
+            to_sort["category_id"] = category_id
+
+        city_id = params.scope_filters.get("city_id")
+        country_id = params.scope_filters.get("country_id")
+        if city_id:
+            to_sort["city_id"] = city_id
+        elif country_id:
+            to_sort["country_id"] = country_id
+
+        status = params.scope_filters.get(self.STATUS_PARAM)
+
+        if status:
+            to_sort["status"] = status.value
+
+
+        qs = qs.filter(**to_sort)
+
+
+        match params.sort_params.order:
             case SortOrder.NEWEST:
-                qs = qs.order_by("created_at")
-            case SortOrder.OLDEST:
                 qs = qs.order_by("-created_at")
+            case SortOrder.OLDEST:
+                qs = qs.order_by("created_at")
             case SortOrder.RELEVANCE:
-                qs = qs.order_by("-rank", "-similarity")
+                if params.query:
+                    qs = qs.order_by("-rank", "-similarity")
+                else:
+                    qs = qs.order_by("-created_at")
+
 
         products = list(qs[: params.limit])
 
-        all_file_ids = [fid for obj in products for fid in (obj.files_ids or [])]
-        files_map = get_file_contract().get_many(all_file_ids) if all_file_ids else {}
+        service = get_service()
+        products = [service.get(p.id) for p in products]
 
-        return [self._to_dto(obj, files_map) for obj in products]
+        # if params.radius:
+        #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-    @staticmethod
-    def _to_dto(obj, files_map: dict) -> SearchResultItem:
-        files = [
-            dataclasses.asdict(files_map[fid])
-            for fid in (obj.files_ids or [])
-            if fid in files_map
-        ]
+        return [_to_dto(obj) for obj in products]
+    
+    # @staticmethod
+    # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
+    #     if _haversine(user_lat, user_lon, city.latitude, city.longitude) <= radius_km:
+    #          return True
+    #     return False
 
-        return SearchResultItem(
-            resource_type=ResourceType.SHOP,
-            id=obj.id,
-            title=obj.title,
-            description=obj.description,
-            meta={
-                "price": obj.price,
-                "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-                "files": files,
-            },
+
+def _to_dto(obj) -> SearchResultItem:
+
+    return SearchResultItem(
+        resource_type=ResourceType.SHOP,
+        id=obj.id,
+        title=obj.title,
+        description=obj.description,
+        meta={
+            "owner_id": obj.owner_id,
+            "price": obj.price,
+            "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M"),
+            "files": obj.files,
+            "country": obj.country,
+            "region": obj.region,
+            "city": obj.city,
+            "category": obj.category,
+        },
+    )
+
+
+def _parse_int_param(key: str, value: str) -> int | None:
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        raise ProductValidationError(
+            "Invalid value from key %s",
+            key,
+            extra={"key": key, "value": value, "event": "search_validaton"},
         )
+
+
+# def _haversine(lat1, lon1, lat2, lon2):
+#     R = 6371  # Earth radius
+#     dlat = radians(lat2 - lat1)
+#     dlon = radians(lon2 - lon1)
+#     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+#     return R * 2 * atan2(sqrt(a), sqrt(1-a))

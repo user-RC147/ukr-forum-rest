@@ -104,9 +104,9 @@ MANIFEST
 # ========================================
 # Docker / Production (якщо не хочеш комітити)
 # ========================================
-Dockerfile
-.dockerignore
-docker-compose*.yml
+# Dockerfile
+# .dockerignore
+# docker-compose*.yml
 docker-compose.override.yml
 
 # ========================================

@@ -11,6 +11,7 @@ product_create_schema = extend_schema(
                 "title": {"type": "string"},
                 "description": {"type": "string"},
                 "price": {"type": "integer"},
+                "category_id": {"type": "integer"},
                 "country_id": {"type": "integer"},
                 "region_id": {"type": "integer"},
                 "city_id": {"type": "integer"},
@@ -33,13 +34,25 @@ product_update_schema = extend_schema(
                 "title": {"type": "string"},
                 "description": {"type": "string"},
                 "price": {"type": "integer"},
+                "category_id": {"type": "integer"},
                 "country_id": {"type": "integer"},
                 "region_id": {"type": "integer"},
                 "city_id": {"type": "integer"},
-                "files": {
+                "update_file_ids": {
+                "type": "array",
+                "items": {"type": "integer"},
+                "description": "Id файлів для оновлення, порядок відповідає update_files",
+                },
+                "update_files": {
+                "type": "array",
+                "items": {"type": "string", "format": "binary"},
+                "description": "Нові файли для оновлення, порядок відповідає update_ids",
+                },
+                "create_files": {
                     "type": "array",
                     "items": {"type": "string", "format": "binary"},
                 },
+                "keep_files_ids": {"type": "array", "items": {"type": "integer"},}
             },
         }
     },

@@ -36,6 +36,12 @@ const routes = [
                 meta: { title: 'Оголошення', requiresAuth: true },
             },
             {
+                path: 'shop/my-products',
+                name: 'shop-my-products',
+                component: () => import('@/modules/shop/views/ShopMyProductsView.vue'),
+                meta: { title: 'Мої товари', requiresAuth: true },
+            },
+            {
                 path: 'shop/create',
                 name: 'shop-create-product',
                 component: () => import('@/modules/shop/views/ShopCreateProductView.vue'),
@@ -59,11 +65,14 @@ const routes = [
                 props: true,
             },
             {
-                path: 'shop/:pk/:productSlug?',
+                path: '/shop/product/:pk(\\d+)/:categorySlug?/:productSlug?',
                 name: 'shop-product',
                 component: () => import('@/modules/shop/views/ShopProductDetailView.vue'),
-                meta: { title: 'Товар', requiresAuth: true },
-                props: true,
+            },
+            {
+            path: '/shop/search',
+            name: 'shop-search',
+            component: () => import('@/modules/shop/views/ShopSearchView.vue'),
             },
             
             {
