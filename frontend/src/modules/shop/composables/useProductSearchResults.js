@@ -26,7 +26,8 @@ export function useProductSearchResults() {
   )
 
   function buildParams(query) {
-    const ordering = [query.price_sort, query.date_sort || 'date'].filter(Boolean).join(',')
+    // Map frontend filter values to backend expected params
+    // Backend expects `sort` to be one of: "newest", "oldest", "relevance"
     const params = { page: Number(query.page) || 1 }
     if (query.q) params.q = query.q
     if (query.category_id) params.category_id = query.category_id
@@ -34,7 +35,16 @@ export function useProductSearchResults() {
     if (query.city_id) params.city_id = query.city_id
     if (query.radius && query.city_id) params.radius = query.radius
     if (query.status) params.status = query.status
-    if (ordering) params.ordering = ordering
+    // date_sort values: 'date' (new first), '-date' (old first),
+    // '' (relevance — дефолт, radio "За релевантністю")
+    // Для relevance параметр sort не відправляємо взагалі — бекенд сам
+    // рахує релевантність, коли явного sort немає.
+    const dateSort = query.date_sort || ''
+    if (dateSort === 'date') {
+      params.sort = 'newest'
+    } else if (dateSort === '-date') {
+      params.sort = 'oldest'
+    }
     return params
   }
 
@@ -46,7 +56,8 @@ export function useProductSearchResults() {
     isLoading.value = true
     error.value = null
     try {
-      const { data } = await searchProducts(buildParams(query))
+      const params = buildParams(query)
+      const { data } = await searchProducts(params)
       if (token !== requestToken) return
       rawResults.value = data?.results ?? (Array.isArray(data) ? data : [])
       hasNext.value = rawResults.value.length >= 20

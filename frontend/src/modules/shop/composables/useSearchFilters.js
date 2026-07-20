@@ -14,12 +14,11 @@ function buildFilters(query, userStore) {
     city_name: query.city_name || userStore?.user?.city_name || '',
     radius: query.radius || '',
     status: query.status || '',
-    date_sort: query.date_sort || 'date',
-    price_sort: query.price_sort || '',
+    date_sort: query.date_sort || '',
   }
 }
 
-const DEFAULTS = { date_sort: 'date' }
+const DEFAULTS = { date_sort: '' }
 
 export function useSearchFilters() {
   const route = useRoute()
@@ -47,7 +46,6 @@ export function useSearchFilters() {
       'radius',
       'status',
       'date_sort',
-      'price_sort',
     ]
 
     Object.entries(filters).forEach(([key, value]) => {
@@ -63,7 +61,9 @@ export function useSearchFilters() {
 
   function resetFilters() {
     Object.assign(filters, buildFilters({}, null))
-    router.push({ name: 'shop-search', query: {} })
+    if (route.name === 'shop-search') {
+      router.push({ name: 'shop-search', query: {} })
+    }
   }
 
   return { filters, RADII, applyFilters, resetFilters }

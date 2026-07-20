@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, toRef, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, ChevronDownIcon } from '@heroicons/vue/24/outline'
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useCategories } from '../composables/useCategories'
 import { useSearchFilters } from '../composables/useSearchFilters'
 import { useCountryAutocomplete } from '../composables/useCountryAutocomplete'
@@ -224,65 +224,64 @@ function onReset() {
               </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center gap-6 pt-1">
-              <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Дата:</span>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="date" v-model="filters.date_sort" class="text-blue-600 focus:ring-blue-500" />
-                  Спочатку нові
-                </label>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="-date" v-model="filters.date_sort" class="text-blue-600 focus:ring-blue-500" />
-                  Спочатку старі
-                </label>
+            <div class="grid gap-6 pt-1 lg:grid-cols-[1fr_1fr]">
+              <div>
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Сортувати по:</span>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <label class="cursor-pointer">
+                    <input type="radio" value="" v-model="filters.date_sort" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      За релевантністю
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" value="date" v-model="filters.date_sort" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      Спочатку нові
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" value="-date" v-model="filters.date_sort" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      Спочатку старі
+                    </span>
+                  </label>
+                </div>
               </div>
 
-              <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ціна:</span>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="" v-model="filters.price_sort" class="text-blue-600 focus:ring-blue-500" />
-                  За замовчуванням
-                </label>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="-price" v-model="filters.price_sort" class="text-blue-600 focus:ring-blue-500" />
-                  Спочатку дорожчі
-                </label>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="price" v-model="filters.price_sort" class="text-blue-600 focus:ring-blue-500" />
-                  Спочатку дешевші
-                </label>
-              </div>
-
-              <div class="flex items-center gap-3 flex-wrap">
+              <div>
                 <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Стан:</span>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="" v-model="filters.status" class="text-blue-600 focus:ring-blue-500" />
-                  Усі
-                </label>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="new" v-model="filters.status" class="text-blue-600 focus:ring-blue-500" />
-                  Нові
-                </label>
-                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" value="used" v-model="filters.status" class="text-blue-600 focus:ring-blue-500" />
-                  Вживані
-                </label>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <label class="cursor-pointer">
+                    <input type="radio" value="" v-model="filters.status" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      Усі
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" value="new" v-model="filters.status" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      Нові
+                    </span>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" value="used" v-model="filters.status" class="sr-only peer" />
+                    <span class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                      Вживані
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="flex justify-end gap-3 pt-2">
+            <div class="flex justify-end pt-2">
               <button
                 type="button"
                 @click="onReset"
-                class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+                class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
               >
-                Скинути
-              </button>
-              <button
-                type="submit"
-                class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-              >
-                Застосувати фільтри
+                <XMarkIcon class="w-4 h-4" />
+                Скинути фільтри
               </button>
             </div>
           </div>
