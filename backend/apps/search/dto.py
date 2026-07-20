@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
-
+from typing import Any
 
 @dataclass(frozen=True)
 class CategoryDTO:
@@ -29,13 +29,15 @@ class SortOrder(StrEnum):
 
 
 @dataclass(frozen=True)
+class SortParams:
+    order: SortOrder = SortOrder.RELEVANCE
+
+
+@dataclass(frozen=True)
 class SearchParams:
-    query: str
-    country_id: int | None
-    region_id: int | None
-    city_id: int | None
-    category_id: int | None
-    sort_order: SortOrder = SortOrder.RELEVANCE
+    query: str | None
+    sort_params: SortParams
+    scope_filters: dict[str, Any] = field(default_factory=dict)
     limit: int = 30
 
 
