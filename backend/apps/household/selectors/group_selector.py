@@ -1,95 +1,66 @@
-from apps.household.models.group import GroupMember
-
-from typing import Sequence
-from django.db.models import Prefetch
-from apps.household.models.group import Group, GroupMember
-from apps.household.dto.group_dto import GroupOutDTO, GroupMemberOutDTO
+from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMemberOutDTO, GroupOutDTO
+from apps.household.dto.role_dto import RoleOutDTO
+from apps.household.models.group import Group, GroupMember, Role
+from django.db.models import Q
 
 
 class GroupSelector:
-    """
-    Центральний селектор для перевірки прав доступу користувачів у групах.
-    Використовується як "вхідна охорона" перед виконанням дій.
-    """
 
-    def has_write_access_to_asset(self,user_id:int,asset_id:int)->bool:
-       
-        """
-        Перевірка на внесення змін (Створення чеків, додавання товарів).
-        Дозволено ТІЛЬКИ для CREATOR та EDITOR.
-        """
-        # Пояснення дії: Швидким SQL-запитом EXISTS перевіряємо ланцюжок зв'язків.
-        # Шукаємо в таблиці GroupMember рядок, де:
-        # 1. user_id дорівнює нашому поточному користувачу
-        # 2. Група цього учасника містить вказаний Asset (group__assets__id)
-        # 3. Роль користувача дозволяє редагування (Власник або Редактор)
-        access=GroupMember.objects.filter(
-            user_id=user_id,
-            group__assets__id=asset_id,
-            role__in=[GroupMember.Role.CREATOR,GroupMember.Role.EDITOR]
-        ).exists()
+    # def get_all_group(self):
+    #   group_all=Group.objects.all()
+    #   return group_all
 
-        return access
+
     
-    def has_read_access_to_asset(self,user_id:int,asset_id:int)->bool:
-       
-        """
-        Перевірка на перегляд (Історія витрат, аналітика магазинів).
-        Дозволено ВСІМ учасникам групи (CREATOR, EDITOR, а також VIEWER).
-        """
-        # Пояснення дії: Тут ми перевіряємо, чи юзер взагалі є в цій групі.
-        # Оскільки CREATOR, EDITOR і VIEWER є легальними учасниками, 
-        # ми просто перевіряємо сам факт членства для цього об'єкта (Asset).
-        access=GroupMember.objects.filter(
-            user_id=user_id,
-            group__assets__id=asset_id
-        ).exists()
+
+    def get_all_group_by_user(self, user_id: int):
+        # Шукаємо зв'язки учасників і підвантажуємо групу та роль, щоб не було зайвих запитів
+        #Group.objects.filter(members__user_id=user_id).prefetch_related("members__user", "members__role" )
+
+        #groups = Group.objects.filter(members__user_id=user_id).prefetch_related("members__role" )
         
-        return access
+        
 
-    def get_groups_for_user(self, user_id: int) -> Sequence[GroupOutDTO]:
-        """
-        Отримує список усіх груп, у яких користувач є учасником.
-        Повертає послідовність (Sequence) об'єктів GroupOutDTO з вкладеними учасниками.
-        """
-        # 1. Оптимізуємо запит: заздалегідь завантажуємо всіх учасників (members) 
-        # разом з їхніми username через select_related, щоб уникнути N+1 запитів у циклі.
-        members_prefetch = Prefetch(
-            'members',
-            queryset=GroupMember.objects.select_related('user')
-        )
-
-        # 2. Шукаємо групи, де поточний user_id є серед учасників.
-        # select_related('created_by') підтягує автора групи одним SQL-запитом.
-        groups_queryset = Group.objects.filter(
-            members__user_id=user_id
-        ).select_related('created_by').prefetch_related(members_prefetch).distinct()
-
-        result = []
-
-        # 3. Мапимо ORM-моделі у чисті DTO структури
-        for group in groups_queryset:
-            
-            # Збираємо список учасників для конкретної групи у GroupMemberOutDTO
-            dto_members = [
-                GroupMemberOutDTO(
-                    id=member.id,
-                    user_id=member.user_id,
-                    username=member.user.username,  # Дістається з select_related без дод. запиту
-                    role=member.role,
-                    joined_at=member.joined_at
-                )
-                for member in group.members.all()
-            ]
-
-            # Збираємо саму групу у GroupOutDTO
-            group_dto = GroupOutDTO(
-                id=group.id,
-                name=group.name,
-                created_by_username=group.created_by.username,
-                created_at=group.created_at,
-                members=dto_members
+        groups = (Group.objects.filter(
+                Q(created_by_id=user_id) |
+                Q(members__user_id=user_id)
             )
-            result.append(group_dto)
+            .distinct()
+            .prefetch_related(
+                "members__role"
+            )
+        )
+        
+        groups_dto = [_to_group_id_user_out(group_obj) for group_obj in groups]
 
-        return result
+        return groups_dto
+
+#==========================================
+def _to_role(data:Role)->RoleOutDTO:
+    return RoleOutDTO(
+        id=data.id,
+        name=data.name,
+        name_ua=data.name_ua,
+        is_bool=data.is_bool
+    )
+
+
+def _to_group_member_out(data:GroupMember)->GroupMemberOutDTO:
+    return GroupMemberOutDTO(
+        id=data.id,
+        group_id=data.group_id,
+        user_id=data.user_id,
+        role=_to_role(data.role),
+        joined_at= data.joined_at            
+    )
+
+def _to_group_id_user_out(data:Group)->Group_id_user_OutDTO:
+    return Group_id_user_OutDTO(
+        id=data.id,
+        name=data.name,
+        created_by_id=data.created_by_id,
+        created_at=data.created_at,
+        members=[_to_group_member_out(member)for member in data.members.all()]
+    )
+
+#==========================================

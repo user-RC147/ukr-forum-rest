@@ -7,11 +7,11 @@ from apps.household.models.asset import Asset
 class AssetRepo:
 
 
-    def createAsset(self,dto:CreateAssetDTO)->Asset:
+    def createAsset(self,dto:CreateAssetDTO,creator_user_id:int)->Asset:
         asset = Asset.objects.create(
             name=dto.name,
             group_id=dto.group_id,
             address_line=dto.address_line,
-            created_by_id=dto.user_id,
+            created_by_id=creator_user_id,
         )
         return asset

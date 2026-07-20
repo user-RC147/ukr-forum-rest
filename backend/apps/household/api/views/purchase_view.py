@@ -2,10 +2,18 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-# Імпортуємо серіалізатор чеків
-from apps.household.api.serializers import PurchaseCreateSerializer
+from drf_spectacular.utils import extend_schema
+from yaml import serialize
 
+# Імпортуємо серіалізатор чеків
+from apps.household.api.serializers import CreatePurchaseSerializer
+
+from apps.household.api.serializers.purchase_serializer import PurchaseOutSerializer
 from apps.household.services.purchase_service import PurchaseService
+from apps.household.dto import CreatePurchaseInDTO,PurchaseItemInDTO
+
+# функція-тимчасова для перевірки реквеста
+from core.func_request import func_request
 
 
 class PurchaseViewSet(viewsets.ViewSet):
@@ -23,32 +31,44 @@ class PurchaseViewSet(viewsets.ViewSet):
         self._service = PurchaseService()
 
     def list(self, request):
-        pass
+        user_id=request.user.id
 
+        purchase_list = self._service.get_all_purchase(user_id)
+
+        serializer = PurchaseOutSerializer(purchase_list,many=True)
+
+
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+    @extend_schema(request=CreatePurchaseSerializer, responses=PurchaseOutSerializer)
     def create(self, request):
-        """
-        POST-метод для створення нового чека з товарами.
-        """
-        # 1. Передаємо сирі дані з фронтенду в серіалізатор
-        serializer = PurchaseCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        # 2. Переводимо перевірені дані в чисте DTO
-        dto = serializer.to_dto()
+        creator_user_id = request.user.id
 
-        try:
-            # 3. Викликаємо наш сервіс, який ми зберегли в конструкторі класу
-            purchase = self._service.create_purchase(dto=dto, user=request.user)
+        serializer = CreatePurchaseSerializer(data=request.data)
 
-            # 4. Повертаємо успішну відповідь
-            return Response(
-                {"message": "Чек успішно збережено", "purchase_id": purchase.id},
-                status=status.HTTP_201_CREATED,
+        if serializer.is_valid():
+            data = serializer.validated_data
+            dto = CreatePurchaseInDTO(
+                asset_id=data["asset_id"],
+                market_id=data["market_id"],
+                data_purchase=data["data_purchase"],
+                items=[
+                    PurchaseItemInDTO(
+                        product_id=item["product_id"],
+                        quantity=item["quantity"],
+                        price_per_unit=item["price_per_unit"],
+                    )
+                    for item in data["items"]
+                ],
             )
 
-        except PermissionError as e:
-            # 5. Якщо Селектор прав виявив роль VIEWER — повертаємо 403
-            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+            create_purchase = self._service.create(dto=dto, creator_user_id=creator_user_id)
+
+            serializer = PurchaseOutSerializer(create_purchase)
+        else:
+            serializer = serializer.error_messages
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     # def retrieve(self, request, pk=None):
     #     pass

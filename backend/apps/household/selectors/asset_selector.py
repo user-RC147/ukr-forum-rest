@@ -21,12 +21,15 @@ class AssetSelector:
         """
         # Фільтруємо поле group_id значенням, яке лежить всередині DTO
         if dto.group_id is not None:
-            return list(Asset.objects.filter(group_id=dto.group_id))
-        
-        # Варіант Б: Обрано "Всі групи" (group_id є None)
-        # Фільтруємо активи, чия група містить нашого користувача в учасниках (members)
+            
+            asset_list = list(Asset.objects.filter(group_id=dto.group_id))
+           
+        else:
+            # Варіант Б: Обрано "Всі групи" (group_id є None)
+            # Фільтруємо активи, чия група містить нашого користувача в учасниках (members)
 
-        asset_list =list(
-            Asset.objects.filter(group__members__user_id=dto.user_id).distinct()
-        )
+            asset_list=list(
+                Asset.objects.filter(group__members__user_id=dto.user_id).distinct()
+            )
+       
         return asset_list

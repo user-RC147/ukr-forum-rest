@@ -6,9 +6,11 @@ from rest_framework import status
  
 from drf_spectacular.utils import extend_schema
 
-from apps.household.api.serializers.asset_serializer import AssetListFilterSerializer, AssetSerializer
+from apps.household.api.serializers.asset_serializer import AssetListFilterSerializer, AssetOutSerializer, CreateAssetSerializer
 from apps.household.dto.asset_dto import CreateAssetDTO, ListAssetDTO
 from apps.household.services.asset_service import AssetService
+
+from apps.household.dto.location_dto import LocationIdInDTO
 
 
 class AssetViewSet(ViewSet):
@@ -42,14 +44,15 @@ class AssetViewSet(ViewSet):
         
         # 4. ОБОВ'ЯЗКОВО СЕРІАЛІЗУЄМО список моделей перед відповіддю
         # Використовуємо many=True, бо передаємо список об'єктів
-        output_serializer = AssetSerializer(asset_list, many=True)
+        output_serializer = AssetOutSerializer(asset_list, many=True)
         
         return Response({'results': output_serializer.data}, status=status.HTTP_200_OK)
             
         
-    @extend_schema(request=AssetSerializer, responses=AssetSerializer)
+    @extend_schema(request=CreateAssetSerializer, responses=AssetOutSerializer)
     def create(self, request):
-        serializer =AssetSerializer(data=request.data)
+        creator_user_id = request.user.id
+        serializer =CreateAssetSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -57,11 +60,16 @@ class AssetViewSet(ViewSet):
         dto=CreateAssetDTO(
             name=serializer.validated_data['name'],
             group_id=serializer.validated_data['group'],
-            user_id=request.user.id,
+            #location=LocationInDTO(**location_data),  # Автоматично розпакує country_id, region_id, city_id
+            location=LocationIdInDTO(
+                country_id=serializer.validated_data['location']['country_id'],
+                region_id=serializer.validated_data['location']['region_id'],
+                city_id=serializer.validated_data['location']['city_id']
+            ),
             address_line=serializer.validated_data.get('address_line')
         )
 
-        data=self._service.create(dto)      
+        data=self._service.create(dto=dto,creator_user_id=creator_user_id)      
 
         return Response({'id':data.id, 'name':data.name},status=status.HTTP_201_CREATED)
 

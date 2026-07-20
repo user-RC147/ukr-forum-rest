@@ -1,5 +1,9 @@
 from django.db import models
 
+# Якщо категорій буде багато або рівнів вкладеності буде більше ніж 2-3, рекомендую подивитися 
+# в сторону пакету django-mptt або django-treebeard. Вони додають до бази даних спеціальні 
+# індекси (Modified Preorder Tree Traversal), які дозволяють діставати все дерево або повний шлях 
+# (get_full_path) за один єдиний SQL-запит.
 
 class Category(models.Model):
     """

@@ -1,7 +1,11 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional,Sequence # Імпортуємо абстрактну послідовність
+from typing import Optional,Sequence
+
+from apps.household.dto.asset_dto import AssetId_Name_OutDTO, AssetOutDTO
+from apps.household.dto.market_dto import Market_Id_Name_OutDTO, MarketFullOutDTO
+from apps.household.dto.product_dto import ProductOutDTO # Імпортуємо абстрактну послідовність
 
 @dataclass(frozen=True)
 class PurchaseFilterDTO:
@@ -36,9 +40,18 @@ class CreatePurchaseInDTO:
 
     asset_id:int
     market_id:int
-    data_purchase:date
-    items:Sequence[PurchaseItemInDTO]  # Використовуємо Sequence замість list
+    data_purchase:datetime
+    items:list[PurchaseItemInDTO]   # Використовуємо Sequence замість list
     note:str=''
+
+@dataclass(frozen=True)
+class PurchaseItemOutDTO:
+    id:int
+    purchase_id:int
+    product:ProductOutDTO
+    quantity:Decimal
+    price_per_unit:Decimal
+    total_price:Decimal
 
 
 
@@ -49,16 +62,35 @@ class PurchaseOutDTO:
     Включає повні гео-дані магазину для точної синхронізації з Vue.js.
     """
     id:int
+    data_purchase:datetime
+    note:str
+    asset:AssetOutDTO
+    market:MarketFullOutDTO
+    created_at:datetime
+    created_by_id:int
+
+    items:list[PurchaseItemInDTO]
+
+    # Фінансовий підсумок чека
+    total_amount: Decimal  # Порахована базою даних загальна сума чека (Разом)
+
+
+
+@dataclass(frozen=True)
+class Purchase_Id_Name_OutDTO:
+    """
+    DTO для віддачі даних про чек на фронтенд (Output).
+    Включає повні гео-дані магазину для точної синхронізації з Vue.js.
+    """
+    id:int
     data_purchase:date
     note:str
+    asset:list[AssetId_Name_OutDTO]
+    market:list[Market_Id_Name_OutDTO]
+    created_at:datetime
+    created_by_id:int
 
-    # Дані магазину та його повна локація
-    market_id:int
-    market_name:str
-    market_address_line:str
-    market_country_id:int
-    market_region_id:int
-    market_city_id:int
+    items:list[PurchaseItemInDTO]
 
     # Фінансовий підсумок чека
     total_amount: Decimal  # Порахована базою даних загальна сума чека (Разом)

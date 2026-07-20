@@ -5,6 +5,4 @@ import api from '@/api/axios' // Використовуємо єдиний на�
  * Django URL: GET /api/v1/household/unit-of-measure/
  * @returns {Promise}
  */
-export function getUnitsOfMeasure() {
-  return api.get('/household/unit-of-measure/')
-}
+export const getUnitsOfMeasure=()=> api.get('/household/unit-of-measure/')

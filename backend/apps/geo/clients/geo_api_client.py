@@ -25,12 +25,12 @@ class GeoApiClient:
         return data if isinstance(data,list) else data.get('results',[])
     
 
-    def get_regions(self,country_code:str)->list[dict]:
+    def get_regions(self,country_id:int)->list[dict]:
         response=requests.get(
             f'{self.base_url}/regions/',
             headers=self.headers,
             timeout=3,
-            params={'country_code':country_code},
+            params={'country_id':country_id},
         )
         response.raise_for_status()
         data=response.json()

@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class PurchaseItem(models.Model):
     """Рядок чеку — конкретний товар з кількістю і ціною."""
 
@@ -15,14 +14,6 @@ class PurchaseItem(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-    )
-
-    product_name_snapshot = models.CharField(
-        max_length=150,
-        blank=True,
-        default="",
-        verbose_name="Назва товару",
-        help_text="Зберігається автоматично при збереженні рядка чеку",
     )
 
     # Кількість на складі
@@ -42,8 +33,6 @@ class PurchaseItem(models.Model):
         help_text="Ціна за 1 шт/кг/л",
     )
 
-    # price = models.DecimalField(max_digits=12,decimal_places=2,verbose_name="Загальна ціна",help_text="Ціна за всю наявну кількість (автоматично?)", null=True,blank=True)
-    
     class Meta:
         db_table = "household_purchase_item"
 
@@ -52,11 +41,3 @@ class PurchaseItem(models.Model):
         return self.price_per_unit * self.quantity
 
     
-
-    def save(self, *args, **kwargs):
-        if self.product:
-            self.product_name_snapshot = self.product.name
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.product_name_snapshot or str(self.product)

@@ -36,24 +36,18 @@ class ProductViewSet(ViewSet):
     @extend_schema(request=CreateProductSerializer, responses=CreateProductSerializer)
     def create(self, request):
 
-        data = request.data
+        user_id=request.user.id
         
-        data['created_by_id']=request.user.id
+        serializer=CreateProductSerializer(data=request.data)
 
-
-        serializer=CreateProductSerializer(data=data)
-        
-
-        #group_in_user_exsits = self._service.
-        
-        
         if serializer.is_valid():
             data=serializer.validated_data
 
             dto = CreateProductInDTO(
                 name=data['name'],
                 unit_of_measure_id=data['unit_of_measure_id'],
-                category_id=data.get("category_id") or None
+                category_id=data.get("category_id") or None,
+                created_by_id=request.user.id
                 
             )  # Конвертуємо словник у DTO
             try:

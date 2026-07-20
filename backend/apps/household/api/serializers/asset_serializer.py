@@ -1,13 +1,25 @@
 from rest_framework import serializers
 
-class AssetSerializer(serializers.Serializer):
+from apps.household.api.serializers.group_serializer import GroupOutSerializer
+from apps.household.api.serializers.location_serializer import LocationInSerializer, LocationOutSerializer
+from apps.household.dto.group_dto import GroupOutDTO
+
+class AssetOutSerializer(serializers.Serializer):
     
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()          # ← приймає дані
-    group = serializers.IntegerField(write_only=True)  # ← тільки для запису
-    group_id = serializers.IntegerField(read_only=True)  # ← для читання
+    name = serializers.CharField(read_only=True)    
+    group = GroupOutSerializer(read_only=True)  # ← для читання
+    location=LocationOutSerializer(read_only=True)
     address_line = serializers.CharField(required=False, allow_null=True)
-    group_name = serializers.CharField(source='group.name', read_only=True)
+
+
+
+class CreateAssetSerializer(serializers.Serializer):
+    name=serializers.CharField()
+    group_id=serializers.IntegerField()
+    location=LocationInSerializer()
+    address_line=serializers.CharField()
+
 
 
 

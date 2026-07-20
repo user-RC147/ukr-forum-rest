@@ -14,7 +14,6 @@ class LocationMixin(models.Model):
     class Meta:
         abstract=True
 
-    
 
 
 class PrivateLocationMixin(LocationMixin):

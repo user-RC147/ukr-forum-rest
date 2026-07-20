@@ -15,12 +15,13 @@ class RegionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        print(request.data)
 
         # 2. Отримуємо налаштований geo_service з IoC-контейнера
         geo_service = apps.get_app_config('geo').service
 
-        country_code = request.query_params.get('country_code', '')
-        if not country_code:
+        country_id = request.query_params.get('country_id', '')
+        if not country_id:
             return Response({'results': []})
-        regions = geo_service.fetch_and_save_regions(country_code)
+        regions = geo_service.fetch_and_save_regions(country_id)
         return Response({'results': [asdict(r) for r in regions]})

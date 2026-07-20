@@ -88,8 +88,8 @@
                 <div class="bg-amber-100 px-4 py-2 rounded-2xl">
                     <select v-model="selectedGroup" class="bg-transparent focus:outline-none text-sm">
                         <option :value="null">Всі групи</option>
-                        <option v-for="g in groupStore.groups" :key="g.id" :value="g.id">
-                            {{ g.name }}
+                        <option v-for="g in groupStore.groups" :key="g.group.id" :value="g.group.id">
+                            {{ g.group.name }}
                         </option>
                     </select>
                 </div>

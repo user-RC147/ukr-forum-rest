@@ -1,14 +1,23 @@
 from email.headerregistry import Group
-from rest_framework import viewsets,status
+from tokenize import group
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from apps.household.api.serializers import GroupMemberOutSerializer,GroupOutSerializer,CreateGroupInSerializer
+from apps.household.api.serializers import (
+    GroupMemberOutSerializer,
+    GroupOutSerializer,
+    CreateGroupInSerializer,
+)
 
+from apps.household.dto.group_dto import CreateGroupInDTO
+from apps.household.models.group import GroupMember
 from apps.household.services.group_service import GroupService
 from apps.household.dto import GroupOutDTO
 from drf_spectacular.utils import extend_schema
+from apps.household.api.serializers.group_serializer import CreateGroupInSerializerTime
 
+from apps.shop import serializers
 
 
 class GroupViewSet(viewsets.ViewSet):
@@ -16,74 +25,56 @@ class GroupViewSet(viewsets.ViewSet):
     Контролер для управління групами користувачів.
     Працює виключно через сервісний шар Чистої Архітектури.
     """
-    permission_classes=[IsAuthenticated]
 
+    permission_classes = [IsAuthenticated]
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._service = GroupService()
 
+    # чи є користувач частиною групи
+    # Викликаємо метод екземпляра сервісу, передаючи ID авторизованого юзера
+    def auth_user_in_group(self, request): ...
 
-    #чи є користувач частиною групи
-    #Викликаємо метод екземпляра сервісу, передаючи ID авторизованого юзера
-    def auth_user_group(self,request):
-        user =self._service.get_all_list(user_id=request.user.id)
-        return user
+    # def list(self, request): 
+    #     grups = self._service.get_all_list()
+    #     serializer = GroupOutSerializer(grups,many=True)
+      
+    #     return Response(data=serializer.data, status=status.HTTP_200_OK)
+    
 
+    def list(self,request):
+        user_id = request.user.id
+        group_members = self._service.get_all_group_member_by_user(user_id=user_id)
 
-    def list(self, request):
-        """
-        GET /api/household/groups/
-        Отримання списку всіх груп поточного користувача.
-        """
+        # print(group_members)
+        # print(type(group_members))
 
-        # 1. Викликаємо метод екземпляра сервісу, передаючи ID авторизованого юзера
-        dtos = self._service.get_all_list(user_id=request.user.id)
+        serializer = GroupOutSerializer(group_members,many=True)
 
-        # 2. Передаємо отриманий масив DTO в серіалізатор для виводу (many=True)
+        return Response(data=serializer.data,status=status.HTTP_200_OK)
 
-        serializer = GroupOutSerializer(dtos,many=True)
-
-        # 3. Повертаємо сформований JSON
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    # @extend_schema(
-    #     request=CreateGroupInSerializer,
-    #     responses={201: {"type": "object", "properties": {"id": {"type": "integer"}, "detail": {"type": "string"}}}}
-    # )
-
-    @extend_schema(request=CreateGroupInSerializer, responses={201: None})
+    @extend_schema(request=CreateGroupInSerializerTime(), responses=GroupOutSerializer())
     def create(self, request):
-        """
-        POST /api/household/groups/
-        Створення нової групи поточним аутентифікованим користувачем.
-        """
+        creator_id = request.user.id
 
-        # 1. Передаємо сирі дані в серіалізатор для перевірки
-        serializer=CreateGroupInSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # 2. Перетворюємо перевірені дані у чисте вхідне DTO
-        dto=serializer.to_dto()
-
-        # 3. Викликаємо сервіс через публічну точку доступу в AppConfig
-        # Поточний юзер (request.user.id) автоматично стає творцем
-        group_id=self._service.create_new_group(
-            dto=dto,
-            creator_id=request.user.id
-        )
-
-        # 4. Повертаємо відповідь про успішне створення
-        return Response(
-            {"id": group_id, "detail": "Групу успішно створено."},
-            status=status.HTTP_201_CREATED
-        )
-
+        serializer = CreateGroupInSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            dto = CreateGroupInDTO(
+                name=data['name']
+            )
+            results = self._service.create_group(dto=dto,creator_id=creator_id)
+         
+            return Response(GroupOutSerializer(results).data,status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        
 
     # def retrieve(self, request, pk=None):
     #     pass
 
-    # def update(self, request, pk=None):
+    # def update(self, request, group_id=None):
     #     pass
 
     # def partial_update(self, request, pk=None):
