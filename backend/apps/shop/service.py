@@ -11,9 +11,9 @@ from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 
-from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
+from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
-from .repository import get_repo, ProductRepository
+from .repository import ProductRepository, get_repo
 
 logger = logging.getLogger(__name__)
 
@@ -70,14 +70,16 @@ class ProductService:
                 if fid in maps["files"]
             ]
 
-    def get(self, id:int) -> ProductDTO:
+    def get(self, id: int) -> ProductDTO:
         result = dataclasses.asdict(self.repo.get(id))
 
         self._attach_products([result])
 
         return _to_dto(result)
 
-    def get_all(self, user_id=None, page: int = 1, page_size: int = 20) -> list[ProductDTO]:
+    def get_all(
+        self, user_id=None, page: int = 1, page_size: int = 20
+    ) -> list[ProductDTO]:
 
         result = self.repo.get_many(user_id)
 
@@ -101,9 +103,7 @@ class ProductService:
 
         files = data.files
 
-        data: dict = dataclasses.asdict(
-            dataclasses.replace(data, files=[])
-        )
+        data: dict = dataclasses.asdict(dataclasses.replace(data, files=[]))
         data["owner_id"] = user.id
         file_list = self.file_contract.create_many(files, data["owner_id"])
         file_ids = [i.id for i in file_list]
@@ -117,7 +117,10 @@ class ProductService:
 
         dto = _to_dto(result)
 
-        logger.info("Product was created", extra={"product_id": product.id, "event": "create_product"})
+        logger.info(
+            "Product was created",
+            extra={"product_id": product.id, "event": "create_product"},
+        )
 
         return dto
 
@@ -136,41 +139,43 @@ class ProductService:
         keep_files_ids = fields.pop("keep_files_ids", None)
 
         with transaction.atomic():
-                has_file_changes = any(
-                    v is not None
-                    for v in (
-                        update_files,
-                        create_files,
-                        keep_files_ids,
-                    )
+            has_file_changes = any(
+                v is not None
+                for v in (
+                    update_files,
+                    create_files,
+                    keep_files_ids,
+                )
+            )
+
+            if has_file_changes:
+                item_ids = [p["id"] for p in product.files]
+                plan = FileUpdatePlan(
+                    keep_ids=keep_files_ids or [],
+                    update_ids=list(update_files.keys()) or [],
                 )
 
-                if has_file_changes:
-                    item_ids = [p["id"] for p in product.files]
-                    plan = FileUpdatePlan(
-                        keep_ids=keep_files_ids or [],
-                        update_ids=list(update_files.keys()) or [],
-                    )
+                updated_file_dtos = self.file_contract.update_many(
+                    user_id=user.id,
+                    item_ids=item_ids,
+                    plan=plan,
+                    update_files=update_files,
+                    create_files=create_files,
+                )
 
+                fields["file_ids"] = [f.id for f in updated_file_dtos]
 
-                    updated_file_dtos = self.file_contract.update_many(
-                        user_id=user.id,
-                        item_ids=item_ids,
-                        plan=plan,
-                        update_files=update_files,
-                        create_files=create_files,
-                    )
+            product_id = data.id
+            result = dataclasses.asdict(self.repo.update(product_id, fields))
+            self._attach_products([result])
+            result = _to_dto(result)
 
-                    fields["file_ids"] = [f.id for f in updated_file_dtos]
+            logger.info(
+                "Product was updated",
+                extra={"product_id": product_id, "event": "update_product"},
+            )
 
-                product_id = data.id
-                result = dataclasses.asdict(self.repo.update(product_id, fields))
-                self._attach_products([result])
-                result = _to_dto(result)
-
-                logger.info("Product was updated", extra={"product_id": product_id, "event": "update_product"})
-
-                return result
+            return result
 
     def delete(self, user: RequestUserDTO, id: int) -> None:
 
@@ -178,13 +183,15 @@ class ProductService:
 
         self._ensure_can_edit(user, product)
 
-
         with transaction.atomic():
             if product.files:
                 self.file_contract.delete_many([p["id"] for p in product.files])
             result = self.repo.delete(id)
 
-        logger.info("Deleted product", extra={"product_id": product.id, "event": "delete_product"})
+        logger.info(
+            "Deleted product",
+            extra={"product_id": product.id, "event": "delete_product"},
+        )
 
         return result
 
@@ -198,7 +205,10 @@ class ProductService:
     @staticmethod
     def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
         if user.id != product.owner_id and not user.is_staff:
-            raise ProductPermissionError(extra={"item_id": product.id, "event": "file_validation"})
+            raise ProductPermissionError(
+                extra={"item_id": product.id, "event": "file_validation"}
+            )
+
 
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(
@@ -216,7 +226,6 @@ def _to_dto(data) -> ProductDTO:
         visible=data["visible"],
         files=data["files"],
     )
-
 
 
 def get_service() -> ProductService:
