@@ -19,21 +19,23 @@ class ProductSearchHandler:
     STATUS_PARAM = "status"
 
     def parse_extra_filters(self, query_params: QueryDict) -> dict:
+        int_param = {"country_id", "city_id", "region_id", "category_id", "radius"}
+
+        result = {i: _parse_int_param(i, query_params.get(i, "")) for i in int_param}
+
         status = query_params.get(self.STATUS_PARAM, None)
 
         if status:
             try:
-                return {self.STATUS_PARAM: ProductStatus(status)}
+                result[self.STATUS_PARAM] = ProductStatus(status)
             except ValueError:
                 raise ProductValidationError(
                     {self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"},
                     extra={"invalid_value": status, "event": "search_validaton"}
                 )
-        else:
-            return {self.STATUS_PARAM: None}
 
-
-
+        return result
+        
 
     def search(self, params: SearchParams) -> list[SearchResultItem]:
 
@@ -56,17 +58,20 @@ class ProductSearchHandler:
             )
 
         to_sort = dict()
-        if params.category_id:
-            to_sort["category_id"] = params.category_id
+        category_id = params.scope_filters.get("category_id")
+        if category_id:
+            to_sort["category_id"] = category_id
 
-        if params.city_id:
-            to_sort["city_id"] = params.city_id
-        elif params.country_id:
-            to_sort["country_id"] = params.country_id
+        city_id = params.scope_filters.get("city_id")
+        country_id = params.scope_filters.get("country_id")
+        if city_id:
+            to_sort["city_id"] = city_id
+        elif country_id:
+            to_sort["country_id"] = country_id
 
         status = params.scope_filters.get(self.STATUS_PARAM)
 
-        if status is not None:
+        if status:
             to_sort["status"] = status.value
 
 
@@ -93,7 +98,7 @@ class ProductSearchHandler:
         # if params.radius:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-        return [self._to_dto(obj) for obj in products]
+        return [_to_dto(obj) for obj in products]
     
     # @staticmethod
     # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
@@ -101,27 +106,38 @@ class ProductSearchHandler:
     #          return True
     #     return False
 
-    @staticmethod
-    def _to_dto(obj) -> SearchResultItem:
 
-        return SearchResultItem(
-            resource_type=ResourceType.SHOP,
-            id=obj.id,
-            title=obj.title,
-            description=obj.description,
-            meta={
-                "owner_id": obj.owner_id,
-                "price": obj.price,
-                "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M"),
-                "files": obj.files,
-                "country": obj.country,
-                "region": obj.region,
-                "city": obj.city,
-                "category": obj.category,
-            },
+def _to_dto(obj) -> SearchResultItem:
+
+    return SearchResultItem(
+        resource_type=ResourceType.SHOP,
+        id=obj.id,
+        title=obj.title,
+        description=obj.description,
+        meta={
+            "owner_id": obj.owner_id,
+            "price": obj.price,
+            "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M"),
+            "files": obj.files,
+            "country": obj.country,
+            "region": obj.region,
+            "city": obj.city,
+            "category": obj.category,
+        },
+    )
+
+
+def _parse_int_param(key: str, value: str) -> int | None:
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        raise ProductValidationError(
+            "Invalid value from key %s",
+            key,
+            extra={"key": key, "value": value, "event": "search_validaton"},
         )
-
-
 
 
 # def _haversine(lat1, lon1, lat2, lon2):
