@@ -48,28 +48,19 @@ class GeoService:
             print(f"Зовнішній гео-API недоступний ({e}). Беремо країни з локальної БД.")
 
             # Повертаємо всі країни, які вже встигли зберегтися в локальній БД раніше
-            return [
-                CountryDTO(
-                    id=c.id,
-                    name=c.name,
-                    name_ua=c.name_ua,
-                    code=c.code,
-                    flag_emoji=c.flag_emoji,
-                )
-                for c in Country.objects.all()
-            ]
+            return [_to_dto_country(c) for c in Country.objects.all()]
 
-    def fetch_and_save_regions(self, country_code: str) -> list[RegionDTO]:
+    def fetch_and_save_regions(self, country_id: int) -> list[RegionDTO]:
         """Отримує регіони з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
         # Знаходимо країну в локальній БД
         try:
-            country = Country.objects.get(code=country_code)
+            country = Country.objects.get(id=country_id)
         except Country.DoesNotExist:
             return []
 
         try:
             # Пробуємо отримати регіони з зовнішнього API
-            api_regions = geo_api_client.get_regions(country_code)
+            api_regions = geo_api_client.get_regions(country_id)
             result = []
             for data in api_regions:
                 region = geo_repository.get_or_create_region(data, country)
@@ -89,12 +80,7 @@ class GeoService:
             )
 
             # Повертаємо регіони цієї країни, які вже є в локальній базі
-            return [
-                RegionDTO(
-                    id=r.id, name=r.name, name_ua=r.name_ua, country_id=r.country_id
-                )
-                for r in Region.objects.filter(country=country)
-            ]
+            return [_to_dto_region (r) for r in Region.objects.filter(country=country)]
 
     def fetch_and_save_cities(self, region_id: int) -> list[CityDTO]:
         """Отримує міста з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
@@ -102,6 +88,9 @@ class GeoService:
             region = Region.objects.select_related("country").get(id=region_id)
         except Region.DoesNotExist:
             return []
+
+        # Створюємо DTO регіону заздалегідь для передачі в CityDTO
+        region_dto = self.get_region(region_id)
 
         if not region.api_id:
             # Якщо немає api_id, віддаємо локальні міста
@@ -111,7 +100,7 @@ class GeoService:
                     name=c.name,
                     name_ua=c.name_ua,
                     country_id=c.country_id,
-                    region_id=c.region_id,
+                    region=asdict(region_dto), # Змінено з region_id на region
                 )
                 for c in City.objects.filter(region_id=region_id)
             ]
@@ -128,7 +117,7 @@ class GeoService:
                         name=city.name,
                         name_ua=city.name_ua,
                         country_id=city.country_id,
-                        region_id=city.region_id,
+                        region=asdict(region_dto), # Змінено з region_id на region
                     )
                 )
             return result
@@ -142,7 +131,7 @@ class GeoService:
                     name=c.name,
                     name_ua=c.name_ua,
                     country_id=c.country_id,
-                    region_id=c.region_id,
+                    region=asdict(region_dto), # Змінено з region_id на region
                 )
                 for c in City.objects.filter(region_id=region_id)
             ]

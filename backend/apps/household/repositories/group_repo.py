@@ -1,30 +1,30 @@
 from django.db import transaction
 
+from apps.household.dto.group_dto import CreateGroupInDTO, GroupMemberOutDTO, GroupOutDTO
 from apps.household.models.group import Group,GroupMember
 
 
 class GroupRepo:
-    """
-    Репозиторій для роботи з базою даних груп та їх учасників.
-    Включає лише чисті операції запису та маніпуляції ORM-моделями.
-    """
-    def create_group_with_creator(self,name:str,creator_id:int)->Group:
-        """
-        Створює групу та автоматично додає користувача як CREATOR.
-        Операція обгорнута в atomic транзакцію для безпеки даних.
-        """
-        with transaction.atomic():
-            # 1. Створюємо саму групу
-            group=Group.objects.create(
-                name=name,
-                created_by_id=creator_id
-            )
+    
+    
+    def create_group(self,dto:CreateGroupInDTO,creator_id:int)->GroupOutDTO:
+        create_group = Group.objects.create(
+            name=dto.name,
+            created_by_id=creator_id
+        )
+        new_create_group=Group.objects.select_related('members').get(id=create_group.id)
+        create_group_dto = GroupOutDTO(
+            id=new_create_group.id,
+            name=new_create_group.name,
+            created_by_username=new_create_group.created_by_username,
+            created_at=new_create_group.created_at,
+            members=GroupMemberOutDTO(
+                id=new_create_group.members.id,
+                user_id=new_create_group.members.user_id,
+                username=new_create_group.members.username,
+                role=new_create_group.members.role,
+                joined_at=new_create_group.members.joined_at
+            ) 
 
-            # 2. Одразу створюємо запис учасника з роллю Власника (creator)
-            GroupMember.objects.create(
-                group=group,
-                user_id=creator_id,
-                role=GroupMember.Role.CREATOR
-            )
-
-            return group
+        )
+        return create_group_dto

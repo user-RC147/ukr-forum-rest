@@ -1,41 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationIdInDTO, LocationOutDTO
 
-@dataclass(frozen=True)
-class CountryDTO:
-    id:int
-    name:str
-    name_ua:str
-    code:str
-    flag_emoji:str
-    currency:str
-
-
-@dataclass(frozen=True)
-class RegionDTO:
-    id:int
-    name:str
-    name_ua:str
-    country_id:int
-
- 
-@dataclass(frozen=True)
-class CityDTO:
-    id:int
-    name:str
-    name_ua:str
-    country_id:int
-    region_id: int
-    latitude:Decimal
-    longitude:Decimal
-    
-
-@dataclass(frozen=True)
-class MarketLocationDTO:
-    country:'CountryDTO'
-    region:'RegionDTO'
-    city:'CityDTO'
 
 
 @dataclass(frozen=True)
@@ -47,26 +14,28 @@ class ListMarketDTO:
 class CreateMarketInDTO:
     name:str
     address_line: str
-    country_id:int
-    region_id:int
-    city_id:int
+    location:LocationIdInDTO
 
 
 @dataclass(frozen=True)
-class MarketOutDTO:
+class Market_Id_Name_OutDTO:
     id:int
     name:str
     address_line: str
-    country_id:int
-    region_id:int
-    city_id:int
+    location:LocationId_Name_OutDTO
 
+@dataclass(frozen=True)
+class Market_Id_OutDTO:
+    id:int
+    name:str
+    address_line: str
+    location:LocationIdInDTO
 
 @dataclass(frozen=True)
 class MarketFullOutDTO:
     id:int
     name:str
     address_line: str
-    location:'MarketLocationDTO'
+    location:LocationOutDTO
 
 

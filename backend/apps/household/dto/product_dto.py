@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from .unit_of_measure_dto import UnitOfMeasureDTO
+from .unit_of_measure_dto import UnitOfMeasureOutDTO
 
 
 @dataclass(frozen=True)
@@ -16,9 +16,9 @@ class CategoryProductDTO:
 class ProductOutDTO:
     id:int
     name:str
-    unit_of_measure:'UnitOfMeasureDTO'
+    unit_of_measure:UnitOfMeasureOutDTO
     created_by: int
-    category:'CategoryProductDTO'
+    category:CategoryProductDTO
 
 
 

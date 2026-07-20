@@ -5,16 +5,16 @@ export const getCountries = async () => {
   return data
 }
 
-export const getRegions = async (countryCode) => {
+export const getRegions = async (countryId) => {
   const { data } = await api.get('/geo/regions/', {
-    params: { country_code: countryCode },
+    params: { country_id: countryId },
   })
   return data
 }
 
 export const getCities = async (regionId) => {
   const { data } = await api.get('/geo/cities/', {
-    params: { region: regionId },
+    params: { region_id: regionId },
   })
   return data
 }

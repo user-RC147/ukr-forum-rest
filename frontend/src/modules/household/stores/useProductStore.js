@@ -63,7 +63,9 @@ export const useProductStore = defineStore('product', {
         // Додаємо його в кінець масиву — Vue автоматично перемалює екран.
         this.products.push(response.data)
         return response.data
-      } catch (err) {
+      } catch (error) {
+        console.log(error.response?.data)
+
         this.error = err.response?.data?.detail || 'Не вдалося створити товар'
         throw err
       } finally {

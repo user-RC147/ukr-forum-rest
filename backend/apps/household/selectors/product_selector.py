@@ -1,7 +1,7 @@
 from django.db.models import Q
 
 from apps.household.dto.product_dto import CategoryProductDTO, ProductOutDTO
-from apps.household.dto.unit_of_measure_dto import UnitOfMeasureDTO
+from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.models.product import Product
 from apps.household.exceptions import ProductNotFoundException
 
@@ -16,7 +16,7 @@ class ProductSelector:
             ProductOutDTO(
                 id=product.id,
                 name=product.name,
-                unit_of_measure=UnitOfMeasureDTO(
+                unit_of_measure=UnitOfMeasureOutDTO(
                     id=product.unit_of_measure.id,
                     name=product.unit_of_measure.name,
                     code=product.unit_of_measure.code,

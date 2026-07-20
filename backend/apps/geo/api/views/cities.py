@@ -20,9 +20,9 @@ class CityListView(APIView):
         # 2. Отримуємо налаштований geo_service з IoC-контейнера
         geo_service = apps.get_app_config('geo').service
 
-        region_id = request.query_params.get('region')
+        region_id = request.query_params.get('region_id')
         if not region_id:
-            return Response({'results': []})
+            return Response({'results1': []})
         cities = geo_service.fetch_and_save_cities(int(region_id))
         return Response({'results': [asdict(c) for c in cities]})
     
@@ -36,7 +36,7 @@ class CitySearchView(APIView):
         query = request.query_params.get("q", "")
         country_id = request.query_params.get("country_id", "")
         if len(query) < 2 or not country_id:
-            return Response({"results": [], "query": query})
+            return Response({"results3": [], "query": query})
 
         geo_service = apps.get_app_config('geo').service
         serializer = CitySerializer(geo_service.search_cities(query, country_id), many=True)

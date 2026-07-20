@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 
 from apps.household.api.serializers.market_serializer import MarketSerializer, MarketCreateSerializer,MarketFullSerializer
 from apps.household.apps import HouseholdConfig
+from apps.household.dto.location_dto import LocationIdInDTO
 from apps.household.permissions.group_permissions import IsGroupCreator,IsOwner
 from apps.household.dto.market_dto import CreateMarketInDTO, ListMarketDTO, MarketFullOutDTO
 from apps.household.repositories.maket_repo import MarketRepo
@@ -39,15 +40,7 @@ class MarketViewSet(ViewSet):
         """
         GET /api/household/markets/
         """
-        # 1. Читаємо query-параметри з URL фронтенду (якщо вони є)
-        # search_query = request.query_params.get('search', None)
-        # country_id = request.query_params.get('country_id', None)
-        # region_id = request.query_params.get('region_id', None)
-        # city_id = request.query_params.get('city_id', None)
-        # ordering = request.query_params.get('ordering', 'name')
-
-        # 2. Викликаємо ініціалізований сервіс (а не сам клас статично!)
-        # Примітка: переконайтеся, що у вашому View екземпляр сервісу лежить у self.market_service або аналогічно
+      
         markets_data = self._service.get_all()
                 
         # 3. Проганяємо дані через серіалізатор
@@ -71,9 +64,12 @@ class MarketViewSet(ViewSet):
         dto = CreateMarketInDTO(
             name=vd['name'],
             address_line=vd['address_line'],
-            country_id=vd['country_id'],
-            region_id=vd['region_id'],
-            city_id=vd['city_id'],
+            location =LocationIdInDTO(
+                country_id=vd['country_id'],
+                region_id=vd['region_id'],
+                city_id=vd['city_id'],
+            )
+            
         )
 
         try:

@@ -6,7 +6,7 @@
 
     const props = defineProps({
         units: { type: Array, default: () => [] },
-        category: { type: Array, default: () => [] },
+        categories: { type: Array, default: () => [] },
     });
 
     // Локальний стан форми — тільки всередині компонента
@@ -22,7 +22,6 @@
         emit('submit',{ ...form.value })
     }
 
-    // Коли натиснули Зберегти — кидаємо подію з даними форми
     function handleCancel() {
         emit('cancel');
     }
@@ -35,8 +34,23 @@
             <h3 class="text-xl font-bold text-gray-800 mb-4">Новий товар</h3>
 
             <div>
-                <select v-model="form.category_id">                        
-                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Категорія
+                </label>
+
+                <select
+                    v-model="form.category_id"
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                >
+                    <option :value="null">
+                        Без категорії
+                    </option>
+
+                    <option
+                        v-for="cat in categories"
+                        :key="cat.id"
+                        :value="cat.id"
+                    >
                         {{ cat.name }}
                     </option>
                 </select>

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass(frozen=True)
-class UnitOfMeasureDTO:
+class UnitOfMeasureOutDTO:
     id: int
     name: str
     code: str

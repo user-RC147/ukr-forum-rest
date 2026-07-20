@@ -61,7 +61,7 @@ watch(()=> form.value.region_id, async (regionId)=>{
     if (regionId){
         const res = await getCities(regionId)
         // Використовуємо .results згідно з архітектурою вашого гео-модуля
-        cities.value=res.data.results || res.data
+        cities.value=res.data.results2 || res.data
     }
 })
 

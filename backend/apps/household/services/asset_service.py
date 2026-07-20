@@ -17,6 +17,11 @@ class AssetService:
         return asset_list
 
 
-    def create(self,dto:CreateAssetDTO):
-        asset=self._repository.createAsset(dto)
+    def create(self,dto:CreateAssetDTO,creator_user_id:int):
+
+        #Перевірка користувача на права і на його існування
+        #contract=creator_user_id
+
+
+        asset=self._repository.createAsset(dto=dto,creator_user_id=creator_user_id)
         return asset

@@ -1,6 +1,20 @@
 from rest_framework import serializers
 
+from apps.household.api.serializers.user_serializer import UserOutSerializer
 from apps.household.dto.group_dto import CreateGroupInDTO
+
+
+
+class RoleSerialiser(serializers.Serializer):
+    id=serializers.IntegerField()
+    name=serializers.CharField()
+    name_ua=serializers.CharField()
+
+class GroupSerialiser(serializers.Serializer):
+    id=serializers.IntegerField()
+    name=serializers.CharField()
+    created_by=serializers.CharField()
+    created_at=serializers.DateTimeField(format="%Y-%m-%d")
 
 
 class GroupMemberOutSerializer(serializers.Serializer):
@@ -9,43 +23,26 @@ class GroupMemberOutSerializer(serializers.Serializer):
     Працює виключно з об'єктами GroupMemberOutDTO.
     """
     id = serializers.IntegerField(read_only=True)
+    group_id=serializers.IntegerField(read_only=True)
     user_id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    role = serializers.CharField(read_only=True)
-    joined_at = serializers.DateTimeField(read_only=True)
+    user = serializers.CharField(read_only=True)
+    role = RoleSerialiser()
+    joined_at = serializers.DateTimeField(format="%Y-%m-%d")
 
 
 class GroupOutSerializer(serializers.Serializer):
-    """
-    Головний серіалізатор для відображення групи та її учасників.
-    Працює виключно з об'єктами GroupOutDTO.
-    """
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(read_only=True)
-    created_by_username = serializers.CharField(read_only=True)
-    created_at = serializers.DateTimeField(read_only=True)
-    
-    # Вкладений список учасників, який автоматично мапиться з масиву DTO
-    members = GroupMemberOutSerializer(many=True, read_only=True)
+    id=serializers.IntegerField()
+    name=serializers.CharField()
+    created_by=UserOutSerializer()
+    members = GroupMemberOutSerializer(many=True)
+    created_at=serializers.DateTimeField(format="%Y-%m-%d")
+
+
 
 class CreateGroupInSerializer(serializers.Serializer):
-    """
-    Вхідний валідатор для створення нової групи.
-    Приймає сирі дані з HTTP-запиту (POST).
-    """
+    name=serializers.CharField()
 
-    name=serializers.CharField(
-        max_length=100,
-        allow_blank=False,
-        help_text="Назва нової групи (наприклад, 'Моя сім'я')"
-    )
 
-    def to_dto(self)->CreateGroupInDTO:
-        """
-        Конвертує перевірені дані (validated_data) у чисте вхідне DTO.
-        """
-        data=self.validated_data
-        new_group=CreateGroupInDTO(
-            name=data['name']
-        )
-        return  new_group
+class CreateGroupInSerializerTime(serializers.Serializer):
+    name=serializers.CharField()
+    created_by=serializers.IntegerField()

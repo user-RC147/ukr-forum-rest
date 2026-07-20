@@ -1,9 +1,33 @@
 from django.db import transaction
 
+from apps.household.dto.asset_dto import AssetId_Name_OutDTO
+from apps.household.dto.group_dto import (
+    Group_Id_Name_OutDTO,
+    Group_id_user_OutDTO,
+    GroupOutDTO,
+    GroupMemberOutDTO,
+)
+from apps.household.dto.location_dto import (
+    CityNameOutDTO,
+    CountryNameOutDTO,
+    LocationId_Name_OutDTO,
+    LocationIdOutDTO,
+    RegionNameOutDTO,
+)
+from apps.household.dto.market_dto import Market_Id_Name_OutDTO
+from apps.household.dto.product_dto import CategoryProductDTO, ProductOutDTO
+from apps.household.dto.purchase_dto import (
+    PurchaseItemOutDTO,
+    CreatePurchaseInDTO,
+    PurchaseOutDTO,
+    Purchase_Id_Name_OutDTO,
+)
+
 from apps.household.models.purchase import Purchase
 from apps.household.models.purchase_item import PurchaseItem
 from apps.household.models.product import Product
-from apps.household.dto.purchase_dto import CreatePurchaseInDTO
+
+from apps.household.repositories.purchase_item_repo import PurchaseItemRepo
 
 
 class PurchaseRepo:
@@ -12,42 +36,41 @@ class PurchaseRepo:
     Відповідає виключно за операції запису в базу даних (Команди).
     """
 
-    def create_with_items(self,dto:CreatePurchaseInDTO,user_id:int)->Purchase:
-        # Пояснення дії 1: Відкриваємо атомарну транзакцію
-        with transaction.atomic():
+    def get_location_id_name(self, item):
+        location_id_name = LocationId_Name_OutDTO(
+            country=CountryNameOutDTO(
+                id=item.country.id,
+                name=item.country.name,
+                code=item.country.code,
+            ),
+            region=RegionNameOutDTO(
+                id=item.region.id,
+                name=item.region.name,
+                name_ua=item.region.name_ua,
+            ),
+            city=CityNameOutDTO(
+                id=item.city.id,
+                name=item.city.name,
+                name_ua=item.city.name_ua,
+            ),
+        )
 
-            # Пояснення дії 2: Створюємо шапку чека
-            purchase=Purchase.objects.create(
+        return location_id_name
+
+    def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> bool:
+
+        with transaction.atomic():
+            create_purchase = Purchase.objects.create(
                 asset_id=dto.asset_id,
                 market_id=dto.market_id,
                 data_purchase=dto.data_purchase,
+                created_by_id=creator_user_id,
                 note=dto.note,
-                created_by_id=user_id
             )
+            PurchaseItemRepo().create_items_for_repo_purchase(dto=dto.items, purchase_id=create_purchase.id)
 
-            # Пояснення дії 3: Збираємо назви товарів для текстового зліпку (Snapshot)
-            product_ids=[item.product_id for item in dto.items]
-            product_map={
-                p.id:p.name for p in Product.objects.filter(id__in=product_ids)
-            }
+            # Оновлюємо об'єкт з бази, щоб отримати актуальний total_amount
 
-            # Пояснення дії 4: Готуємо масив моделей рядків чека
-            items_to_create=[]
-            for item in dto.items:
-                product_name = product_map.get(item.product_id,"Невідомий товар")
+        
 
-                items_to_create.append(
-                    PurchaseItem(
-                        purchase=purchase,
-                        product_id=item.product_id,
-                        product_name_snapshot=product_name,  # Фіксуємо назву на момент покупки
-                        quantity=item.quantity,
-                        price_per_unit=item.price_per_unit
-                    )
-                )
-
-        # Пояснення дії 5: Масове збереження рядків одним SQL-запитом
-        if items_to_create:
-            PurchaseItem.objects.bulk_create(items_to_create)
-
-        return purchase
+        return True
