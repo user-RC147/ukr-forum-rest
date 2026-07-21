@@ -40,7 +40,7 @@ class ProductUpdateSerializer(ProductSerializer):
 
 class ProductReadSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    owner_id = serializers.IntegerField()
+    owner = serializers.DictField()
     title = serializers.CharField()
     description = serializers.CharField()
     price = serializers.IntegerField()

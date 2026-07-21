@@ -10,6 +10,7 @@ from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
+from apps.users.contracts.user_contract import get_user_contract
 
 from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
@@ -26,6 +27,7 @@ class ProductService:
         self.city_contract = get_city_contract()
         self.file_contract = get_file_contract()
         self.category_contract = get_category_contract()
+        self.user_contract = get_user_contract()
 
     def _fetch_map(self, ids: list[int | None], contract) -> dict:
         """Deduplicate ids and 1 batch-request via get_many"""
@@ -48,6 +50,7 @@ class ProductService:
             ("region_id", self.region_contract, "region", False),
             ("city_id", self.city_contract, "city", False),
             ("category_id", self.category_contract, "category", False),
+            ("owner_id", self.user_contract, "owner", False),
             ("file_ids", self.file_contract, "files", True),
         ]
 
@@ -64,6 +67,7 @@ class ProductService:
             p["region"] = self._to_dict(maps["region"].get(p["region_id"]))
             p["city"] = self._to_dict(maps["city"].get(p["city_id"]))
             p["category"] = self._to_dict(maps["category"].get(p["category_id"]))
+            p["owner"] = self._to_dict(maps["owner"].get(p["owner_id"]))
             p["files"] = [
                 self._to_dict(maps["files"][fid])
                 for fid in (p["file_ids"] or [])
@@ -204,7 +208,7 @@ class ProductService:
 
     @staticmethod
     def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
-        if user.id != product.owner_id and not user.is_staff:
+        if user.id != product.owner.id and not user.is_staff:
             raise ProductPermissionError(
                 extra={"item_id": product.id, "event": "file_validation"}
             )
@@ -213,7 +217,7 @@ class ProductService:
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(
         id=data["id"],
-        owner_id=data["owner_id"],
+        owner=data["owner"],
         title=data["title"],
         description=data["description"],
         created_at=data["created_at"],
