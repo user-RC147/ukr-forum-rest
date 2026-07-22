@@ -15,13 +15,10 @@ async function loadMyProducts() {
   isLoading.value = true
   error.value = null
   try {
-    // Завантажуємо всі товари та фільтруємо по автору
-    // В ідеалі це мав би бути окремий ендпоінт /api/shop/my-products/
-    const { data } = await getLatestProducts()
-    const allProducts = data?.results ?? data ?? []
-    
-    // Фільтруємо тільки товари поточного користувача
-    products.value = allProducts.filter(p => p.user?.id === userStore.user?.id)
+    // Фільтрація по user_id тепер на бекенді — не тягнемо чужі товари й не
+    // залежимо від того, скільки товарів повертає "latest" ендпоінт
+    const { data } = await getLatestProducts({ user_id: userStore.user?.id })
+    products.value = data?.results ?? data ?? []
   } catch (e) {
     error.value = 'Не вдалося завантажити ваші товари'
     console.error(e)
