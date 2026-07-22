@@ -17,6 +17,7 @@ import {
   LockClosedIcon,
   GlobeAltIcon,
   CalendarDaysIcon,
+  UserCircleIcon,
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
@@ -63,10 +64,24 @@ watch(
 
 const isOwner = computed(() => {
   if (!auth.isAuthenticated || !product.value) return false;
-  return Number(auth.user?.id) === Number(product.value.owner_id);
+  return Number(auth.user?.id) === Number(product.value.owner?.id);
 });
 
 const canModerate = computed(() => isOwner.value || auth.user?.is_staff);
+
+// display_name приоритетнее username; если оба пустые — просто ничего не показываем
+const sellerName = computed(() => {
+  const owner = product.value?.owner;
+  return owner?.display_name || owner?.username || "";
+});
+
+// TODO: бэкенд пока не отдаёт дату регистрации в owner — как появится поле
+// (например owner.date_joined), подставить сюда и убрать v-if="false" ниже
+const sellerJoinedDate = computed(() => {
+  const raw = product.value?.owner?.date_joined;
+  if (!raw) return "";
+  return raw.split(" ")[0];
+});
 
 const currency = computed(() => {
   const c = product.value?.country;
@@ -267,6 +282,35 @@ const handleComplaint = async () => {
                 Видалити товар
               </router-link>
             </template>
+          </div>
+        </div>
+
+        <div
+          v-if="sellerName"
+          class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+        >
+          <h3 class="font-semibold text-base text-gray-900 mb-4">
+            ПРОДАВЕЦЬ
+          </h3>
+          <div class="flex items-start gap-3">
+            <UserCircleIcon
+              class="w-11 h-11 text-gray-300 flex-shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <!-- <router-link
+                :to="{
+                  name: 'users-public-detail',
+                  params: { pk: product.owner.id },
+                }"
+                class="font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200 truncate block"
+              >
+                {{ sellerName }}
+              </router-link> -->
+              <!-- Заглушка на будущее: дата регистрации продавца, пока бэкенд её не отдаёт -->
+              <p v-if="sellerJoinedDate" class="text-xs text-gray-500 mt-1">
+                На сайті з {{ sellerJoinedDate }}
+              </p>
+            </div>
           </div>
         </div>
 
