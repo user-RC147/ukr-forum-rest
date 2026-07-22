@@ -53,3 +53,7 @@ class ProductReadSerializer(serializers.Serializer):
     city = serializers.DictField()
     category = serializers.DictField()
     files = serializers.ListField(child=serializers.DictField(), default=list)
+
+
+class ProductListQuerySerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=False)
