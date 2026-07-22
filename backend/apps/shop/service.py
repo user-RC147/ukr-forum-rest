@@ -82,8 +82,11 @@ class ProductService:
         return _to_dto(result)
 
     def get_all(
-        self, user_id=None, page: int = 1, page_size: int = 20
+        self, user, user_id=None, page: int = 1, page_size: int = 20
     ) -> list[ProductDTO]:
+
+        if user_id:
+            ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         result = self.repo.get_many(user_id)
 
@@ -131,7 +134,7 @@ class ProductService:
     def update(self, user: RequestUserDTO, data: ProductUpdateDTO) -> ProductDTO:
 
         product = self.get(data.id)
-        self._ensure_can_edit(user, product)
+        ProductAccessPolicy.can_edit(user, product)
         fields = {
             f.name: getattr(data, f.name)
             for f in dataclasses.fields(data)
@@ -185,7 +188,7 @@ class ProductService:
 
         product = self.get(id)
 
-        self._ensure_can_edit(user, product)
+        ProductAccessPolicy.can_edit(user, product)
 
         with transaction.atomic():
             if product.files:
@@ -206,12 +209,6 @@ class ProductService:
     def delete_all_by_user(self, user_id: int) -> int:
         return self.repo.delete_by_user(user_id)
 
-    @staticmethod
-    def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
-        if user.id != product.owner.id and not user.is_staff:
-            raise ProductPermissionError(
-                extra={"item_id": product.id, "event": "file_validation"}
-            )
 
 
 def _to_dto(data) -> ProductDTO:
@@ -234,3 +231,24 @@ def _to_dto(data) -> ProductDTO:
 
 def get_service() -> ProductService:
     return ProductService()
+
+
+class ProductAccessPolicy:
+    @staticmethod
+    def can_view_as_owner(user: RequestUserDTO, owner_id: int, add_extra: dict | None = None) -> None:
+
+        if user.id != owner_id and not user.is_staff:
+            extra = {
+                    "user_id from request": user.id,
+                    "owner_id": owner_id,
+                    "event": "product_validation",
+                }
+            if add_extra:
+                extra.update(add_extra)
+            raise ProductPermissionError(
+                extra=extra
+            )
+
+    @staticmethod
+    def can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
+        ProductAccessPolicy.can_view_as_owner(user, product.owner["id"], add_extra={"item_id": product.id})
