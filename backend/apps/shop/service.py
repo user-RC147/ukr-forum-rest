@@ -10,10 +10,11 @@ from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
+from apps.users.contracts.user_contract import get_user_contract
 
-from .dto import ProductDTO, ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
+from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
-from .repository import get_repo, ProductRepository
+from .repository import ProductRepository, get_repo
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class ProductService:
         self.city_contract = get_city_contract()
         self.file_contract = get_file_contract()
         self.category_contract = get_category_contract()
+        self.user_contract = get_user_contract()
 
     def _fetch_map(self, ids: list[int | None], contract) -> dict:
         """Deduplicate ids and 1 batch-request via get_many"""
@@ -48,6 +50,7 @@ class ProductService:
             ("region_id", self.region_contract, "region", False),
             ("city_id", self.city_contract, "city", False),
             ("category_id", self.category_contract, "category", False),
+            ("owner_id", self.user_contract, "owner", False),
             ("file_ids", self.file_contract, "files", True),
         ]
 
@@ -64,20 +67,26 @@ class ProductService:
             p["region"] = self._to_dict(maps["region"].get(p["region_id"]))
             p["city"] = self._to_dict(maps["city"].get(p["city_id"]))
             p["category"] = self._to_dict(maps["category"].get(p["category_id"]))
+            p["owner"] = self._to_dict(maps["owner"].get(p["owner_id"]))
             p["files"] = [
                 self._to_dict(maps["files"][fid])
                 for fid in (p["file_ids"] or [])
                 if fid in maps["files"]
             ]
 
-    def get(self, id:int) -> ProductDTO:
+    def get(self, id: int) -> ProductDTO:
         result = dataclasses.asdict(self.repo.get(id))
 
         self._attach_products([result])
 
         return _to_dto(result)
 
-    def get_all(self, user_id=None, page: int = 1, page_size: int = 20) -> list[ProductDTO]:
+    def get_all(
+        self, user, user_id=None, page: int = 1, page_size: int = 20
+    ) -> list[ProductDTO]:
+
+        if user_id:
+            ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         result = self.repo.get_many(user_id)
 
@@ -101,9 +110,7 @@ class ProductService:
 
         files = data.files
 
-        data: dict = dataclasses.asdict(
-            dataclasses.replace(data, files=[])
-        )
+        data: dict = dataclasses.asdict(dataclasses.replace(data, files=[]))
         data["owner_id"] = user.id
         file_list = self.file_contract.create_many(files, data["owner_id"])
         file_ids = [i.id for i in file_list]
@@ -117,14 +124,17 @@ class ProductService:
 
         dto = _to_dto(result)
 
-        logger.info("Product was created", extra={"product_id": product.id, "event": "create_product"})
+        logger.info(
+            "Product was created",
+            extra={"product_id": product.id, "event": "create_product"},
+        )
 
         return dto
 
     def update(self, user: RequestUserDTO, data: ProductUpdateDTO) -> ProductDTO:
 
         product = self.get(data.id)
-        self._ensure_can_edit(user, product)
+        ProductAccessPolicy.can_edit(user, product)
         fields = {
             f.name: getattr(data, f.name)
             for f in dataclasses.fields(data)
@@ -136,55 +146,59 @@ class ProductService:
         keep_files_ids = fields.pop("keep_files_ids", None)
 
         with transaction.atomic():
-                has_file_changes = any(
-                    v is not None
-                    for v in (
-                        update_files,
-                        create_files,
-                        keep_files_ids,
-                    )
+            has_file_changes = any(
+                v is not None
+                for v in (
+                    update_files,
+                    create_files,
+                    keep_files_ids,
+                )
+            )
+
+            if has_file_changes:
+                item_ids = [p["id"] for p in product.files]
+                plan = FileUpdatePlan(
+                    keep_ids=keep_files_ids or [],
+                    update_ids=list(update_files.keys()) or [],
                 )
 
-                if has_file_changes:
-                    item_ids = [p["id"] for p in product.files]
-                    plan = FileUpdatePlan(
-                        keep_ids=keep_files_ids or [],
-                        update_ids=list(update_files.keys()) or [],
-                    )
+                updated_file_dtos = self.file_contract.update_many(
+                    user_id=user.id,
+                    item_ids=item_ids,
+                    plan=plan,
+                    update_files=update_files,
+                    create_files=create_files,
+                )
 
+                fields["file_ids"] = [f.id for f in updated_file_dtos]
 
-                    updated_file_dtos = self.file_contract.update_many(
-                        user_id=user.id,
-                        item_ids=item_ids,
-                        plan=plan,
-                        update_files=update_files,
-                        create_files=create_files,
-                    )
+            product_id = data.id
+            result = dataclasses.asdict(self.repo.update(product_id, fields))
+            self._attach_products([result])
+            result = _to_dto(result)
 
-                    fields["file_ids"] = [f.id for f in updated_file_dtos]
+            logger.info(
+                "Product was updated",
+                extra={"product_id": product_id, "event": "update_product"},
+            )
 
-                product_id = data.id
-                result = dataclasses.asdict(self.repo.update(product_id, fields))
-                self._attach_products([result])
-                result = _to_dto(result)
-
-                logger.info("Product was updated", extra={"product_id": product_id, "event": "update_product"})
-
-                return result
+            return result
 
     def delete(self, user: RequestUserDTO, id: int) -> None:
 
         product = self.get(id)
 
-        self._ensure_can_edit(user, product)
-
+        ProductAccessPolicy.can_edit(user, product)
 
         with transaction.atomic():
             if product.files:
                 self.file_contract.delete_many([p["id"] for p in product.files])
             result = self.repo.delete(id)
 
-        logger.info("Deleted product", extra={"product_id": product.id, "event": "delete_product"})
+        logger.info(
+            "Deleted product",
+            extra={"product_id": product.id, "event": "delete_product"},
+        )
 
         return result
 
@@ -195,15 +209,12 @@ class ProductService:
     def delete_all_by_user(self, user_id: int) -> int:
         return self.repo.delete_by_user(user_id)
 
-    @staticmethod
-    def _ensure_can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
-        if user.id != product.owner_id and not user.is_staff:
-            raise ProductPermissionError(extra={"item_id": product.id, "event": "file_validation"})
+
 
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(
         id=data["id"],
-        owner_id=data["owner_id"],
+        owner=data["owner"],
         title=data["title"],
         description=data["description"],
         created_at=data["created_at"],
@@ -218,6 +229,26 @@ def _to_dto(data) -> ProductDTO:
     )
 
 
-
 def get_service() -> ProductService:
     return ProductService()
+
+
+class ProductAccessPolicy:
+    @staticmethod
+    def can_view_as_owner(user: RequestUserDTO, owner_id: int, add_extra: dict | None = None) -> None:
+
+        if user.id != owner_id and not user.is_staff:
+            extra = {
+                    "user_id from request": user.id,
+                    "owner_id": owner_id,
+                    "event": "product_validation",
+                }
+            if add_extra:
+                extra.update(add_extra)
+            raise ProductPermissionError(
+                extra=extra
+            )
+
+    @staticmethod
+    def can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
+        ProductAccessPolicy.can_view_as_owner(user, product.owner["id"], add_extra={"item_id": product.id})

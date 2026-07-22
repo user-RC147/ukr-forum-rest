@@ -2,18 +2,25 @@ import dataclasses
 import re
 from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
+from rest_framework.request import Request
 from django.core.files.uploadedfile import UploadedFile
 
 from apps.files import exceptions as files_exceptions
 from apps.search.contracts import exceptions as search_exceptions
 from apps.shop.exceptions import NotFoundError, ProductPermissionError
-from apps.shop.schemas import product_create_schema, product_update_schema
+from apps.shop.schemas import product_create_schema, product_update_schema, product_list_schema
 from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 
-from .serializers import ProductReadSerializer, ProductSerializer, ProductUpdateSerializer
+from .serializers import ProductReadSerializer, ProductSerializer, ProductUpdateSerializer, ProductListQuerySerializer
 from .service import ProductService
+
+class RequiresAuthIfUserIdParam(BasePermission):
+    def has_permission(self, request, view):
+        if request.query_params.get("user_id"):
+            return request.user.is_authenticated
+        return True
 
 
 class ProductViewSet(viewsets.ViewSet):
@@ -28,6 +35,8 @@ class ProductViewSet(viewsets.ViewSet):
     def get_permissions(self):
         if self.action in ["create", "destroy", "partial_update"]:
             return [IsAuthenticated()]
+        elif self.action == "list":
+            return [RequiresAuthIfUserIdParam()]
         return []
 
     @product_create_schema
@@ -85,8 +94,12 @@ class ProductViewSet(viewsets.ViewSet):
 
         return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
-    def list(self, request):
-        product = self.service.get_all()
+    @product_list_schema
+    def list(self, request: Request):
+        query = ProductListQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        user_id = query.validated_data.get("user_id")
+        product = self.service.get_all(user=_to_dto_user(request.user), user_id=user_id)
 
         serializer = ProductReadSerializer(product, many=True)
 
