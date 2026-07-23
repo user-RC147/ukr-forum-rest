@@ -115,7 +115,7 @@ def _to_dto(obj) -> SearchResultItem:
         title=obj.title,
         description=obj.description,
         meta={
-            "owner_id": obj.owner_id,
+            "owner": obj.owner,
             "price": obj.price,
             "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M"),
             "files": obj.files,

@@ -1,4 +1,5 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 
 from apps.shop.serializers import ProductReadSerializer
 
@@ -39,27 +40,40 @@ product_update_schema = extend_schema(
                 "region_id": {"type": "integer"},
                 "city_id": {"type": "integer"},
                 "update_file_ids": {
-                "type": "array",
-                "items": {"type": "integer"},
-                "description": "Id файлів для оновлення, порядок відповідає update_files",
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "Id файлів для оновлення, порядок відповідає update_files",
                 },
                 "update_files": {
-                "type": "array",
-                "items": {"type": "string", "format": "binary"},
-                "description": "Нові файли для оновлення, порядок відповідає update_ids",
+                    "type": "array",
+                    "items": {"type": "string", "format": "binary"},
+                    "description": "Нові файли для оновлення, порядок відповідає update_ids",
                 },
                 "create_files": {
                     "type": "array",
                     "items": {"type": "string", "format": "binary"},
                 },
-                "keep_files_ids": {"type": "array", "items": {"type": "integer"},}
+                "keep_files_ids": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                },
             },
         }
     },
     responses={200: ProductReadSerializer},
 )
 
+
 product_list_schema = extend_schema(
     summary="Список продуктів",
+    parameters=[
+        OpenApiParameter(
+            name="user_id",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Фільтрація товарів ID юзера (опціонально)",
+        ),
+    ],
     responses={200: ProductReadSerializer(many=True)},
 )
