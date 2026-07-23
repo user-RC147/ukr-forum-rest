@@ -59,10 +59,8 @@ class GroupService:
                 for group_member in group_members
             ]
 
-    def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> Group:
+    def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> bool:
         # перевірка корстувача
-        if self._get_user_contract.get(creator_id):
-            create_group = self._repository.create_group(dto=dto, creator_id=creator_id)
-        else:
-            create_group = None
-        return create_group
+        if not self._selector.get_group_by_name(dto) and self._get_user_contract.get(creator_id):
+            return self._repository.create_group(dto=dto, creator_id=creator_id)
+      

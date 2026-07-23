@@ -1,5 +1,4 @@
-from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMemberOutDTO, GroupOutDTO
-from apps.household.dto.role_dto import RoleOutDTO
+from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMemberOutDTO, GroupOutDTO,CreateGroupInDTO,RoleOutDTO
 from apps.household.models.group import Group, GroupMember, Role
 from django.db.models import Q
 
@@ -10,8 +9,8 @@ class GroupSelector:
     #   group_all=Group.objects.all()
     #   return group_all
 
-
-    
+    def get_group_by_name(self,dto:CreateGroupInDTO)->bool:            
+        return Group.objects.filter(name=dto.name).exists()
 
     def get_all_group_by_user(self, user_id: int):
         # Шукаємо зв'язки учасників і підвантажуємо групу та роль, щоб не було зайвих запитів

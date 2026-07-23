@@ -7,6 +7,11 @@ LOG_DIR = Path("/app/logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# LOG_DIR = BASE_DIR / "logs"
+# LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
 COMMON_HANDLERS = ["console", "json_stream"] if DEBUG else ["json_stream"]
 
 BASE_LOGGING = {

@@ -66,7 +66,7 @@ class GroupViewSet(viewsets.ViewSet):
             )
             results = self._service.create_group(dto=dto,creator_id=creator_id)
          
-            return Response(GroupOutSerializer(results).data,status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         
