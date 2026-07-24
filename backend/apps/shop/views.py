@@ -90,7 +90,11 @@ class ProductViewSet(viewsets.ViewSet):
         query = ProductListQuerySerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
         user_id = query.validated_data.get("user_id")
-        product = self.service.get_all(user=_to_dto_user(request.user), user_id=user_id)
+        if user_id:
+            user = _to_dto_user(request.user)
+            product = self.service.get_all(user=user, user_id=user_id)
+        else:
+            product = self.service.get_all()
 
         serializer = ProductReadSerializer(product, many=True)
 
