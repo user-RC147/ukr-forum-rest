@@ -13,9 +13,9 @@ class MarketRepo:
         market = Market.objects.create(
             name=dto.name,
             address_line=dto.address_line,
-            country_id=dto.country_id,
-            region_id=dto.region_id,
-            city_id=dto.city_id,
+            country_id=dto.location.country_id,
+            region_id=dto.location.region_id,
+            city_id=dto.location.city_id,
             created_by_id=user_id,
         )
 

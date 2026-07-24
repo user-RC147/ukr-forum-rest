@@ -1,7 +1,6 @@
-from email.headerregistry import Group
 from apps.geo import repositories
 from apps.household.dto import CreateGroupInDTO, GroupOutDTO
-from apps.household.dto.group_dto import Group_id_user_OutDTO
+from apps.household.dto.group_dto import Group_id_user_OutDTO,GroupMemberOutDTO
 from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
@@ -22,8 +21,6 @@ class GroupService:
         self._selector = GroupSelector()
         self._repository = GroupRepo()
 
-    def get_user_in_group_exists(self) -> bool: ...
-
     # =================================================
     def _to_user_out(self, data, users_map) -> UserOutDTO:
 
@@ -33,13 +30,24 @@ class GroupService:
             display_name=users_map[data.created_by_id].display_name,
         )
 
+    def _to_group_member_out(self,data,users_map)->GroupMemberOutDTO:
+        return GroupMemberOutDTO(
+            id=data.id,
+            group_id=data.group_id,
+            user=self._to_user_out(data,users_map),
+            role=data.role,
+            joined_at=data.joined_at
+        )
+
+
+
     def _to_group_out(self, data: Group_id_user_OutDTO, users_map) -> GroupOutDTO:
         return GroupOutDTO(
             id=data.id,
             name=data.name,
             created_by=self._to_user_out(data, users_map),
             created_at=data.created_at,
-            members=data.members,
+            members=[self._to_group_member_out(member,users_map)for member in data.members],
         )
 
     # =================================================
@@ -49,7 +57,9 @@ class GroupService:
         if self._get_user_contract.get(user_id):
             group_members = self._selector.get_all_group_by_user(user_id=user_id)
 
-            user_ids = list(
+            user_ids = set(
+                {group.created_by_id for group in group_members}
+                |
                 {member.user_id for group in group_members for member in group.members}
             )
             users_map = self._get_user_contract.get_many(user_ids)

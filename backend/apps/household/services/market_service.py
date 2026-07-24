@@ -68,7 +68,7 @@ class MarketService:
     def create(self, dto: CreateMarketInDTO, user: int) -> market:
 
         try:
-            self.location_market_exists(dto)
+            #self.location_market_exists(dto)
             return self._repository.create(dto, user)
         except Exception:
             raise Exception

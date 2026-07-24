@@ -11,7 +11,7 @@ from apps.household.dto.user_dto import User_Id_OutDTO, UserOutDTO
 # ==========================================
 
 @dataclass(frozen=True)
-class GroupMemberOutDTO:
+class GroupMember_id_user_OutDTO:
     """
     DTO учасника групи для відображення (Output).
     Повністю збігається з полями моделі GroupMember.
@@ -23,6 +23,17 @@ class GroupMemberOutDTO:
     joined_at: datetime
 
 
+@dataclass(frozen=True)
+class GroupMemberOutDTO:
+    """
+    DTO учасника групи для відображення (Output).
+    Повністю збігається з полями моделі GroupMember.
+    """
+    id:int
+    group_id:int
+    user:UserOutDTO
+    role:RoleOutDTO
+    joined_at: datetime
 
 
 

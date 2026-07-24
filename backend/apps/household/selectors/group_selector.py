@@ -1,4 +1,4 @@
-from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMemberOutDTO, GroupOutDTO,CreateGroupInDTO,RoleOutDTO
+from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMember_id_user_OutDTO, GroupOutDTO,CreateGroupInDTO,RoleOutDTO
 from apps.household.models.group import Group, GroupMember, Role
 from django.db.models import Q
 
@@ -44,13 +44,13 @@ def _to_role(data:Role)->RoleOutDTO:
     )
 
 
-def _to_group_member_out(data:GroupMember)->GroupMemberOutDTO:
-    return GroupMemberOutDTO(
+def _to_group_member_out(data:GroupMember)->GroupMember_id_user_OutDTO:
+    return GroupMember_id_user_OutDTO(
         id=data.id,
         group_id=data.group_id,
         user_id=data.user_id,
         role=_to_role(data.role),
-        joined_at= data.joined_at            
+        joined_at= data.joined_at
     )
 
 def _to_group_id_user_out(data:Group)->Group_id_user_OutDTO:
