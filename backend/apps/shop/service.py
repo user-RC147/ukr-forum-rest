@@ -210,7 +210,6 @@ class ProductService:
         return self.repo.delete_by_user(user_id)
 
 
-
 def _to_dto(data) -> ProductDTO:
     return ProductDTO(
         id=data["id"],
@@ -235,20 +234,22 @@ def get_service() -> ProductService:
 
 class ProductAccessPolicy:
     @staticmethod
-    def can_view_as_owner(user: RequestUserDTO, owner_id: int, add_extra: dict | None = None) -> None:
+    def can_view_as_owner(
+        user: RequestUserDTO, owner_id: int, add_extra: dict | None = None
+    ) -> None:
 
         if user.id != owner_id and not user.is_staff:
             extra = {
-                    "user_id from request": user.id,
-                    "owner_id": owner_id,
-                    "event": "product_validation",
-                }
+                "user_id from request": user.id,
+                "owner_id": owner_id,
+                "event": "product_validation",
+            }
             if add_extra:
                 extra.update(add_extra)
-            raise ProductPermissionError(
-                extra=extra
-            )
+            raise ProductPermissionError(extra=extra)
 
     @staticmethod
     def can_edit(user: RequestUserDTO, product: ProductDTO) -> None:
-        ProductAccessPolicy.can_view_as_owner(user, product.owner["id"], add_extra={"item_id": product.id})
+        ProductAccessPolicy.can_view_as_owner(
+            user, product.owner["id"], add_extra={"item_id": product.id}
+        )

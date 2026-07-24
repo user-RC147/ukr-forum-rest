@@ -1,20 +1,27 @@
 import dataclasses
 import re
-from rest_framework import status, viewsets
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
-from rest_framework.permissions import IsAuthenticated, BasePermission
-from rest_framework.response import Response
-from rest_framework.request import Request
+
 from django.core.files.uploadedfile import UploadedFile
+from rest_framework import status, viewsets
+from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 
-from apps.files import exceptions as files_exceptions
-from apps.search.contracts import exceptions as search_exceptions
-from apps.shop.exceptions import NotFoundError, ProductPermissionError
-from apps.shop.schemas import product_create_schema, product_update_schema, product_list_schema
+from apps.shop.schemas import (
+    product_create_schema,
+    product_list_schema,
+    product_update_schema,
+)
+
 from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
-
-from .serializers import ProductReadSerializer, ProductSerializer, ProductUpdateSerializer, ProductListQuerySerializer
+from .serializers import (
+    ProductListQuerySerializer,
+    ProductReadSerializer,
+    ProductSerializer,
+    ProductUpdateSerializer,
+)
 from .service import ProductService
+
 
 class RequiresAuthIfUserIdParam(BasePermission):
     def has_permission(self, request, view):
@@ -51,7 +58,6 @@ class ProductViewSet(viewsets.ViewSet):
         user = _to_dto_user(request.user)
 
         product = self.service.create(user, data)
-
 
         return Response(
             ProductReadSerializer(product).data, status=status.HTTP_201_CREATED
@@ -96,8 +102,10 @@ class ProductViewSet(viewsets.ViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 def _to_dto_user(user) -> RequestUserDTO:
     return RequestUserDTO(id=user.id, is_staff=user.is_staff)
+
 
 def _to_dto_create(data) -> ProductCreateDTO:
     return ProductCreateDTO(
@@ -112,13 +120,15 @@ def _to_dto_create(data) -> ProductCreateDTO:
         files=data["files"],
     )
 
+
 def _to_dto_update(id: int, data) -> ProductUpdateDTO:
     allowed = {f.name for f in dataclasses.fields(ProductUpdateDTO)} - {"id"}
     kwargs = {k: v for k, v in data.items() if k in allowed}
     return ProductUpdateDTO(id=id, **kwargs)
 
 
-UPDATE_FILE_KEY_RE = re.compile(r'^update_files\[(\d+)\]$')
+UPDATE_FILE_KEY_RE = re.compile(r"^update_files\[(\d+)\]$")
+
 
 def _extract_update_files(request) -> dict[int, UploadedFile]:
     result = {}
