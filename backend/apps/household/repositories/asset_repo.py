@@ -12,6 +12,10 @@ class AssetRepo:
             name=dto.name,
             group_id=dto.group_id,
             address_line=dto.address_line,
+            country_id =dto.location.country_id,
+            region_id=dto.location.region_id,
+            city_id=dto.location.city_id,
             created_by_id=creator_user_id,
         )
-        return asset
+        if asset:
+            return True

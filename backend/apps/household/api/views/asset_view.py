@@ -27,23 +27,18 @@ class AssetViewSet(ViewSet):
         GET /api/household/assets/?group=5
         Повертає активи для селекту на сторінці створення чека.
         """
-        # 1. Беремо group_id з query_params (урл-рядка), а не з тіла запиту
-        serializer = AssetListFilterSerializer(data=request.query_params)
+      
+        serializer = AssetListFilterSerializer(data=request.data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        # 2. Формуємо DTO
         dto = ListAssetDTO(
             group_id=serializer.validated_data.get('group_id'),
-            user_id=request.user.id
         )
         
-        # 3. Викликаємо бізнес-логику
-        asset_list = self._service.get_list_asset(dto)
+        asset_list = self._service.get_list_asset(dto,request.user.id)
         
-        # 4. ОБОВ'ЯЗКОВО СЕРІАЛІЗУЄМО список моделей перед відповіддю
-        # Використовуємо many=True, бо передаємо список об'єктів
         output_serializer = AssetOutSerializer(asset_list, many=True)
         
         return Response({'results': output_serializer.data}, status=status.HTTP_200_OK)
@@ -59,7 +54,7 @@ class AssetViewSet(ViewSet):
 
         dto=CreateAssetDTO(
             name=serializer.validated_data['name'],
-            group_id=serializer.validated_data['group'],
+            group_id=serializer.validated_data['group_id'],
             #location=LocationInDTO(**location_data),  # Автоматично розпакує country_id, region_id, city_id
             location=LocationIdInDTO(
                 country_id=serializer.validated_data['location']['country_id'],
@@ -71,7 +66,7 @@ class AssetViewSet(ViewSet):
 
         data=self._service.create(dto=dto,creator_user_id=creator_user_id)      
 
-        return Response({'id':data.id, 'name':data.name},status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED) #{'id':data.id, 'name':data.name},
 
     # def retrieve(self, request, pk=None):
     #     pass

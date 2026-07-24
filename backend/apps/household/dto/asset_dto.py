@@ -7,6 +7,27 @@ from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationOutD
 
 
 @dataclass(frozen=True)
+class Asset_Id_Group_location_OutDTO:
+    id:int
+    name:str
+    group_id:int
+    location:LocationIdInDTO
+    address_line:str
+    created_by_id:int
+    created_at:datetime
+
+@dataclass(frozen=True)
+class Asset_Id_Group_OutDTO:
+    id:int
+    name:str
+    group_id:int
+    location:LocationOutDTO
+    address_line:str
+    created_by_id:int
+    created_at:datetime
+
+
+@dataclass(frozen=True)
 class AssetOutDTO:
     id:int
     name:str
@@ -38,4 +59,3 @@ class CreateAssetDTO:
 @dataclass(frozen=True)
 class ListAssetDTO:
     group_id: int | None = None
-    user_id: int | None = None  # ← Додаємо для ідентифікації користувача
