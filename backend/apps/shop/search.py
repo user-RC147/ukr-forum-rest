@@ -42,23 +42,19 @@ class ProductSearchHandler:
     def search(self, params: SearchParams) -> list[SearchResultItem]:
 
         repo = get_repo()
-        qs = repo.searchable_queryset().only(
-            "id", "title", "description", "price", "created_at", "file_ids"
-        )
+        qs = repo.searchable_queryset().only("id")
         # FTS
         if params.query:
             raw_query = " & ".join(f"{w}:*" for w in params.query.split())
             query = SearchQuery(raw_query, search_type="raw", config="simple")
-            vector = SearchVector("title", weight="A", config="simple")
-
-            qs = (
-                qs.only("id", "title", "description", "price", "created_at", "file_ids")
-                .annotate(
-                    rank=SearchRank(vector, query),
-                    similarity=TrigramSimilarity("title", params.query),
-                )
-                .filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
+            vector = SearchVector("title", weight="A", config="simple") + SearchVector(
+                "description", weight="B", config="simple"
             )
+
+            qs = qs.annotate(
+                rank=SearchRank(vector, query),
+                similarity=TrigramSimilarity("title", params.query),
+            ).filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
 
         to_sort = dict()
         category_id = params.scope_filters.get("category_id")
@@ -93,12 +89,12 @@ class ProductSearchHandler:
         products = list(qs[: params.limit])
 
         service = get_service()
-        products = [service.get(p.id) for p in products]
+        products = service.get_many(product_ids=[p.id for p in products])
 
         # if params.radius:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-        return [_to_dto(obj) for obj in products]
+        return [_to_dto(obj) for obj in products.values()]
 
     # @staticmethod
     # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
