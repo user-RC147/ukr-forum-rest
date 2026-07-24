@@ -59,14 +59,6 @@ class ProductViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk: int):
         product = self.service.get(pk)
-        # try:
-
-        # except (
-        #     files_exceptions.NotFoundError,
-        #     search_exceptions.NotFoundError,
-        #     NotFoundError,
-        # ) as e:
-        #     raise NotFound(detail=str(e))
 
         serializer = ProductReadSerializer(product)
 
@@ -84,13 +76,6 @@ class ProductViewSet(viewsets.ViewSet):
 
         user = _to_dto_user(request.user)
         product = self.service.update(user, data)
-        # try:
-        # except ProductPermissionError:
-        #     raise PermissionDenied(detail="Access denied")
-        # except files_exceptions.NotFoundError as e:
-        #     raise NotFound(detail=str(e))
-        # except files_exceptions.ValidationError as e:
-        #     raise ValidationError(detail=str(e))
 
         return Response(ProductReadSerializer(product).data, status=status.HTTP_200_OK)
 
@@ -108,15 +93,6 @@ class ProductViewSet(viewsets.ViewSet):
     def destroy(self, request, pk: int):
         user = _to_dto_user(request.user)
         self.service.delete(user, pk)
-        # try:
-        # except (
-        #     files_exceptions.NotFoundError,
-        #     search_exceptions.NotFoundError,
-        #     NotFoundError,
-        # ) as e:
-        #     raise NotFound(detail=str(e))
-        # except ProductPermissionError:
-        #     raise PermissionDenied(detail="Access denied")
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
