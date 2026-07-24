@@ -26,13 +26,25 @@ class ProductRepository:
         return _to_dto(result)
 
     def get_many(
-        self, user_id: int | None = None, limit: int = 100
+        self,
+        page: int,
+        page_size: int,
+        user_id: int | None = None,
+        product_ids: list[int] | None = None,
     ) -> list[ProductRepoDTO]:
-        if user_id:
-            result = self.model.objects.filter(owner_id=user_id)
+        if product_ids:
+            qs = self.model.objects.filter(id__in=product_ids)
         else:
-            result = self.model.objects.all()
-        return [_to_dto(r) for r in result]
+            qs = self.model.objects.all()
+
+        if user_id:
+            qs = qs.filter(owner_id=user_id)
+        qs = qs.order_by("id")
+
+        offset = (page - 1) * page_size
+        items = list(qs[offset : offset + page_size])
+
+        return [_to_dto(i) for i in items]
 
     def create(self, data: dict) -> ProductRepoDTO:
         result = self.model.objects.create(**data)

@@ -1,7 +1,6 @@
 import dataclasses
 import logging
 
-from django.core.paginator import Paginator
 from django.db import transaction
 
 from apps.files.contracts import get_file_contract
@@ -81,22 +80,37 @@ class ProductService:
 
         return _to_dto(result)
 
+    def get_many(
+        self,
+        product_ids: list[int],
+        page: int = 1,
+        page_size: int = 20,
+    ) -> dict[int, ProductDTO]:
+        result = self.repo.get_many(
+            product_ids=product_ids, page=page, page_size=page_size
+        )
+        result = [dataclasses.asdict(p) for p in result]
+
+        self._attach_products(result)
+
+        return {p["id"]: _to_dto(p) for p in result}
+
     def get_all(
-        self, user, user_id=None, page: int = 1, page_size: int = 20
+        self,
+        user: RequestUserDTO | None = None,
+        user_id: int | None = None,
+        page: int = 1,
+        page_size: int = 20,
     ) -> list[ProductDTO]:
 
         if user_id:
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
-        result = self.repo.get_many(user_id)
+        items = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
+        if not items:
+            return []
 
-        paginator = Paginator(result, page_size)
-        page_products = list(paginator.page(page).object_list)
-
-        if not page_products:
-            return page_products
-
-        result = [dataclasses.asdict(p) for p in page_products]
+        result = [dataclasses.asdict(p) for p in items]
 
         self._attach_products(result)
 
