@@ -4,12 +4,12 @@ from .unit_of_measure_dto import UnitOfMeasureOutDTO
 
 
 @dataclass(frozen=True)
-class CategoryProductDTO:
+class CategoryProductOutDTO:
     id:int
     name:str
     icon:str
     is_active:bool
-    parent:Optional[int]
+    parent_id:int|None=None
 
 
 @dataclass(frozen=True)
@@ -17,8 +17,8 @@ class ProductOutDTO:
     id:int
     name:str
     unit_of_measure:UnitOfMeasureOutDTO
-    created_by: int
-    category:CategoryProductDTO
+    created_by_id: int
+    category:Optional[CategoryProductOutDTO]|None=None
 
 
 

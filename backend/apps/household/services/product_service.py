@@ -25,10 +25,11 @@ class ProductService:
     # def group_in_user_exsits(self):
     #     group_exsist = self._selector
 
-    def get_all_products(self)->list[ProductOutDTO]:
-        products = self._selector.get_all_product()
+    def get_all_products(self,user_id:int)->list[ProductOutDTO]:
 
-        return  products
+        if self._user_contract.get(user_id):
+            products = self._selector.get_all_product()
+            return products
     
     
     def create(self,dto:CreateProductInDTO,user_id:int)->Product:

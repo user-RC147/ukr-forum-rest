@@ -3,6 +3,7 @@ from .asset_selector import AssetSelector
 from .product_selector import ProductSelector
 from .group_selector import GroupSelector
 from .category_selector import CategorySelector
+from .purchase_item_selector import PurchaseItemSelector
 
 
 __all__=[
@@ -10,6 +11,9 @@ __all__=[
     'AssetSelector',
     'ProductSelector',
     'GroupSelector',
-    'CategorySelector'
+    'CategorySelector',
+
+    #PurchaseItem
+    'PurchaseItemSelector',
     
 ]

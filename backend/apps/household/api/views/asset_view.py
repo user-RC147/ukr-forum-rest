@@ -28,7 +28,9 @@ class AssetViewSet(ViewSet):
         Повертає активи для селекту на сторінці створення чека.
         """
       
-        serializer = AssetListFilterSerializer(data=request.data)
+        serializer = AssetListFilterSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+       
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -36,7 +38,7 @@ class AssetViewSet(ViewSet):
         dto = ListAssetDTO(
             group_id=serializer.validated_data.get('group_id'),
         )
-        
+            
         asset_list = self._service.get_list_asset(dto,request.user.id)
         
         output_serializer = AssetOutSerializer(asset_list, many=True)

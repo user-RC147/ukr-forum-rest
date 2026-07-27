@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Sequence
+from typing import Optional, Sequence
 
 from apps.household.dto.role_dto import RoleOutDTO
 from apps.household.dto.user_dto import User_Id_OutDTO, UserOutDTO
@@ -42,6 +42,13 @@ class Group_Id_Name_OutDTO:
     id:int
     name:str
 
+
+@dataclass
+class Group_Id_Name_InDTO:
+    id:int|None = None
+    name:str|None = None
+
+
 @dataclass(frozen=True)
 class GroupOutDTO:
     """
@@ -52,7 +59,7 @@ class GroupOutDTO:
     name:str
     created_by: UserOutDTO
     created_at: datetime
-    members: Sequence[GroupMemberOutDTO]  # Послідовність учасників для серіалізатора
+    members: Optional[list[GroupMemberOutDTO]] # Послідовність учасників для серіалізатора
 
 
 @dataclass(frozen=True)

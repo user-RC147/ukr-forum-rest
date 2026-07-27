@@ -25,8 +25,11 @@ class AssetSelector:
         Повертає список активів (Asset), які належать до конкретної групи.
         """
         # Фільтруємо поле group_id значенням, яке лежить всередині DTO
+   
         if dto.group_id is not None:
             
+
+
             asset_list = Asset.objects.filter(
                 Q(group_id=dto.group_id) &
                 (Q(group__members__user_id=user_id) |

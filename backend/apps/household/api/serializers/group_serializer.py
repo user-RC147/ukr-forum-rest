@@ -23,9 +23,8 @@ class GroupMemberOutSerializer(serializers.Serializer):
     Працює виключно з об'єктами GroupMemberOutDTO.
     """
     id = serializers.IntegerField(read_only=True)
-    group_id=serializers.IntegerField(read_only=True)
-    user_id = serializers.IntegerField(read_only=True)
-    user = serializers.CharField(read_only=True)
+    group_id=serializers.IntegerField(read_only=True)   
+    user = UserOutSerializer()
     role = RoleSerialiser()
     joined_at = serializers.DateTimeField(format="%Y-%m-%d")
 
@@ -39,10 +38,14 @@ class GroupOutSerializer(serializers.Serializer):
 
 
 
+# class CreateGroupInSerializer(serializers.Serializer):
+#     name=serializers.CharField()
+    
+
+class Group_Id_InSerializer(serializers.Serializer):
+    group_id=serializers.IntegerField(required=False,
+    allow_null=True,)
+
+
 class CreateGroupInSerializer(serializers.Serializer):
     name=serializers.CharField()
-
-
-class CreateGroupInSerializerTime(serializers.Serializer):
-    name=serializers.CharField()
-    created_by=serializers.IntegerField()

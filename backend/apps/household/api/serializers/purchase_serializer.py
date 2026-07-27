@@ -1,4 +1,5 @@
 from itertools import product
+from xml.dom.minidom import Childless
 from rest_framework import serializers
 
 from apps.household.api.serializers.group_serializer import GroupOutSerializer
@@ -18,6 +19,18 @@ class PurchaseItemOutSerializer(serializers.Serializer):
     price_per_unit=serializers.DecimalField(max_digits=12, decimal_places=2)
 
 
+class Purchase_Id_OutSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    asset_id = serializers.ImageField()
+    market_id = serializers.IntegerField()
+    data_purchase = serializers.DateField()
+    note = serializers.CharField()
+    created_by_id=serializers.IntegerField()
+    created_at = serializers.DateTimeField()
+    items = PurchaseItemOutSerializer(many=True)
+    total_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
 class PurchaseOutSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     asset = AssetOutSerializer()
@@ -26,8 +39,8 @@ class PurchaseOutSerializer(serializers.Serializer):
     note = serializers.CharField()
     created_by_id=serializers.IntegerField()
     created_at = serializers.DateTimeField()
-    items = list[PurchaseItemOutSerializer()]
-
+    items = PurchaseItemOutSerializer(many=True)
+    total_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
 
 class CreatePurchaseItemSerializer(serializers.Serializer):
     """
@@ -57,12 +70,7 @@ class CreatePurchaseSerializer(serializers.Serializer):
     # group_id = GroupOutSerializer()
 
     data_purchase = serializers.DateTimeField(help_text="Дата здійснення покупки")
-    # note = serializers.CharField(
-    #     required=False,
-    #     allow_blank=True,
-    #     default="",
-    #     help_text="Додаткова текстова нотатка до чека",
-    # )
+ 
 
     # Вкладений серіалізатор для перевірки списку товарів (таблиці)
-    items = CreatePurchaseItemSerializer()
+    items = CreatePurchaseItemSerializer(many=True)
