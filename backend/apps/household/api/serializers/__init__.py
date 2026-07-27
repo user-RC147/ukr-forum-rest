@@ -6,6 +6,7 @@ from .purchase_serializer import CreatePurchaseSerializer, CreatePurchaseItemSer
 from .category_serializer import CategoryInSerializer
 from .location_serializer import LocationOutSerializer,CountryOutSerializer,RegionOutSerializer,CityOutSerializer,LocationInSerializer
 from .user_serializer import UserOutSerializer
+from .paginator_purchase_item_serializer import PaginatorSerializerOut
 
 
 __all__=[
@@ -44,6 +45,7 @@ __all__=[
 
     #User
     'UserOutSerializer',
-    
-    
+
+    #Paginator
+    'PaginatorSerializerOut',   
 ]

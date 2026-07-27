@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.viewsets import ViewSet
 
 
+from apps.household.api.serializers.paginator_purchase_item_serializer import PaginatorSerializerOut
 from apps.household.api.serializers.purchase_serializer import PurchaseItemOutSerializer
 from apps.household.services.purchase_item_service import PurchaseItemService
 
@@ -19,14 +20,16 @@ class PurchaseItemViewSet(ViewSet):
 
     def list(self, request):
         user_id = request.user.id
+        page=int(request.query_params.get('page',1))
+        page_size=int(request.query_params.get('page_size',5))
 
-        purchase_items = self._service.get_all_purchase_item(user_id)
+        purchase_items = self._service.get_all_purchase_item(user_id,page,page_size)
 
-        serializer = PurchaseItemOutSerializer(purchase_items,many=True)
+        results = PurchaseItemOutSerializer(purchase_items.items,many=True)
+        paginator =PaginatorSerializerOut(purchase_items)
 
-        results = serializer.data
 
-        return Response({'results':results}, status=status.HTTP_200_OK)
+        return Response({'results':results.data,'paginator':paginator.data}, status=status.HTTP_200_OK)
 
     # def create(self, request):
     #     pass

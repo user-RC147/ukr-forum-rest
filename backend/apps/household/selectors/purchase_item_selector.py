@@ -7,11 +7,13 @@ from apps.household.dto.product_dto import ProductOutDTO
 
 from apps.household.models.unit_of_measure import UnitOfMeasure
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
+from core.paginations.func_paginator import paginate_build
+from core.paginations.paginated_result_dto import PaginatorDTO
 
 
 class PurchaseItemSelector:
 
-    def get_all_purchase_item(self, user_id: int) -> list[PurchaseItemOutDTO]:
+    def get_all_purchase_item(self, user_id: int,page: int, page_size: int) -> PaginatorDTO[PurchaseItemOutDTO]:
 
         purchase_items = PurchaseItem.objects.filter(
             Q(purchase__asset__group__members__user_id=user_id) |            
@@ -23,9 +25,17 @@ class PurchaseItemSelector:
             "product__unit_of_measure",
         ).distinct()
 
-        dto = [_to_dto_purchase_item(item)for item in purchase_items]
+        count = purchase_items.count()
 
-        return dto
+        offset = (page - 1) * page_size
+        page_items = purchase_items[offset : offset + page_size]
+
+
+        dto = [_to_dto_purchase_item(item)for item in page_items]
+
+        paginator_pages = paginate_build(dto, count, page, page_size)
+
+        return paginator_pages
 
 
 def _to_dto_unit(data: UnitOfMeasure) -> UnitOfMeasureOutDTO:
