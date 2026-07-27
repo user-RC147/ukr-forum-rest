@@ -186,16 +186,12 @@
                     </option>
                 </select>
             </div>
-
-            <div class="bg-amber-100 px-4 py-3 rounded-2xl text-center whitespace-nowrap">
-                {{ userStore.user?.username || userStore.user?.display_name || 'Завантаження...' }}
-            </div>
-
             <div class="bg-amber-100 px-4 py-3 rounded-2xl flex min-w-[130px]">
                 <select v-model="selectedGroup" class="w-full bg-transparent focus:outline-none">
                     <option :value="null">Всі групи</option>
-                    <option v-for="group in groupStore.groups" :key="group.group.id" :value="group.group.id">
-                        {{ group.group.name }}
+                    
+                    <option v-for="group in groupStore.groups" :key="group.id" :value="group.id">
+                        {{ group.name }}
                     </option>
                 </select>
             </div>

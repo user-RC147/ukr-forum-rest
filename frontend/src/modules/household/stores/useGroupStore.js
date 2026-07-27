@@ -12,7 +12,7 @@ export const useGroupStore = defineStore('groups', () => {
     error.value = null
     try {
       const response = await getGroups()
-      groups.value = response.data
+      groups.value = response.data.results
     } catch (e) {
       error.value = 'Помилка завантаження груп'
     } finally {

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass(frozen=True)
 class User_Id_OutDTO:
@@ -9,5 +10,5 @@ class User_Id_OutDTO:
 @dataclass(frozen=True)
 class UserOutDTO:
     id:int
-    username:str
+    username:Optional[str]
     display_name:str

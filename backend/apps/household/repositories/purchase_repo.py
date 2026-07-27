@@ -14,13 +14,17 @@ from apps.household.dto.location_dto import (
     LocationIdOutDTO,
     RegionNameOutDTO,
 )
+
+from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.dto.market_dto import Market_Id_Name_OutDTO
-from apps.household.dto.product_dto import CategoryProductDTO, ProductOutDTO
+from apps.household.dto.product_dto import CategoryProductOutDTO, ProductOutDTO
 from apps.household.dto.purchase_dto import (
+    Purchase_Id_OutDTO,
     PurchaseItemOutDTO,
     CreatePurchaseInDTO,
     PurchaseOutDTO,
     Purchase_Id_Name_OutDTO,
+    PurchaseItemInDTO,
 )
 
 from apps.household.models.purchase import Purchase
@@ -57,8 +61,8 @@ class PurchaseRepo:
 
         return location_id_name
 
-    def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> bool:
-
+    def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> Purchase_Id_OutDTO:
+        
         with transaction.atomic():
             create_purchase = Purchase.objects.create(
                 asset_id=dto.asset_id,
@@ -67,10 +71,75 @@ class PurchaseRepo:
                 created_by_id=creator_user_id,
                 note=dto.note,
             )
-            PurchaseItemRepo().create_items_for_repo_purchase(dto=dto.items, purchase_id=create_purchase.id)
+            PurchaseItemRepo().create_items_for_repo_purchase(
+                dto=dto.items, purchase_id=create_purchase.id
+            )
 
-            # Оновлюємо об'єкт з бази, щоб отримати актуальний total_amount
-
+        purchase_id_obj = Purchase.objects.select_related(
+            "asset",
+            "market"
+            ).prefetch_related(
+                'items__product__unit_of_measure',
+                'items__product__category'
+            ).get(id=create_purchase.id)
         
+        dto = _to_dto_new_purchase_out(purchase_id_obj)
+       
 
-        return True
+        return dto
+
+
+# def _to_dto_asset_out(data)->AssetOutDTO:
+#     return AssetOutDTO()
+
+# def _to_dto_market_out(data)->MarketFullOutDTO:
+#     return MarketFullOutDTO()
+
+
+def _to_dto_unit_out(data) -> UnitOfMeasureOutDTO:
+    return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)
+
+
+def _to_dto_category_out(data) -> CategoryProductOutDTO:
+    return CategoryProductOutDTO(
+        id=data.id,
+        name=data.name,
+        icon=data.icon,
+        is_active=data.is_active,
+        parent_id=data.parent_id,
+    )
+
+
+def _to_dto_product_out(data) -> ProductOutDTO:
+    return ProductOutDTO(
+        id=data.id,
+        name=data.name,
+        unit_of_measure=_to_dto_unit_out(data.unit_of_measure),
+        created_by_id=data.created_by_id,
+        category=_to_dto_category_out(data.category) if data.category else None,
+    )
+
+
+def _to_dto_item_purchase_out(data) -> PurchaseItemOutDTO:
+    return PurchaseItemOutDTO(
+        id=data.id,
+        purchase_id=data.purchase_id,
+        product=_to_dto_product_out(data.product),
+        quantity=data.quantity,
+        price_per_unit=data.price_per_unit,
+        total_price=data.total_price,
+    )
+
+
+def _to_dto_new_purchase_out(data) -> Purchase_Id_OutDTO:
+    return Purchase_Id_OutDTO(
+        id=data.id,
+        data_purchase=data.data_purchase,
+        note=data.note,
+        asset_id=data.asset_id,
+        market_id=data.market_id,
+        created_at=data.created_at,
+        created_by_id=data.created_by_id,
+        items=[_to_dto_item_purchase_out(item) for item in data.items.all()],
+        total_amount=data.total_amount,
+    )

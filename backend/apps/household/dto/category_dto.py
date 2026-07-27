@@ -13,4 +13,4 @@ class CategoryOutDTO:
     name:str
     icon:str
     is_active:bool
-    parent:int
+    parent_id:int

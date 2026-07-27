@@ -1,6 +1,6 @@
 from apps.geo import repositories
 from apps.household.dto import CreateGroupInDTO, GroupOutDTO
-from apps.household.dto.group_dto import Group_id_user_OutDTO,GroupMemberOutDTO
+from apps.household.dto.group_dto import Group_id_user_OutDTO,GroupMemberOutDTO,Group_Id_Name_InDTO
 from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
@@ -22,12 +22,21 @@ class GroupService:
         self._repository = GroupRepo()
 
     # =================================================
-    def _to_user_out(self, data, users_map) -> UserOutDTO:
+    def _to_creator_out(self, data, users_map) -> UserOutDTO:
 
         return UserOutDTO(
             id=users_map[data.created_by_id].id,
             username=users_map[data.created_by_id].username,
             display_name=users_map[data.created_by_id].display_name,
+        )
+    
+    
+    def _to_user_out(self, data, users_map) -> UserOutDTO:
+
+        return UserOutDTO(
+            id=users_map[data.user_id].id,
+            username=users_map[data.user_id].username,
+            display_name=users_map[data.user_id].display_name,
         )
 
     def _to_group_member_out(self,data,users_map)->GroupMemberOutDTO:
@@ -45,17 +54,18 @@ class GroupService:
         return GroupOutDTO(
             id=data.id,
             name=data.name,
-            created_by=self._to_user_out(data, users_map),
+            created_by=self._to_creator_out(data, users_map),
             created_at=data.created_at,
             members=[self._to_group_member_out(member,users_map)for member in data.members],
         )
 
     # =================================================
 
-    def get_all_group_member_by_user(self, user_id: int):
+    def get_all_group_member_by_user(self, dto:Group_Id_Name_InDTO,user_id:int):
+      
 
         if self._get_user_contract.get(user_id):
-            group_members = self._selector.get_all_group_by_user(user_id=user_id)
+            group_members = self._selector.get_all_group_by_user(dto,user_id)
 
             user_ids = set(
                 {group.created_by_id for group in group_members}
@@ -71,6 +81,8 @@ class GroupService:
 
     def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> bool:
         # перевірка корстувача
-        if not self._selector.get_group_by_name(dto) and self._get_user_contract.get(creator_id):
-            return self._repository.create_group(dto=dto, creator_id=creator_id)
+        creator_user= self._get_user_contract.get(creator_id)
+
+        if not self._selector.get_group_by_name(dto) and creator_user:
+            return self._repository.create_group(dto=dto, creator_user=creator_user)
       

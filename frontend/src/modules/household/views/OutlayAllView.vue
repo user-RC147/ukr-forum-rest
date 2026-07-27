@@ -4,18 +4,48 @@
     import { useUserStore } from '@/shared/stores/useUserStore.js';
     import { useAssetStore } from '../stores/useAssetStore.js';
 
+    //===Group====
     const groupStore = useGroupStore();
     const selectedGroup = ref(null); // Тут зберігається id вибраної групи
+    const activeMember=ref(null)
+
+    const selectedGroupMembers = computed(() => {
+        const users = groupStore.groups.find((group) => group.id === selectedGroup.value);        
+        
+        if (users) {
+            // Обгортаємо власника у форму, схожу на GroupMemberOutDTO,
+            // щоб <select> міг однаково звертатись через member.user.username
+            const ownerAsMember={
+                id:`owner-${users.created_by.id}`, // унікальний id, щоб не перетнутись з id звичайних members
+                user: users.created_by,
+                role: {id:0, name:'creator',name_ua:'Власник'},
+            };
+
+            // concat об'єднує два масиви "на одному рівні" (без вкладеності)
+            // тут: масив з одним елементом (власник) + масив звичайних учасників
+            return [ownerAsMember].concat(users.members);
+        }else{
+            return []
+        }
+    });
+
+    watch(selectedGroupMembers, (newMembers)=>{
+        const found = newMembers.find((member) => member.user.id === userStore.user.id);
+        
+        activeMember.value = found ? found.id : null;
+        
+    });
+
+    //=======
+
+
 
     const userStore = useUserStore(); //ref() // замінити на store.user.username
 
     const assetStore = useAssetStore();
     const selectedAsset = ref(null);
 
-    // Тільки групи де поточний user є учасником
-    // const myGroups = computed(() =>
-    //     groupStore.groups.filter((group) => group.members.some((member) => member.user_id === userStore.user?.id))
-    // );
+
 
     onMounted(() => {
         groupStore.fetchGroups();
@@ -77,6 +107,8 @@
                 </div>
             </div>
 
+            
+
             <!-- Група -->
             <div class="flex flex-col gap-2">
                 <router-link
@@ -88,8 +120,8 @@
                 <div class="bg-amber-100 px-4 py-2 rounded-2xl">
                     <select v-model="selectedGroup" class="bg-transparent focus:outline-none text-sm">
                         <option :value="null">Всі групи</option>
-                        <option v-for="g in groupStore.groups" :key="g.group.id" :value="g.group.id">
-                            {{ g.group.name }}
+                        <option v-for="g in groupStore.groups" :key="g.id" :value="g.id">
+                            {{ g.name }}
                         </option>
                     </select>
                 </div>
@@ -97,18 +129,41 @@
         </div>
 
         <!-- Кнопка додати чек -->
-        <div class="mb-6">
+        <div class="flex justify-between mb-6">
             <router-link
-                :to="{ name: 'household-purchases-create',
-                    query: { 
-                            group_id: selectedGroup, 
-                            asset_id: selectedAsset 
-                        }
-                 }"
+                :to="{
+                    name: 'household-purchases-create',
+                    query: {
+                        group_id: selectedGroup,
+                        asset_id: selectedAsset,
+                    },
+                }"
                 class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition"
             >
                 + Додати чек
             </router-link>
+
+
+            <div class="flex flex-col gap-2 justify-center">
+                <select 
+                    class="border-0"
+                    v-model="activeMember">
+                    <option 
+                        class="text-center bg-blue-100"
+                        :value="null">Учасники групи</option>
+                    <option 
+                        class="text-center"
+                        v-for="member in selectedGroupMembers" :key="member.id" :value="member.id">
+                        {{ member.user.username }}
+                    </option>
+                </select>
+            </div>
+
+
+
+
+
+
         </div>
 
         <!-- Таблиця витрат -->

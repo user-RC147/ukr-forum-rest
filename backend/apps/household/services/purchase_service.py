@@ -1,5 +1,9 @@
 from apps.household.dto.asset_dto import AssetOutDTO
-from apps.household.dto.group_dto import GroupOutDTO, GroupMemberOutDTO
+from apps.household.dto.group_dto import (
+    GroupOutDTO,
+    GroupMemberOutDTO,
+    GroupMember_id_user_OutDTO,
+)
 from apps.household.dto.location_dto import (
     CityOutDTO,
     CountryOutDTO,
@@ -9,13 +13,12 @@ from apps.household.dto.location_dto import (
 from apps.household.dto.market_dto import MarketFullOutDTO
 from apps.household.dto.purchase_dto import (
     CreatePurchaseInDTO,
+    Purchase_Id_OutDTO,
     PurchaseItemOutDTO,
     PurchaseOutDTO,
     Purchase_Id_Name_OutDTO,
 )
 
-# ПОЯСНЕННЯ ДІЇ: Використовуємо створені нами точки входу (__init__.py -> __all__)
-# Тепер нам не треба писати довжелезні шляхи до кожного окремого файлу.
 from apps.household.repositories.purchase_repo import PurchaseRepo
 from apps.household.selectors.group_selector import GroupSelector
 
@@ -27,8 +30,9 @@ from apps.geo.contracts import (
 from apps.household.selectors.purchase_selector import PurchaseSelector
 from apps.household.dto.user_dto import UserOutDTO
 from apps.household.dto.role_dto import RoleOutDTO
+from apps.household.dto.product_dto import ProductOutDTO, CategoryProductOutDTO
+from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 
-from dataclasses import fields
 from apps.users.contracts.user_contract import get_user_contract
 
 from apps.users.dto.user import UserDTO
@@ -109,21 +113,23 @@ class PurchaseService:
         user_map = _get_user_contract(purchase_list)
 
         locations_asset_and_makret = self._get_locations_geo(purchase_list)
-        
+
         dto = [
             PurchaseOutDTO(
                 id=purchase.id,
                 data_purchase=purchase.data_purchase,
                 note=purchase.note,
                 asset=_dto_asset_out(
-                    purchase.asset, locations=locations_asset_and_makret,user_map=user_map
+                    purchase.asset,
+                    locations=locations_asset_and_makret,
+                    user_map=user_map,
                 ),
                 market=_dto_market_dto(
                     purchase.market, locations=locations_asset_and_makret
                 ),
                 created_at=purchase.created_at,
                 created_by_id=purchase.created_by_id,
-                items=purchase.items,
+                items=[_to_dto_items(item) for item in purchase.items],
                 # Фінансовий підсумок чека
                 total_amount=purchase.total_amount,
             )
@@ -132,78 +138,50 @@ class PurchaseService:
 
         return dto
 
-    def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> PurchaseOutDTO:
+    def create(
+        self, dto: CreatePurchaseInDTO, creator_user_id: int
+    ) -> Purchase_Id_OutDTO:
         """
         Бізнес-процес створення чека з попередньою перевіркою ролей учасника.
         """
-        create_purchase = self._repository.create(
-            dto=dto, creator_user_id=creator_user_id
-        )
 
-        countries = {
-            create_purchase.asset.location.country.id,
-            create_purchase.market.location.country.id,
-        }
-        regions = {
-            create_purchase.asset.location.region.id,
-            create_purchase.market.location.region.id,
-        }
+        return self._repository.create(dto=dto, creator_user_id=creator_user_id)
 
-        cities = {
-            create_purchase.asset.location.city.id,
-            create_purchase.market.location.city.id,
-        }
 
-        countries = self._get_country_contract.get_many(list(countries))
-        regions = self._get_region_contract.get_many(list(regions))
-        cities = self._get_city_contract.get_many(list(cities))
-
-        new_create_purchase = PurchaseOutDTO(
-            id=create_purchase.id,
-            data_purchase=create_purchase.data_purchase,
-            note=create_purchase.note,
-            asset=AssetOutDTO(
-                id=create_purchase.asset.id,
-                name=create_purchase.asset.name,
-                group=create_purchase.asset.group,
-                location=self.get_location_full(create_purchase.asset),
-                address_line=create_purchase.asset.address_line,
-                created_by_id=create_purchase.created_by_id,
-                created_at=create_purchase.created_at,
-            ),
-            market=MarketFullOutDTO(
-                id=create_purchase.market.id,
-                name=create_purchase.market.name,
-                address_line=create_purchase.market.address_line,
-                location=self.get_location_full(create_purchase.market),
-            ),
-            created_at=create_purchase.created_at,
-            created_by_id=create_purchase.created_by_id,
-            items=create_purchase.items,
-            # Фінансовий підсумок чека
-            total_amount=create_purchase.total_amount,
-        )
-
-        return new_create_purchase
+# ==========================================================================
+# ==========================================================================
 
 
 def _get_user_contract(data):
     users_ids = set()
 
-    for item in data:
-        for member in item.asset.group.members:
+    for purchase in data:
+        users_ids.add(purchase.asset.created_by_id)
+        users_ids.add(purchase.asset.group.created_by_id)
+
+        for member in purchase.asset.group.members:
             users_ids.add(member.user_id)
 
-    user_map =get_user_contract().get_many(users_ids)
-    
+    user_map = get_user_contract().get_many(users_ids)
+
     return user_map
 
 
-def _dto_user_out(data,user_map) -> UserOutDTO:
+def _to_dto_user_out(data, user_map) -> UserOutDTO:
+    return UserOutDTO(
+        id=user_map[data.user_id].id,
+        username=user_map[data.user_id].username if not data.user_id else None,
+        display_name=user_map[data.user_id].display_name,
+    )
+
+
+def _to_dto_creator_by_out(data, user_map) -> UserOutDTO:
     return UserOutDTO(
         id=user_map[data.created_by_id].id,
-        username=user_map[data.created_by_id].username,
-        display_name=user_map[data.created_by_id].display_name
+        username=(
+            user_map[data.created_by_id].username if not data.created_by_id else None
+        ),
+        display_name=user_map[data.created_by_id].display_name,
     )
 
 
@@ -213,23 +191,23 @@ def _dto_role_out(data) -> RoleOutDTO:
     )
 
 
-def _dto_group_members(data) -> GroupMemberOutDTO:
+def _dto_group_members(data, user_map) -> GroupMemberOutDTO:
     return GroupMemberOutDTO(
         id=data.id,
         group_id=data.group_id,
-        user_id=data.user_id,
-        role=_dto_role_out(data.rele),
+        user=_to_dto_user_out(data, user_map),
+        role=_dto_role_out(data.role),
         joined_at=data.joined_at,
     )
 
 
-def _dto_group_out(data,user_map) -> GroupOutDTO:
+def _dto_group_out(data, user_map) -> GroupOutDTO:
     return GroupOutDTO(
         id=data.id,
         name=data.name,
-        created_by=_dto_user_out(data,user_map),
+        created_by=_to_dto_creator_by_out(data, user_map),
         created_at=data.created_at,
-        members=data.members,
+        members=[_dto_group_members(member, user_map) for member in data.members],
     )
 
 
@@ -273,11 +251,11 @@ def _dto_location_out(data, locations) -> LocationOutDTO:
     )
 
 
-def _dto_asset_out(data, locations,user_map) -> AssetOutDTO:
+def _dto_asset_out(data, locations, user_map) -> AssetOutDTO:
     return AssetOutDTO(
         id=data.id,
         name=data.name,
-        group=_dto_group_out(data.group,user_map),
+        group=_dto_group_out(data.group, user_map),
         location=_dto_location_out(data.location, locations),
         address_line=data.address_line,
         created_by_id=data.created_by_id,
@@ -294,15 +272,36 @@ def _dto_market_dto(data, locations) -> MarketFullOutDTO:
     )
 
 
-def _dto_items(data: Purchase_Id_Name_OutDTO) -> PurchaseItemOutDTO:
-    return PurchaseItemOutDTO(items=data)
+def _to_dto_unit_out(data) -> UnitOfMeasureOutDTO:
+    return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)
 
 
-# PurchaseItemOutDTO(
-#         id:int
-#         purchase_id:int
-#         product:ProductOutDTO
-#         quantity:Decimal
-#         price_per_unit:Decimal
-#         total_price:Decimal
-#     )
+def _to_dto_category_out(data) -> CategoryProductOutDTO:
+    return CategoryProductOutDTO(
+        id=data.id,
+        name=data.name,
+        icon=data.icon,
+        is_active=data.is_active,
+        parent_id=data.parent_id,
+    )
+
+
+def _to_dto_product_out(data) -> ProductOutDTO:
+    return ProductOutDTO(
+        id=data.id,
+        name=data.name,
+        unit_of_measure=_to_dto_unit_out(data.unit_of_measure),
+        created_by_id=data.created_by_id,
+        category=_to_dto_category_out(data.category) if data.category else None,
+    )
+
+
+def _to_dto_items(data: Purchase_Id_Name_OutDTO) -> PurchaseItemOutDTO:
+    return PurchaseItemOutDTO(
+        id=data.id,
+        purchase_id=data.purchase_id,
+        product=_to_dto_product_out(data.product),
+        quantity=data.quantity,
+        price_per_unit=data.price_per_unit,
+        total_price=data.total_price,
+    )

@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from apps.household.dto.product_dto import CategoryProductDTO, ProductOutDTO
+from apps.household.dto.product_dto import CategoryProductOutDTO, ProductOutDTO
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.models.product import Product
 from apps.household.exceptions import ProductNotFoundException
@@ -10,49 +10,46 @@ class ProductSelector:
 
     def get_all_product(self)->list[ProductOutDTO]:
         products = Product.objects.select_related(
-            "category", "unit_of_measure", "created_by").all()
+            'category',
+            'unit_of_measure'
+        ).distinct()
+        
+        return [ProductOutDTO(
+            id=product.id,
+            name=product.name,
+            unit_of_measure=_dto_unit_out(product.unit_of_measure),
+            created_by_id=product.created_by_id,
+            category=_dto_category_out(product.category) if product.category else None,
+        )for product in products]
 
-        dto: list[ProductOutDTO] = [
-            ProductOutDTO(
-                id=product.id,
-                name=product.name,
-                unit_of_measure=UnitOfMeasureOutDTO(
-                    id=product.unit_of_measure.id,
-                    name=product.unit_of_measure.name,
-                    code=product.unit_of_measure.code,
-                ),
-                created_by=product.created_by,
-                category=(
-                    CategoryProductDTO(
-                        id=product.category.id,
-                        name=product.category.name,
-                        icon=product.category.icon,
-                        is_active=product.category.is_active,
-                        parent=product.category.parent_id,
-                    )
-                    if product.category
-                    else None
-                ),
-            )
-            for product in products
-        ]
-        return dto
+         
+         
 
-    # def get_product_list(self,search_query:str=None)->list[Product]:
-    #     """Повертає список товарів з можливістю текстового пошуку."""
-    #     queryset=Product.objects.all()
-
-    #     if search_query:
-    #         queryset=queryset.filter(name__icontains=search_query)
-    #     return list(queryset.order_by('name'))
 
     def get_product_by_name(self, name: str) -> Product:
         """Повертає товар за його назвою."""
-        try:
-            return Product.objects.get(name=name)
-        except Product.DoesNotExist:
-            raise ProductNotFoundException(f"Product with name '{name}' not found.")
+       
+        return Product.objects.get(name=name)
+   
 
     def find_product_by_name(self, name: str) -> Product | None:
         """Повертає список товарів, які містять пошуковий запит у назві."""
         return Product.objects.filter(name=name).first()
+
+def _dto_category_out(data)->CategoryProductOutDTO:
+    return CategoryProductOutDTO(
+        id=data.id,
+        name=data.name,
+        icon=data.icon,
+        is_active=data.is_active,
+        parent_id=data.parent_id
+    )
+
+
+
+def _dto_unit_out(data)->UnitOfMeasureOutDTO:
+    return UnitOfMeasureOutDTO(
+        id=data.id,
+        name=data.name,
+        code=data.code
+    )

@@ -1,4 +1,4 @@
-from apps.household.dto.group_dto import Group_id_user_OutDTO, GroupMember_id_user_OutDTO, GroupOutDTO,CreateGroupInDTO,RoleOutDTO
+from apps.household.dto.group_dto import Group_Id_Name_InDTO,Group_id_user_OutDTO, GroupMember_id_user_OutDTO, GroupOutDTO,CreateGroupInDTO,RoleOutDTO
 from apps.household.models.group import Group, GroupMember, Role
 from django.db.models import Q
 
@@ -12,23 +12,33 @@ class GroupSelector:
     def get_group_by_name(self,dto:CreateGroupInDTO)->bool:            
         return Group.objects.filter(name=dto.name).exists()
 
-    def get_all_group_by_user(self, user_id: int):
+    def get_all_group_by_user(self, dto:Group_Id_Name_InDTO, user_id: int):
         # Шукаємо зв'язки учасників і підвантажуємо групу та роль, щоб не було зайвих запитів
         #Group.objects.filter(members__user_id=user_id).prefetch_related("members__user", "members__role" )
 
         #groups = Group.objects.filter(members__user_id=user_id).prefetch_related("members__role" )
         
-        
-
-        groups = (Group.objects.filter(
-                Q(created_by_id=user_id) |
-                Q(members__user_id=user_id)
+        if dto.id:
+            groups = (Group.objects.filter(
+                Q(id=dto.id) &
+                   ( Q(created_by_id=user_id) |
+                    Q(members__user_id=user_id))
+                )
+                .distinct()
+                .prefetch_related(
+                    "members__role"
+                )
+            )        
+        else:
+            groups = (Group.objects.filter(
+                    Q(created_by_id=user_id) |
+                    Q(members__user_id=user_id)
+                )
+                .distinct()
+                .prefetch_related(
+                    "members__role"
+                )
             )
-            .distinct()
-            .prefetch_related(
-                "members__role"
-            )
-        )
         
         groups_dto = [_to_group_id_user_out(group_obj) for group_obj in groups]
 

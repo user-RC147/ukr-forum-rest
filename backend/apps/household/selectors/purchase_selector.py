@@ -1,7 +1,9 @@
+from django.db.models import Q
+
 from apps.household.dto.group_dto import (
     Group_id_user_OutDTO,
     GroupMemberOutDTO,
-    GroupOutDTO,
+    GroupOutDTO,GroupMember_id_user_OutDTO
 )
 from apps.household.dto.purchase_dto import PurchaseItemOutDTO, Purchase_Id_Name_OutDTO
 from apps.household.dto.asset_dto import AssetId_Name_OutDTO
@@ -10,8 +12,8 @@ from apps.household.dto.product_dto import ProductOutDTO
 from apps.household.dto.location_dto import LocationIdInDTO
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.dto.category_dto import CategoryOutDTO
-
 from apps.household.dto.user_dto import User_Id_OutDTO
+
 from apps.household.models.asset import Asset
 from apps.household.models.category import Category
 from apps.household.models.group import Group, GroupMember
@@ -27,17 +29,27 @@ class PurchaseSelector:
         super().__init__(**kwargs)
 
     def get_all_purchase(self, user_id: int) -> list[Purchase_Id_Name_OutDTO]:
-
+        
         purchase_list = Purchase.objects.filter(
-            asset__group__members__user_id=user_id
+            Q(asset__group__members__user_id=user_id) |
+            Q(asset__group__created_by_id=user_id)
         ).select_related(
             "asset",
             "market",
             "asset__group",
             "asset__created_by",
+            
+        ).prefetch_related(
+            "items",
+            "asset__group__members",
+            'items__product__unit_of_measure',
+            'items__product__category'
         )
 
-        dto_purchase_list = [_dto_purchase(purchase) for purchase in purchase_list]
+        print(purchase_list.count())
+        print(list(purchase_list))
+
+        dto_purchase_list = [_dto_purchase(purchase) for purchase in purchase_list]       
 
         return dto_purchase_list
 
@@ -52,8 +64,8 @@ def _to_user(data: Purchase) -> User_Id_OutDTO:
     return User_Id_OutDTO(id=data.id)
 
 
-def _to_group_members(data: GroupMember) -> GroupMemberOutDTO:
-    return GroupMemberOutDTO(
+def _to_group_members(data: GroupMember) -> GroupMember_id_user_OutDTO:
+    return GroupMember_id_user_OutDTO(
         id=data.id,
         group_id=data.group_id,
         user_id=data.user_id,
@@ -97,14 +109,16 @@ def _to_unit(data: UnitOfMeasure) -> UnitOfMeasureOutDTO:
     return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)
 
 
-def _to_categoty(data: Category) -> CategoryOutDTO:
-    return CategoryOutDTO(
-        id=data.id,
-        name=data.name,
-        icon=data.icon,
-        is_active=data.is_active,
-        parent=data.parent,
-    )
+def _to_category(data: Category|None) -> CategoryOutDTO|None:
+
+    if data:
+        return CategoryOutDTO(
+            id=data.id,
+            name=data.name,
+            icon=data.icon,
+            is_active=data.is_active,
+            parent_id=data.parent_id,
+        )
 
 
 def _to_product(data: Product) -> ProductOutDTO:
@@ -112,8 +126,8 @@ def _to_product(data: Product) -> ProductOutDTO:
         id=data.id,
         name=data.name,
         unit_of_measure=_to_unit(data.unit_of_measure),
-        created_by=data.created_by,
-        category=_to_categoty(data.category),
+        created_by_id=data.created_by_id,
+        category=_to_category(data.category),
     )
 
 

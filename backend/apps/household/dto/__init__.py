@@ -5,13 +5,14 @@ from .market_dto import (
     Market_Id_Name_OutDTO,
     Market_Id_OutDTO,
 )
-from .product_dto import CreateProductInDTO, ProductOutDTO, CategoryProductDTO
+from .product_dto import CreateProductInDTO, ProductOutDTO, CategoryProductOutDTO
 from .group_dto import (
     CreateGroupInDTO,
     GroupMemberOutDTO,
     GroupOutDTO,
     Group_Id_Name_OutDTO,
     Group_id_user_OutDTO,
+    Group_Id_Name_InDTO,
 )
 from .asset_dto import (
     CreateAssetDTO,
@@ -27,6 +28,7 @@ from .purchase_dto import (
     PurchaseItemOutDTO,
     PurchaseOutDTO,
     Purchase_Id_Name_OutDTO,
+    Purchase_Id_OutDTO
 )
 from .location_dto import (
     LocationOutDTO,
@@ -49,21 +51,26 @@ __all__ = [
     # User
     "User_Id_OutDTO",
     "UserOutDTO",
+    
     # Role
     "RoleOutDTO",
+
     # Product
     "CreateProductInDTO",
     "ProductOutDTO",
     "CreateUnitOfMeasureInDTO",
-    "CategoryProductDTO",
+    "CategoryProductOutDTO",
+
     # UnitOfMeasure
     "UnitOfMeasureOutDTO",
+
     # Market
     "ListMarketDTO",
     "MarketFullOutDTO",
     "CreateMarketInDTO",
     "Market_Id_Name_OutDTO",
     "Market_Id_OutDTO",
+
     # Asset
     "CreateAssetDTO",
     "ListAssetDTO",
@@ -77,12 +84,17 @@ __all__ = [
     "PurchaseOutDTO",
     "Purchase_Id_Name_OutDTO",
     "PurchaseItemOutDTO",
+    'Purchase_Id_OutDTO',
+
     # Group
     "Group_Id_Name_OutDTO",
     "CreateGroupInDTO",
     "GroupMemberOutDTO",
     "GroupOutDTO",
     "Group_id_user_OutDTO",
+    'Group_Id_Name_InDTO',
+
+
     # Location
     "LocationId_Name_OutDTO",
     "LocationOutDTO",
@@ -94,6 +106,8 @@ __all__ = [
     "RegionOutDTO",
     "CityNameOutDTO",
     "CityOutDTO",
+
+
     # Category
     "Category_Id_Name_OutDTO",
     "CategoryOutDTO",

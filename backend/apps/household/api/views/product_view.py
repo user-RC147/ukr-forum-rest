@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ProductViewSet(ViewSet):
+    
     permission_classes=[IsAuthenticated]
 
     def __init__(self,**kwargs):
@@ -26,7 +27,9 @@ class ProductViewSet(ViewSet):
     
 
     def list(self, request):
-        products=self._service.get_all_products()
+        user_id = request.user.id
+
+        products=self._service.get_all_products(user_id)
 
         serializer=ProductOutSerializer(products,many=True)
 

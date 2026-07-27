@@ -74,7 +74,23 @@ class PurchaseOutDTO:
     # Фінансовий підсумок чека
     total_amount: Decimal  # Порахована базою даних загальна сума чека (Разом)
 
+@dataclass(frozen=True)
+class Purchase_Id_OutDTO:
+    """
+    DTO для віддачі даних про чек на фронтенд (Output).
+    Включає повні гео-дані магазину для точної синхронізації з Vue.js.
+    """
+    id:int
+    data_purchase:date
+    note:str
+    asset_id:int
+    market_id:int
+    created_at:datetime
+    created_by_id:int
+    items:list[PurchaseItemInDTO]
 
+    # Фінансовий підсумок чека
+    total_amount: Decimal  #
 
 @dataclass(frozen=True)
 class Purchase_Id_Name_OutDTO:

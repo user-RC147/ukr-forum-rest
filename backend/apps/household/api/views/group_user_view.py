@@ -10,12 +10,12 @@ from apps.household.api.serializers import (
     CreateGroupInSerializer,
 )
 
-from apps.household.dto.group_dto import CreateGroupInDTO
+from apps.household.dto.group_dto import CreateGroupInDTO, Group_Id_Name_InDTO
 from apps.household.models.group import GroupMember
 from apps.household.services.group_service import GroupService
 from apps.household.dto import GroupOutDTO
 from drf_spectacular.utils import extend_schema
-from apps.household.api.serializers.group_serializer import CreateGroupInSerializerTime
+from apps.household.api.serializers.group_serializer import Group_Id_InSerializer,CreateGroupInSerializer
 
 from apps.shop import serializers
 
@@ -42,34 +42,48 @@ class GroupViewSet(viewsets.ViewSet):
       
     #     return Response(data=serializer.data, status=status.HTTP_200_OK)
     
-
+    
     def list(self,request):
         user_id = request.user.id
-        group_members = self._service.get_all_group_member_by_user(user_id=user_id)
+        serializer =Group_Id_InSerializer(data=request.query_params)
 
-        # print(group_members)
-        # print(type(group_members))
+        serializer.is_valid(raise_exception=True)
 
-        serializer = GroupOutSerializer(group_members,many=True)
+        dto_group = Group_Id_Name_InDTO(
+            id=serializer.validated_data.get('group_id'),
+            name=serializer.validated_data.get('name')
+        )
 
-        return Response(data=serializer.data,status=status.HTTP_200_OK)
+        group_members = self._service.get_all_group_member_by_user(dto_group,user_id=user_id)
 
-    @extend_schema(request=CreateGroupInSerializerTime(), responses=GroupOutSerializer())
+        
+        
+
+        results = GroupOutSerializer(group_members,many=True).data
+
+        # print('===/===/==/====/==/===/=====/=====/==/====================')
+        # print('=================================================')
+        # print("results")
+        # print(results)
+        # print('=================================================')
+
+        return Response({'results':results},status=status.HTTP_200_OK)
+  
+
+    @extend_schema(request=CreateGroupInSerializer(), responses=GroupOutSerializer())
     def create(self, request):
         creator_id = request.user.id
 
         serializer = CreateGroupInSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            dto = CreateGroupInDTO(
-                name=data['name']
-            )
-            results = self._service.create_group(dto=dto,creator_id=creator_id)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        dto = CreateGroupInDTO(
+            name=data['name']
+        )
+        results = self._service.create_group(dto=dto,creator_id=creator_id)
          
-            return Response(status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        
+        return Response({'results':results}, status=status.HTTP_201_CREATED)
+     
 
     # def retrieve(self, request, pk=None):
     #     pass
