@@ -5,7 +5,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("geo", "0001_initial"),
+        ("search", "0002_alter_tagmodel_category"),
     ]
 
     operations = [
