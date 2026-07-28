@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
+
 @dataclass(frozen=True)
 class CategoryDTO:
     id: int
@@ -31,6 +32,7 @@ class SortOrder(StrEnum):
 @dataclass(frozen=True)
 class SortParams:
     order: SortOrder = SortOrder.RELEVANCE
+
 
 @dataclass(frozen=True)
 class PaginationParams:

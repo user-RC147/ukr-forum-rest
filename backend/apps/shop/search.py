@@ -11,6 +11,8 @@ from apps.search.contracts.protocols import SearchParams, SearchResultItem
 from apps.search.dto import ResourceType, SortOrder
 from apps.shop.exceptions import ProductValidationError
 from apps.shop.repository import get_repo
+from core.paginator.dto import PaginatorDTO
+from core.paginator.paginator import paginate
 
 from .enums import ProductStatus
 from .service import get_service
@@ -39,7 +41,7 @@ class ProductSearchHandler:
 
         return result
 
-    def search(self, params: SearchParams) -> tuple[int, list[SearchResultItem]]:
+    def search(self, params: SearchParams) -> PaginatorDTO[list[SearchResultItem]]:
 
         repo = get_repo()
         qs = repo.searchable_queryset().only("id")
@@ -98,9 +100,11 @@ class ProductSearchHandler:
         # if params.radius:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-        result = (
-            products.count,
+        result = paginate(
             [_to_dto(obj) for obj in products.items],
+            products.count,
+            params.pagination.page,
+            params.pagination.limit,
         )
         return result
 

@@ -10,8 +10,8 @@ from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
-from backend.core.paginator.dto import PaginatorDTO
-from backend.core.paginator.paginator import paginate
+from core.paginator.dto import PaginatorDTO
+from core.paginator.paginator import paginate
 
 from .dto import PageDTO, ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError

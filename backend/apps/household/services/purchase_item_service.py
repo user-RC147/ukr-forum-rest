@@ -1,7 +1,7 @@
 from apps.household.dto.purchase_dto import PurchaseItemInDTO, PurchaseItemOutDTO
 from apps.household.repositories.purchase_item_repo import PurchaseItemRepo
 from apps.household.selectors.purchase_item_selector import PurchaseItemSelector
-from backend.core.paginator.dto import PaginatorDTO
+from core.paginator.dto import PaginatorDTO
 
 
 class PurchaseItemService:

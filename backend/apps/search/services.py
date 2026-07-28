@@ -5,9 +5,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .contracts.protocols import SearchResultItem
-from .dto import CategoryDTO, TagDTO
+from .dto import CategoryDTO, TagDTO, SearchParams
 from .models import CategoryModel, TagModel
 from .registry import SearchRegistry
+
+from core.paginator.paginator import paginate
+from core.paginator.dto import PaginatorDTO
 
 logger = logging.getLogger(__name__)
 
@@ -18,36 +21,41 @@ class SearchService:
         self.category_model = CategoryModel
         self.tag_model = TagModel
 
-    def search(self, params, scope: str | None = None) -> tuple[int, list[SearchResultItem]]:
+    def search(
+        self, params: SearchParams, scope: str | None = None
+    ) -> PaginatorDTO[list[SearchResultItem]]:
         handlers = SearchRegistry.all()
         items = handlers.items() if scope is None else [(scope, handlers[scope])]
         total = 0
 
-        results: list[tuple[int, SearchResultItem]] = []
+        results: list[SearchResultItem] = []
         for name, handler in items:
             try:
-               search = handler.search(params)
+                search = handler.search(params)
             except Exception:
                 logger.exception("Search failed in module: %s", name)
                 if scope is not None:
                     raise
-            total += search[0]
-            results.extend(search[1])
+            total += search.count
+            results.extend(search.items)
 
-        return total, results
+        return paginate(results, total, params.pagination.page, params.pagination.limit)
 
-    def get_categories(self, category_ids: list[int] | None = None) -> list[CategoryDTO]:
+    def get_categories(
+        self, category_ids: list[int] | None = None
+    ) -> list[CategoryDTO]:
         result = self.category_model.objects.prefetch_related("tags")
         if category_ids is not None:
             result = result.filter(id__in=category_ids)
         return [_to_dto_category(r) for r in result]
-    
 
     def get_category(self, category_id: int) -> CategoryDTO:
         try:
             result = self.category_model.objects.get(id=category_id)
         except ObjectDoesNotExist:
-            raise CategoryNotFoundError(extra={"category_id": category_id, "event": "category_get"})
+            raise CategoryNotFoundError(
+                extra={"category_id": category_id, "event": "category_get"}
+            )
 
         return _to_dto_category(result)
 

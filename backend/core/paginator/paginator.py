@@ -1,6 +1,6 @@
 from math import ceil
 
-from backend.core.paginator.dto import PaginatorDTO
+from core.paginator.dto import PaginatorDTO
 
 
 def paginate(items: list, count: int, page: int, page_size: int) -> PaginatorDTO:
