@@ -19,6 +19,7 @@ from .serializers import (
     ProductReadSerializer,
     ProductSerializer,
     ProductUpdateSerializer,
+    PageSerializer,
 )
 from .service import ProductService
 
@@ -90,13 +91,14 @@ class ProductViewSet(viewsets.ViewSet):
         query = ProductListQuerySerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
         user_id = query.validated_data.get("user_id")
+        page = query.validated_data.get("page", 1)
         if user_id:
             user = _to_dto_user(request.user)
-            product = self.service.get_all(user=user, user_id=user_id)
+            product = self.service.get_all(user=user, user_id=user_id, page=page)
         else:
-            product = self.service.get_all()
+            product = self.service.get_all(page)
 
-        serializer = ProductReadSerializer(product, many=True)
+        serializer = PageSerializer(product)
 
         return Response(serializer.data)
 

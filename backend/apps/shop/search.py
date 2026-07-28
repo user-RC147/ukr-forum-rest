@@ -39,7 +39,7 @@ class ProductSearchHandler:
 
         return result
 
-    def search(self, params: SearchParams) -> list[SearchResultItem]:
+    def search(self, params: SearchParams) -> tuple[int, list[SearchResultItem]]:
 
         repo = get_repo()
         qs = repo.searchable_queryset().only("id")
@@ -86,15 +86,23 @@ class ProductSearchHandler:
                 else:
                     qs = qs.order_by("-created_at")
 
-        products = list(qs[: params.limit])
+        products = list(qs)
 
         service = get_service()
-        products = service.get_many(product_ids=[p.id for p in products])
+        products = service.get_many(
+            page_size=params.pagination.limit,
+            page=params.pagination.page,
+            product_ids=[p.id for p in products],
+        )
 
         # if params.radius:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-        return [_to_dto(obj) for obj in products.values()]
+        result = (
+            products.total,
+            [_to_dto(obj) for obj in products.items],
+        )
+        return result
 
     # @staticmethod
     # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:

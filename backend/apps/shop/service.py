@@ -11,7 +11,7 @@ from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 
-from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
+from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO, PageDTO
 from .exceptions import ProductPermissionError
 from .repository import ProductRepository, get_repo
 
@@ -78,43 +78,51 @@ class ProductService:
 
         self._attach_products([result])
 
-        return _to_dto(result)
+        return _to_dto_product(result)
 
     def get_many(
         self,
         product_ids: list[int],
         page: int = 1,
         page_size: int = 20,
-    ) -> dict[int, ProductDTO]:
-        result = self.repo.get_many(
+    ) -> PageDTO:
+        if not product_ids:
+            return _to_dto_page([], 0)
+
+        qs = self.repo.get_many(
             product_ids=product_ids, page=page, page_size=page_size
         )
-        result = [dataclasses.asdict(p) for p in result]
+        if not qs.items:
+            return _to_dto_page([], 0)
+
+        result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
-        return {p["id"]: _to_dto(p) for p in result}
+        result = [_to_dto_product(p) for p in result]
+        return _to_dto_page(result, qs.total)
 
     def get_all(
         self,
+        page: int = 1,
         user: RequestUserDTO | None = None,
         user_id: int | None = None,
-        page: int = 1,
         page_size: int = 20,
-    ) -> list[ProductDTO]:
+    ) -> PageDTO:
 
         if user_id:
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
-        items = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
-        if not items:
-            return []
+        qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
+        if not qs.items:
+            return _to_dto_page([], qs.total)
 
-        result = [dataclasses.asdict(p) for p in items]
+        result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
-        return [_to_dto(p) for p in result]
+        result = [_to_dto_product(p) for p in result]
+        return _to_dto_page(result, qs.total)
 
     def create(self, user: RequestUserDTO, data: ProductCreateDTO) -> ProductDTO:
         # validate geo
@@ -136,7 +144,7 @@ class ProductService:
         result = dataclasses.asdict(product)
         self._attach_products([result])
 
-        dto = _to_dto(result)
+        dto = _to_dto_product(result)
 
         logger.info(
             "Product was created",
@@ -189,7 +197,7 @@ class ProductService:
             product_id = data.id
             result = dataclasses.asdict(self.repo.update(product_id, fields))
             self._attach_products([result])
-            result = _to_dto(result)
+            result = _to_dto_product(result)
 
             logger.info(
                 "Product was updated",
@@ -224,7 +232,7 @@ class ProductService:
         return self.repo.delete_by_user(user_id)
 
 
-def _to_dto(data) -> ProductDTO:
+def _to_dto_product(data) -> ProductDTO:
     return ProductDTO(
         id=data["id"],
         owner=data["owner"],
@@ -240,6 +248,9 @@ def _to_dto(data) -> ProductDTO:
         visible=data["visible"],
         files=data["files"],
     )
+
+def _to_dto_page(data: list[ProductDTO], total: int):
+    return PageDTO(items=data, total=total)
 
 
 def get_service() -> ProductService:

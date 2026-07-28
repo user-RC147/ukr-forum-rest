@@ -4,7 +4,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
 
-from .dto import ProductRepoDTO
+from .dto import PageDTO, ProductRepoDTO
 from .exceptions import ProductNotFoundError
 from .models import ProductModel
 
@@ -23,15 +23,15 @@ class ProductRepository:
 
     def get(self, id: int) -> ProductRepoDTO:
         result = self._get_model(id)
-        return _to_dto(result)
+        return _to_dto_product(result)
 
     def get_many(
         self,
         page: int,
-        page_size: int,
+        page_size: int = 20,
         user_id: int | None = None,
         product_ids: list[int] | None = None,
-    ) -> list[ProductRepoDTO]:
+    ) -> PageDTO:
         if product_ids:
             qs = self.model.objects.filter(id__in=product_ids)
         else:
@@ -42,13 +42,15 @@ class ProductRepository:
         qs = qs.order_by("id")
 
         offset = (page - 1) * page_size
+        total = qs.count()
         items = list(qs[offset : offset + page_size])
 
-        return [_to_dto(i) for i in items]
+        items = [_to_dto_product(i) for i in items]
+        return _to_dto_page(items, total)
 
     def create(self, data: dict) -> ProductRepoDTO:
         result = self.model.objects.create(**data)
-        return _to_dto(result)
+        return _to_dto_product(result)
 
     def update(self, id: int, data: dict) -> ProductRepoDTO:
         product = self._get_model(id)
@@ -57,7 +59,7 @@ class ProductRepository:
             setattr(product, field, value)
 
         product.save(update_fields=list(data.keys()))
-        return _to_dto(product)
+        return _to_dto_product(product)
 
     def delete(self, id: int) -> None:
         self._get_model(id).delete()
@@ -78,10 +80,14 @@ class ProductRepository:
         )
 
 
-def _to_dto(data: ProductModel) -> ProductRepoDTO:
+def _to_dto_product(data: ProductModel) -> ProductRepoDTO:
     dto_fields = {f.name for f in fields(ProductRepoDTO)}
     result = {field: getattr(data, field) for field in dto_fields}
     return ProductRepoDTO(**result)
+
+
+def _to_dto_page(data: list[ProductRepoDTO], total: int) -> PageDTO:
+    return PageDTO(items=data, total=total)
 
 
 def get_repo():
