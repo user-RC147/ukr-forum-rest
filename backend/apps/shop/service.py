@@ -12,8 +12,8 @@ from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 
 from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO, PageDTO
-from backend.core.paginations.paginator import paginate_build
-from backend.core.paginations.dto import PaginatorDTO
+from backend.core.paginator.paginator import paginate_build
+from backend.core.paginator.dto import PaginatorDTO
 from .exceptions import ProductPermissionError
 from .repository import ProductRepository, get_repo
 

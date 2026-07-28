@@ -4,8 +4,8 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
 
-from backend.core.paginations.paginator import paginate_build
-from backend.core.paginations.dto import PaginatorDTO
+from backend.core.paginator.paginator import paginate_build
+from backend.core.paginator.dto import PaginatorDTO
 
 from .dto import PageDTO, ProductRepoDTO
 from .exceptions import ProductNotFoundError

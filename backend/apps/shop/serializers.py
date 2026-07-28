@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.paginations.serializers import PageSerializerBase
+from core.paginator.serializers import PageSerializerBase
 
 from .enums import PRODUCT_STATUS_LABELS, ProductStatus
 
