@@ -4,8 +4,8 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
 
-from backend.core.paginator.paginator import paginate_build
 from backend.core.paginator.dto import PaginatorDTO
+from backend.core.paginator.paginator import paginate
 
 from .dto import PageDTO, ProductRepoDTO
 from .exceptions import ProductNotFoundError
@@ -50,7 +50,7 @@ class ProductRepository:
 
         items = [_to_dto_product(i) for i in items]
 
-        return paginate_build(items, total, page, page_size)
+        return paginate(items, total, page, page_size)
 
     def create(self, data: dict) -> ProductRepoDTO:
         result = self.model.objects.create(**data)
