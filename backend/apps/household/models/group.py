@@ -1,4 +1,3 @@
-from faulthandler import is_enabled
 from django.db import models
 from django.conf import settings
 

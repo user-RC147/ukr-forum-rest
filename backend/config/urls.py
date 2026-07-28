@@ -17,6 +17,8 @@ urlpatterns = [
     # Geo
     path("api/geo/", include("apps.geo.api.urls")),
     path("api/household/", include("apps.household.api.urls")),
+    #Article
+    path('api/article', include('apps.articles.api.urls')),
     # Shop
     path("api/shop/", include("apps.shop.urls")),
     # Search
