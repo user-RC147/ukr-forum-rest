@@ -18,7 +18,9 @@ class SearchService:
         self.category_model = CategoryModel
         self.tag_model = TagModel
 
-    def search(self, params, scope: str | None = None) -> tuple[int, list[SearchResultItem]]:
+    def search(
+        self, params, scope: str | None = None
+    ) -> tuple[int, list[SearchResultItem]]:
         handlers = SearchRegistry.all()
         items = handlers.items() if scope is None else [(scope, handlers[scope])]
         total = 0
@@ -26,7 +28,7 @@ class SearchService:
         results: list[tuple[int, SearchResultItem]] = []
         for name, handler in items:
             try:
-               search = handler.search(params)
+                search = handler.search(params)
             except Exception:
                 logger.exception("Search failed in module: %s", name)
                 if scope is not None:
@@ -36,18 +38,21 @@ class SearchService:
 
         return total, results
 
-    def get_categories(self, category_ids: list[int] | None = None) -> list[CategoryDTO]:
+    def get_categories(
+        self, category_ids: list[int] | None = None
+    ) -> list[CategoryDTO]:
         result = self.category_model.objects.prefetch_related("tags")
         if category_ids is not None:
             result = result.filter(id__in=category_ids)
         return [_to_dto_category(r) for r in result]
-    
 
     def get_category(self, category_id: int) -> CategoryDTO:
         try:
             result = self.category_model.objects.get(id=category_id)
         except ObjectDoesNotExist:
-            raise CategoryNotFoundError(extra={"category_id": category_id, "event": "category_get"})
+            raise CategoryNotFoundError(
+                extra={"category_id": category_id, "event": "category_get"}
+            )
 
         return _to_dto_category(result)
 

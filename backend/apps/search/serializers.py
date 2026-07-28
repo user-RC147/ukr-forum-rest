@@ -15,6 +15,7 @@ class CategorySerializer(serializers.Serializer):
     name = serializers.CharField()
     tags = serializers.DictField()
 
+
 class TagSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
