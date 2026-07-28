@@ -57,3 +57,9 @@ class ProductReadSerializer(serializers.Serializer):
 
 class ProductListQuerySerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=False)
+    page = serializers.IntegerField(required=False)
+
+
+class PageSerializer(serializers.Serializer):
+    items = ProductReadSerializer(many=True)
+    total = serializers.IntegerField()

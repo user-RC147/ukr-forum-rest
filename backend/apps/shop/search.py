@@ -1,4 +1,3 @@
-
 from django.contrib.postgres.search import (
     SearchQuery,
     SearchRank,
@@ -6,14 +5,16 @@ from django.contrib.postgres.search import (
     TrigramSimilarity,
 )
 from django.db.models import Q
+from django.http import QueryDict
 
 from apps.search.contracts.protocols import SearchParams, SearchResultItem
 from apps.search.dto import ResourceType, SortOrder
-from apps.shop.repository import get_repo
-from .service import get_service
 from apps.shop.exceptions import ProductValidationError
-from django.http import QueryDict
+from apps.shop.repository import get_repo
+
 from .enums import ProductStatus
+from .service import get_service
+
 
 class ProductSearchHandler:
     STATUS_PARAM = "status"
@@ -30,32 +31,30 @@ class ProductSearchHandler:
                 result[self.STATUS_PARAM] = ProductStatus(status)
             except ValueError:
                 raise ProductValidationError(
-                    {self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"},
-                    extra={"invalid_value": status, "event": "search_validaton"}
+                    {
+                        self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"
+                    },
+                    extra={"invalid_value": status, "event": "search_validaton"},
                 )
 
         return result
-        
 
-    def search(self, params: SearchParams) -> list[SearchResultItem]:
+    def search(self, params: SearchParams) -> tuple[int, list[SearchResultItem]]:
 
         repo = get_repo()
-        qs = repo.searchable_queryset().only("id", "title", "description", "price", "created_at", "file_ids")
+        qs = repo.searchable_queryset().only("id")
         # FTS
         if params.query:
             raw_query = " & ".join(f"{w}:*" for w in params.query.split())
             query = SearchQuery(raw_query, search_type="raw", config="simple")
-            vector = SearchVector("title", weight="A", config="simple")
-
-            qs = (
-                qs
-                .only("id", "title", "description", "price", "created_at", "file_ids")
-                .annotate(
-                    rank=SearchRank(vector, query),
-                    similarity=TrigramSimilarity("title", params.query),
-                )
-                .filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
+            vector = SearchVector("title", weight="A", config="simple") + SearchVector(
+                "description", weight="B", config="simple"
             )
+
+            qs = qs.annotate(
+                rank=SearchRank(vector, query),
+                similarity=TrigramSimilarity("title", params.query),
+            ).filter(Q(rank__gt=0.1) | Q(similarity__gt=0.3))
 
         to_sort = dict()
         category_id = params.scope_filters.get("category_id")
@@ -74,9 +73,7 @@ class ProductSearchHandler:
         if status:
             to_sort["status"] = status.value
 
-
         qs = qs.filter(**to_sort)
-
 
         match params.sort_params.order:
             case SortOrder.NEWEST:
@@ -89,17 +86,24 @@ class ProductSearchHandler:
                 else:
                     qs = qs.order_by("-created_at")
 
-
-        products = list(qs[: params.limit])
+        products = list(qs)
 
         service = get_service()
-        products = [service.get(p.id) for p in products]
+        products = service.get_many(
+            page_size=params.pagination.limit,
+            page=params.pagination.page,
+            product_ids=[p.id for p in products],
+        )
 
         # if params.radius:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
-        return [_to_dto(obj) for obj in products]
-    
+        result = (
+            products.total,
+            [_to_dto(obj) for obj in products.items],
+        )
+        return result
+
     # @staticmethod
     # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
     #     if _haversine(user_lat, user_lon, city.latitude, city.longitude) <= radius_km:
