@@ -3,54 +3,67 @@
     import { useGroupStore } from '../stores/useGroupStore.js';
     import { useUserStore } from '@/shared/stores/useUserStore.js';
     import { useAssetStore } from '../stores/useAssetStore.js';
+    import { usePurchaseItemStore } from '../stores/usePurchaseItemStore.js';
+
+    //=====purchaseItems =========
+    const currentPage = ref(1);
+    const purchaseItemStore = usePurchaseItemStore();
+
+    function goNextPage() {
+        currentPage.value += 1;
+        purchaseItemStore.fetchPurchaseItems(currentPage.value);
+    }
+
+    function goPrevPage() {
+        currentPage.value -= 1;
+        purchaseItemStore.fetchPurchaseItems(currentPage.value);
+    }
+
+    //==============
 
     //===Group====
     const groupStore = useGroupStore();
     const selectedGroup = ref(null); // Тут зберігається id вибраної групи
-    const activeMember=ref(null)
+    const activeMember = ref(null);
 
     const selectedGroupMembers = computed(() => {
-        const users = groupStore.groups.find((group) => group.id === selectedGroup.value);        
-        
+        const users = groupStore.groups.find((group) => group.id === selectedGroup.value);
+
         if (users) {
             // Обгортаємо власника у форму, схожу на GroupMemberOutDTO,
             // щоб <select> міг однаково звертатись через member.user.username
-            const ownerAsMember={
-                id:`owner-${users.created_by.id}`, // унікальний id, щоб не перетнутись з id звичайних members
+            const ownerAsMember = {
+                id: `owner-${users.created_by.id}`, // унікальний id, щоб не перетнутись з id звичайних members
                 user: users.created_by,
-                role: {id:0, name:'creator',name_ua:'Власник'},
+                role: { id: 0, name: 'creator', name_ua: 'Власник' },
             };
 
             // concat об'єднує два масиви "на одному рівні" (без вкладеності)
             // тут: масив з одним елементом (власник) + масив звичайних учасників
             return [ownerAsMember].concat(users.members);
-        }else{
-            return []
+        } else {
+            return [];
         }
     });
 
-    watch(selectedGroupMembers, (newMembers)=>{
+    watch(selectedGroupMembers, (newMembers) => {
         const found = newMembers.find((member) => member.user.id === userStore.user.id);
-        
+
         activeMember.value = found ? found.id : null;
-        
     });
 
     //=======
-
-
 
     const userStore = useUserStore(); //ref() // замінити на store.user.username
 
     const assetStore = useAssetStore();
     const selectedAsset = ref(null);
 
-
-
     onMounted(() => {
         groupStore.fetchGroups();
         // При старті завантажуємо активи для "Всіх груп" (запит піде без group_id)
         assetStore.fetchAssets();
+        purchaseItemStore.fetchPurchaseItems(currentPage.value);
     });
 
     watch(selectedGroup, (newGroupId) => {
@@ -67,21 +80,12 @@
         }
     });
 
-    // Тимчасові дані — замінити на реальні з API
-    const purchases = ref([
-        { name: 'хліб', unit: 'шт.', qty: '1,0', price: '2,03', total: '2.03' },
-        { name: 'булочка', unit: 'шт.', qty: '1,0', price: '2,03', total: '2.03' },
-        { name: 'молоко', unit: 'шт.', qty: '1,0', price: '2,03', total: '2.03' },
-    ]);
-
-    const shops = ref([
-        { name: 'Lidl', location: 'Altenessener Str. 289, Essen', total: '6.09' },
-        { name: 'Kaufland', location: 'Strlost Str. 33, Essen', total: '200.2' },
-        { name: 'Aldi', location: 'Bonden Str. 2, Essen', total: '300.2' },
-    ]);
-
-    const totalSum = computed(() => purchases.value.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(2));
-    const shopsTotal = computed(() => shops.value.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(2));
+    const totalSum = computed(() =>
+        purchaseItemStore.purchaseItems
+            .reduce((s, item) => s + parseFloat(item.quantity) * parseFloat(item.price_per_unit), 0)
+            .toFixed(2)
+    );
+    //const shopsTotal = computed(() => shops.value.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(2));
 </script>
 
 <template>
@@ -106,8 +110,6 @@
                     </select>
                 </div>
             </div>
-
-            
 
             <!-- Група -->
             <div class="flex flex-col gap-2">
@@ -143,41 +145,45 @@
                 + Додати чек
             </router-link>
 
-
             <div class="flex flex-col gap-2 justify-center">
-                <select 
-                    class="border-0"
-                    v-model="activeMember">
-                    <option 
-                        class="text-center bg-blue-100"
-                        :value="null">Учасники групи</option>
-                    <option 
+                <select class="border-0" v-model="activeMember">
+                    <option class="text-center bg-blue-100" :value="null">Учасники групи</option>
+                    <option
                         class="text-center"
-                        v-for="member in selectedGroupMembers" :key="member.id" :value="member.id">
+                        v-for="member in selectedGroupMembers"
+                        :key="member.id"
+                        :value="member.id"
+                    >
                         {{ member.user.username }}
                     </option>
                 </select>
             </div>
-
-
-
-
-
-
         </div>
 
         <!-- Таблиця витрат -->
         <div class="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-8">
             <div class="flex justify-between items-center px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm">
-                <span class="font-medium">Загальні витрати за період</span>
-                <select class="bg-transparent focus:outline-none text-sm cursor-pointer">
-                    <option disabled selected>За весь період</option>
-                    <option>День</option>
-                    <option>Тиждень</option>
-                    <option>Місяць</option>
-                    <option>Квартал</option>
-                    <option>Рік</option>
-                </select>
+                <div class="font-medium">Загальні витрати за період</div>
+                <div class="flex justify-between">
+                    <select class="bg-transparent focus:outline-none text-sm cursor-pointer mx-6 w-full">
+                        <option disabled selected>За весь період</option>
+                        <option>День</option>
+                        <option>Тиждень</option>
+                        <option>Місяць</option>
+                        <option>Квартал</option>
+                        <option>Рік</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <div class="flex items-center justify-end">
+                            <span>з</span>
+                            <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <span>по</span>
+                            <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[600px] text-sm border-collapse">
@@ -192,13 +198,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, i) in purchases" :key="i" class="text-center">
+                        <tr v-for="(item, i) in purchaseItemStore.purchaseItems" :key="i" class="text-center">
                             <td class="border border-gray-200 px-3 py-2">{{ i + 1 }}</td>
-                            <td class="border border-gray-200 px-3 py-2">{{ item.name }}</td>
-                            <td class="border border-gray-200 px-3 py-2">{{ item.unit }}</td>
-                            <td class="border border-gray-200 px-3 py-2">{{ item.qty }}</td>
-                            <td class="border border-gray-200 px-3 py-2">{{ item.price }}</td>
-                            <td class="border border-gray-200 px-3 py-2">{{ item.total }}</td>
+                            <td class="border border-gray-200 px-3 py-2">{{ item.product.name }}</td>
+                            <td class="border border-gray-200 px-3 py-2">{{ item.product.unit_of_measure.code }}</td>
+                            <td class="border border-gray-200 px-3 py-2">{{ item.quantity }}</td>
+                            <td class="border border-gray-200 px-3 py-2">{{ item.price_per_unit }}</td>
+                            <td class="border border-gray-200 px-3 py-2">
+                                {{ (parseFloat(item.quantity) * parseFloat(item.price_per_unit)).toFixed(2) }}
+                            </td>
                         </tr>
                     </tbody>
                     <tfoot class="bg-amber-50 font-semibold">
@@ -208,14 +216,37 @@
                         </tr>
                     </tfoot>
                 </table>
+                <div class="text-center">десь тут пагінація</div>
             </div>
         </div>
 
         <!-- Таблиця магазинів + фільтр -->
         <div class="flex flex-wrap gap-6 items-start">
             <!-- Таблиця магазинів -->
-            <div class="flex-1 min-w-[300px] border border-gray-200 rounded-2xl overflow-hidden bg-white">
-                <div class="px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm font-medium">інші магазини</div>
+            <div class="flex-1 min-w-75 border border-gray-200 rounded-2xl overflow-hidden bg-white">
+                <div class="flex justify-between px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm font-medium">
+                    <span>інші магазини</span>
+                    <div class="flex justify-between">
+                        <select class="bg-transparent focus:outline-none text-sm cursor-pointer mx-6 w-full">
+                            <option disabled selected>За весь період</option>
+                            <option>День</option>
+                            <option>Тиждень</option>
+                            <option>Місяць</option>
+                            <option>Квартал</option>
+                            <option>Рік</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <div class="flex items-center justify-end">
+                                <span>з</span>
+                                <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <span>по</span>
+                                <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm border-collapse">
                         <thead class="bg-gray-50 font-semibold">
@@ -245,7 +276,7 @@
             </div>
 
             <!-- Фільтр по датах -->
-            <div class="bg-blue-50 rounded-2xl p-4 text-sm min-w-[180px]">
+            <!-- <div class="bg-blue-50 rounded-2xl p-4 text-sm min-w-[180px]">
                 <div class="font-medium mb-2">Період сортування</div>
                 <select class="bg-transparent focus:outline-none text-sm cursor-pointer mb-4 w-full">
                     <option disabled selected>За весь період</option>
@@ -265,7 +296,7 @@
                         <input type="date" class="border border-gray-300 rounded-lg px-2 py-1 text-sm ml-1" />
                     </span>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
