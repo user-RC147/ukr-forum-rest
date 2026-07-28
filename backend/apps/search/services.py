@@ -18,20 +18,23 @@ class SearchService:
         self.category_model = CategoryModel
         self.tag_model = TagModel
 
-    def search(self, params, scope: str | None = None) -> list[SearchResultItem]:
+    def search(self, params, scope: str | None = None) -> tuple[int, list[SearchResultItem]]:
         handlers = SearchRegistry.all()
         items = handlers.items() if scope is None else [(scope, handlers[scope])]
+        total = 0
 
-        results: list[SearchResultItem] = []
+        results: list[tuple[int, SearchResultItem]] = []
         for name, handler in items:
             try:
-                results.extend(handler.search(params))
+               search = handler.search(params)
             except Exception:
                 logger.exception("Search failed in module: %s", name)
                 if scope is not None:
                     raise
+            total += search[0]
+            results.extend(search[1])
 
-        return results
+        return total, results
 
     def get_categories(self, category_ids: list[int] | None = None) -> list[CategoryDTO]:
         result = self.category_model.objects.prefetch_related("tags")

@@ -32,13 +32,18 @@ class SortOrder(StrEnum):
 class SortParams:
     order: SortOrder = SortOrder.RELEVANCE
 
+@dataclass(frozen=True)
+class PaginationParams:
+    page: int = 1
+    limit: int = 20
+
 
 @dataclass(frozen=True)
 class SearchParams:
     query: str | None
     sort_params: SortParams
+    pagination: PaginationParams
     scope_filters: dict[str, Any] = field(default_factory=dict)
-    limit: int = 30
 
 
 @dataclass(frozen=True)

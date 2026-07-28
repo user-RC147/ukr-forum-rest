@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
-from .dto import SearchParams, SortOrder, SortParams
+from .dto import SearchParams, SortOrder, SortParams, PaginationParams
 from .serializers import SearchResultItemSerializer, CategorySerializer, TagSerializer
 from .services import SearchService
 from .registry import SearchRegistry
@@ -42,8 +42,12 @@ class SearchView(viewsets.ViewSet):
         handler = self.registry.all()[scope] if scope else None
         extra_filters = handler.parse_extra_filters(request.query_params) if handler else {}
 
+        page = self._parse_int_param("page", request.query_params.get("page", 1))
 
-        params = self._build_params(request, query, sort_params, extra_filters)
+        pagination = PaginationParams(page=page)
+
+
+        params = self._build_params(request, query, sort_params, extra_filters, pagination)
 
         service = SearchService()
         results = (
@@ -53,7 +57,8 @@ class SearchView(viewsets.ViewSet):
         return Response(
             {
                 "query": query,
-                "results": SearchResultItemSerializer(results, many=True).data,
+                "total": results[0],
+                "results": SearchResultItemSerializer(results[1], many=True).data,
             }
         )
 
@@ -72,10 +77,11 @@ class SearchView(viewsets.ViewSet):
         return SortParams(order=order)
 
     def _build_params(
-        self, request: Request, query: str | None, sort_params: SortParams, extra_filters: dict
+        self, request: Request, query: str | None, sort_params: SortParams, extra_filters: dict, pagination: PaginationParams
     ) -> SearchParams:
         return SearchParams(
             query=query,
+            pagination=pagination,
             sort_params=sort_params,
             scope_filters=extra_filters,
         )

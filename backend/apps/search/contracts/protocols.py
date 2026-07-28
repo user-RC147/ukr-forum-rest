@@ -5,7 +5,7 @@ from ..dto import CategoryDTO, SearchParams, SearchResultItem, TagDTO
 
 @runtime_checkable
 class Searchable(Protocol):
-    def search(self, params: SearchParams) -> list[SearchResultItem]: ...
+    def search(self, params: SearchParams) -> tuple[int, list[SearchResultItem]]: ...
 
 
 class CategoryProtocol(Protocol):
