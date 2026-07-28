@@ -10,8 +10,10 @@ from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
+from backend.core.paginator.dto import PaginatorDTO
+from backend.core.paginator.paginator import paginate
 
-from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO, PageDTO
+from .dto import PageDTO, ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
 from .repository import ProductRepository, get_repo
 
@@ -85,22 +87,20 @@ class ProductService:
         product_ids: list[int],
         page: int = 1,
         page_size: int = 20,
-    ) -> PageDTO:
+    ) -> PaginatorDTO[ProductDTO]:
         if not product_ids:
-            return _to_dto_page([], 0)
+            return paginate([], 0, page, page_size)
 
-        qs = self.repo.get_many(
-            product_ids=product_ids, page=page, page_size=page_size
-        )
+        qs = self.repo.get_many(product_ids=product_ids, page=page, page_size=page_size)
         if not qs.items:
-            return _to_dto_page([], 0)
+            return paginate([], 0, page, page_size)
 
         result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
         result = [_to_dto_product(p) for p in result]
-        return _to_dto_page(result, qs.total)
+        return paginate(result, qs.count, page, page_size)
 
     def get_all(
         self,
@@ -108,21 +108,21 @@ class ProductService:
         user: RequestUserDTO | None = None,
         user_id: int | None = None,
         page_size: int = 20,
-    ) -> PageDTO:
+    ) -> PaginatorDTO[ProductDTO]:
 
         if user_id:
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
         if not qs.items:
-            return _to_dto_page([], qs.total)
+            return paginate([], qs.count, page, page_size)
 
         result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
         result = [_to_dto_product(p) for p in result]
-        return _to_dto_page(result, qs.total)
+        return paginate(result, qs.count, page, page_size)
 
     def create(self, user: RequestUserDTO, data: ProductCreateDTO) -> ProductDTO:
         # validate geo
@@ -248,6 +248,7 @@ def _to_dto_product(data) -> ProductDTO:
         visible=data["visible"],
         files=data["files"],
     )
+
 
 def _to_dto_page(data: list[ProductDTO], total: int):
     return PageDTO(items=data, total=total)
