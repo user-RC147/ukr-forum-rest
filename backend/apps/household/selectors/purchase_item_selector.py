@@ -7,8 +7,8 @@ from apps.household.dto.product_dto import ProductOutDTO
 
 from apps.household.models.unit_of_measure import UnitOfMeasure
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
-from core.paginations.func_paginator import paginate_build
-from core.paginations.paginated_result_dto import PaginatorDTO
+from backend.core.paginations.paginator import paginate_build
+from backend.core.paginations.dto import PaginatorDTO
 
 
 class PurchaseItemSelector:

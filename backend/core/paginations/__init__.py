@@ -1,5 +1,5 @@
-from .paginated_result_dto import PaginatorDTO
-from .func_paginator import paginate_build
+from .dto import PaginatorDTO
+from .paginator import paginate_build
 
 
 
