@@ -2,6 +2,11 @@ from math import ceil
 
 from core.paginator.dto import PaginatorDTO
 
+#для реалізації в selectors
+    # count = purchase_items.count()
+    # offset = (page - 1) * page_size
+    # page_items = purchase_items[offset : offset + page_size]
+
 
 def paginate(items: list, count: int, page: int, page_size: int) -> PaginatorDTO:
 

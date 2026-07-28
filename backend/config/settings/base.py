@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "apps.shop",
     "apps.files",
     "apps.search",
+    "apps.articles",
 ]
 
 MIDDLEWARE = [
