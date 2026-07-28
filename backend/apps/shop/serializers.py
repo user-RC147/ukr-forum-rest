@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from core.paginator.serializers import PageSerializerBase
+
 from .enums import PRODUCT_STATUS_LABELS, ProductStatus
 
 
@@ -57,3 +59,8 @@ class ProductReadSerializer(serializers.Serializer):
 
 class ProductListQuerySerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=False)
+    page = serializers.IntegerField(required=False)
+
+
+class PageSerializer(PageSerializerBase):
+    items = ProductReadSerializer(many=True)

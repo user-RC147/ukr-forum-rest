@@ -1,11 +1,13 @@
 from typing import Protocol, runtime_checkable
 
+from core.paginator.dto import PaginatorDTO
+
 from ..dto import CategoryDTO, SearchParams, SearchResultItem, TagDTO
 
 
 @runtime_checkable
 class Searchable(Protocol):
-    def search(self, params: SearchParams) -> list[SearchResultItem]: ...
+    def search(self, params: SearchParams) -> PaginatorDTO[list[SearchResultItem]]: ...
 
 
 class CategoryProtocol(Protocol):

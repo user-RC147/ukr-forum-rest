@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
+
 @dataclass(frozen=True)
 class CategoryDTO:
     id: int
@@ -34,11 +35,17 @@ class SortParams:
 
 
 @dataclass(frozen=True)
+class PaginationParams:
+    page: int = 1
+    limit: int = 20
+
+
+@dataclass(frozen=True)
 class SearchParams:
     query: str | None
     sort_params: SortParams
+    pagination: PaginationParams
     scope_filters: dict[str, Any] = field(default_factory=dict)
-    limit: int = 30
 
 
 @dataclass(frozen=True)

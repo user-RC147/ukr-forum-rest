@@ -79,3 +79,9 @@ class ProductDTO:
     visible: bool
     files: list[dict]
     status: ProductStatus = ProductStatus.NEW
+
+
+@dataclass(frozen=True)
+class PageDTO[T]:
+    items: list[T]
+    total: int

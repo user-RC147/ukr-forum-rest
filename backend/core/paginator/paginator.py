@@ -1,6 +1,6 @@
 from math import ceil
 
-from core.paginations.paginated_result_dto import PaginatorDTO, T
+from core.paginator.dto import PaginatorDTO
 
 #для реалізації в selectors
     # count = purchase_items.count()
@@ -8,7 +8,7 @@ from core.paginations.paginated_result_dto import PaginatorDTO, T
     # page_items = purchase_items[offset : offset + page_size]
 
 
-def paginate_build(items: list[T], count: int, page: int, page_size: int)-> PaginatorDTO[T]:
+def paginate(items: list, count: int, page: int, page_size: int) -> PaginatorDTO:
 
     total_pages = ceil(count / page_size)
     has_next: bool = page < total_pages
