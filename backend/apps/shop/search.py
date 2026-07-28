@@ -99,7 +99,7 @@ class ProductSearchHandler:
         #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
 
         result = (
-            products.total,
+            products.count,
             [_to_dto(obj) for obj in products.items],
         )
         return result
@@ -122,6 +122,7 @@ def _to_dto(obj) -> SearchResultItem:
             "owner": obj.owner,
             "price": obj.price,
             "created_at": obj.created_at.strftime("%d.%m.%Y %H:%M"),
+            "status": obj.status,
             "files": obj.files,
             "country": obj.country,
             "region": obj.region,

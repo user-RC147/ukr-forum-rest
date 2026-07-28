@@ -12,6 +12,8 @@ from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 
 from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO, PageDTO
+from core.paginations.func_paginator import paginate_build
+from core.paginations.paginated_result_dto import PaginatorDTO
 from .exceptions import ProductPermissionError
 from .repository import ProductRepository, get_repo
 
@@ -85,22 +87,22 @@ class ProductService:
         product_ids: list[int],
         page: int = 1,
         page_size: int = 20,
-    ) -> PageDTO:
+    ) -> PaginatorDTO[ProductDTO]:
         if not product_ids:
-            return _to_dto_page([], 0)
+            return paginate_build([], 0, page, page_size)
 
         qs = self.repo.get_many(
             product_ids=product_ids, page=page, page_size=page_size
         )
         if not qs.items:
-            return _to_dto_page([], 0)
+            return paginate_build([], 0, page, page_size)
 
         result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
         result = [_to_dto_product(p) for p in result]
-        return _to_dto_page(result, qs.total)
+        return paginate_build(result, qs.count, page, page_size)
 
     def get_all(
         self,
@@ -108,21 +110,21 @@ class ProductService:
         user: RequestUserDTO | None = None,
         user_id: int | None = None,
         page_size: int = 20,
-    ) -> PageDTO:
+    ) -> PaginatorDTO[ProductDTO]:
 
         if user_id:
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
         if not qs.items:
-            return _to_dto_page([], qs.total)
+            return paginate_build([], qs.count, page, page_size)
 
         result = [dataclasses.asdict(p) for p in qs.items]
 
         self._attach_products(result)
 
         result = [_to_dto_product(p) for p in result]
-        return _to_dto_page(result, qs.total)
+        return paginate_build(result, qs.count, page, page_size)
 
     def create(self, user: RequestUserDTO, data: ProductCreateDTO) -> ProductDTO:
         # validate geo

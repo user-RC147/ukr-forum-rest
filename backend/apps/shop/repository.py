@@ -4,6 +4,9 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
 
+from core.paginations.func_paginator import paginate_build
+from core.paginations.paginated_result_dto import PaginatorDTO
+
 from .dto import PageDTO, ProductRepoDTO
 from .exceptions import ProductNotFoundError
 from .models import ProductModel
@@ -31,7 +34,7 @@ class ProductRepository:
         page_size: int = 20,
         user_id: int | None = None,
         product_ids: list[int] | None = None,
-    ) -> PageDTO:
+    ) -> PaginatorDTO:
         if product_ids:
             qs = self.model.objects.filter(id__in=product_ids)
         else:
@@ -46,7 +49,8 @@ class ProductRepository:
         items = list(qs[offset : offset + page_size])
 
         items = [_to_dto_product(i) for i in items]
-        return _to_dto_page(items, total)
+
+        return paginate_build(items, total, page, page_size)
 
     def create(self, data: dict) -> ProductRepoDTO:
         result = self.model.objects.create(**data)
