@@ -3,7 +3,9 @@ from math import ceil
 from backend.core.paginations.dto import PaginatorDTO, T
 
 
-def paginate_build(items: list[T], count: int, page: int, page_size: int)-> PaginatorDTO[T]:
+def paginate_build(
+    items: list[T], count: int, page: int, page_size: int
+) -> PaginatorDTO[T]:
 
     total_pages = ceil(count / page_size)
     has_next: bool = page < total_pages
