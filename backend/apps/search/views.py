@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from .dto import PaginationParams, SearchParams, SortOrder, SortParams
 from .registry import SearchRegistry
-from .serializers import CategorySerializer, SearchResultItemSerializer, TagSerializer
+from .serializers import CategorySerializer, SearchResultItemSerializer, TagSerializer, PageSerializer
 from .services import SearchService
 
 logger = logging.getLogger(__name__)
@@ -57,13 +57,7 @@ class SearchView(viewsets.ViewSet):
             service.search(params, scope=scope) if scope else service.search(params)
         )
 
-        return Response(
-            {
-                "query": query,
-                "total": results[0],
-                "results": SearchResultItemSerializer(results[1], many=True).data,
-            }
-        )
+        return Response({"query": query, "results": PageSerializer(results).data})
 
     def _parse_sort(self, request: Request) -> SortParams:
         raw = request.query_params.get("sort", SortOrder.RELEVANCE)
