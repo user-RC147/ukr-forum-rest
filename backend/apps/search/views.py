@@ -9,7 +9,12 @@ from rest_framework.response import Response
 
 from .dto import PaginationParams, SearchParams, SortOrder, SortParams
 from .registry import SearchRegistry
-from .serializers import CategorySerializer, SearchResultItemSerializer, TagSerializer, PageSerializer
+from .serializers import (
+    CategorySerializer,
+    PageSerializer,
+    SearchResultItemSerializer,
+    TagSerializer,
+)
 from .services import SearchService
 
 logger = logging.getLogger(__name__)
