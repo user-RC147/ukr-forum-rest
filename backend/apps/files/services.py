@@ -3,14 +3,13 @@ import logging
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
 from apps.files.dto import FileDTO, FileUpdatePlan
 from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError, AppValidationError, FileNotFoundError
 from apps.files.models import FileModel
-from apps.files.utils import _cleanup_empty_parent_dirs
+from apps.files.file_storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +27,7 @@ ALLOWED_NAMESIZE = 300
 class FileService:
     def __init__(self, model=FileModel) -> None:
         self.model = model
+        self.storage = get_storage()
 
     def create(self, data: UploadedFile, user_id: int) -> FileDTO:
         self._validate_file(data, user_id)
@@ -66,7 +66,7 @@ class FileService:
             except ObjectDoesNotExist:
                 raise FileNotFoundError(extra={"file_id": file_id, "event": "delete_file"})
 
-            transaction.on_commit(lambda: _cleanup_disk(file_path))
+            transaction.on_commit(lambda: self.storage.delete(file_path))
 
         logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
@@ -79,7 +79,7 @@ class FileService:
         with transaction.atomic():
             deleted_count, _ = data.delete()
 
-            transaction.on_commit(lambda: _cleanup_disk(file_paths))
+            transaction.on_commit(lambda: self.storage.delete(file_paths))
 
         logger.info(
             "Files was deleted",
@@ -137,7 +137,7 @@ class FileService:
                 new_file_paths.extend(f.file.name for f in updated)
                 result.extend(_to_dto(f) for f in updated)
                 if old_paths:
-                    transaction.on_commit(lambda paths=old_paths: _cleanup_disk(paths))
+                    transaction.on_commit(lambda paths=old_paths: self.storage.delete(paths))
 
                 created = self._apply_creates(user_id, create_files)
                 result.extend(created)
@@ -146,7 +146,7 @@ class FileService:
 
                 self._apply_deletes(user_id, item_ids, plan)
         except Exception:
-            _cleanup_disk(new_file_paths)
+            self.storage.delete(new_file_paths)
             logger.error(
                 "Unexpected error when try update many files. New files was deleted.",
                 extra={
@@ -280,13 +280,3 @@ def _to_dto(file: FileModel) -> FileDTO:
         file=f"{settings.BASE_URL}{file.file.url}",
         visible=file.visible,
     )
-
-
-def _cleanup_disk(data: list[str] | str):
-    if isinstance(data, list):
-        for path in data:
-            default_storage.delete(path)
-            _cleanup_empty_parent_dirs(str(path))
-    else:
-        default_storage.delete(data)
-        _cleanup_empty_parent_dirs(str(data))
