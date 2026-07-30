@@ -18,7 +18,8 @@ async function loadLatestProducts() {
   error.value = null
   try {
     const { data } = await getLatestProducts()
-    products.value = data?.results ?? data ?? []
+    // /api/shop/products/ повертає Page { count, page, ..., items }
+    products.value = data?.items ?? []
   } catch (e) {
     error.value = 'Не вдалося завантажити оголошення'
     console.error(e)
