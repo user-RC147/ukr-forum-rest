@@ -12,8 +12,8 @@ class PurchaseItemService:
         self._repository = PurchaseItemRepo()
         self._selector = PurchaseItemSelector()
 
-    def get_all_purchase_item(self, user_id: int, page: int, page_size: int) -> PaginatorDTO[PurchaseItemOutDTO]:
-        return self._selector.get_all_purchase_item(user_id, page, page_size)
+    def get_all_purchase_item(self, user_id: int, page: int, page_size: int,date_from:str|None,date_to:str|None) -> PaginatorDTO[PurchaseItemOutDTO]:
+        return self._selector.get_all_purchase_item(user_id, page, page_size,date_from,date_to)
 
     def create(self, dto: PurchaseItemInDTO, creator_id: int):
 

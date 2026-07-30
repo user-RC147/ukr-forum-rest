@@ -22,8 +22,10 @@ class PurchaseItemViewSet(ViewSet):
         user_id = request.user.id
         page=int(request.query_params.get('page',1))
         page_size=int(request.query_params.get('page_size',5))
+        date_from = (request.query_params.get('date_from'))
+        date_to =(request.query_params.get('date_to'))
 
-        purchase_items = self._service.get_all_purchase_item(user_id,page,page_size)
+        purchase_items = self._service.get_all_purchase_item(user_id,page,page_size,date_from,date_to)
 
         results = PurchaseItemOutSerializer(purchase_items.items,many=True)
         paginator =PaginatorSerializerOut(purchase_items)

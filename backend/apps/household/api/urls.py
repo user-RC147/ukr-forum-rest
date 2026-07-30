@@ -8,6 +8,7 @@ from apps.household.api.views.product_view import ProductViewSet
 from apps.household.api.views.purchase_item_view import PurchaseItemViewSet
 from apps.household.api.views.purchase_view import PurchaseViewSet
 from apps.household.api.views.unit_of_measure_view import UnitOfMeasureViewSet
+from apps.household.api.views.market_expenses_view import MarketExpenseViewSet
 
 router = DefaultRouter()
 router.register('groups',    GroupViewSet,    basename='group')
@@ -18,5 +19,6 @@ router.register('unit-of-measure', UnitOfMeasureViewSet, basename='unit-of-measu
 router.register('products',  ProductViewSet,  basename='product')
 router.register('purchases', PurchaseViewSet, basename='purchase')
 router.register('purchase-items', PurchaseItemViewSet, basename='purchase-items')
+router.register('market-expenses' , MarketExpenseViewSet, basename='market-expenses')
 
 urlpatterns = router.urls

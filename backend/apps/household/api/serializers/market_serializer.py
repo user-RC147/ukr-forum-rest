@@ -1,8 +1,9 @@
-from jsonschema import ValidationError
-from rest_framework import serializers
-
 
 from rest_framework import serializers
+
+from apps.household.api.serializers.location_serializer import LocationInSerializer, LocationOutSerializer
+
+
 
 
 class CountrySerializer(serializers.Serializer):
@@ -37,6 +38,25 @@ class MarketLocationSerializer(serializers.Serializer):
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
+
+
+
+class MarketExpenseInSerializer(serializers.Serializer):
+    id =serializers.IntegerField()
+
+class MarketExpense_Id_OutSerializer(serializers.Serializer):
+    id =serializers.IntegerField()
+    name=serializers.CharField()
+    location=LocationInSerializer()
+    address_line=serializers.CharField()
+    total = serializers.DecimalField(max_digits=12,decimal_places=3)
+
+class MarketExpenseOutSerializer(serializers.Serializer):
+    id =serializers.IntegerField()
+    name=serializers.CharField()
+    location=LocationOutSerializer()
+    address_line=serializers.CharField()
+    total = serializers.DecimalField(max_digits=12,decimal_places=3)
 
 
 class MarketSerializer(serializers.Serializer):

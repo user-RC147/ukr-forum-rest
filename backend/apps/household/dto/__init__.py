@@ -4,6 +4,9 @@ from .market_dto import (
     ListMarketDTO,
     Market_Id_Name_OutDTO,
     Market_Id_OutDTO,
+    MarketExpenseInDTO,
+    MarketExpenseOutDTO,
+    MarketExpense_Id_OutDTO
 )
 from .product_dto import CreateProductInDTO, ProductOutDTO, CategoryProductOutDTO
 from .group_dto import (
@@ -70,6 +73,9 @@ __all__ = [
     "CreateMarketInDTO",
     "Market_Id_Name_OutDTO",
     "Market_Id_OutDTO",
+    'MarketExpenseInDTO',
+    'MarketExpenseOutDTO',
+    'MarketExpense_Id_OutDTO',
 
     # Asset
     "CreateAssetDTO",

@@ -9,13 +9,11 @@ export const usePurchaseItemStore = defineStore('purchaseItem', () => {
     const loading = ref(false);
     const error = ref(null);
 
-    async function fetchPurchaseItems(page = 1, page_size = 3
-
-    ) {
+    async function fetchPurchaseItems(page = 1, page_size = 5, date_from, date_to) {
         loading.value=true;
         error.value=null;
         try{
-            const response = await getPurchaseItems(page,page_size);
+            const response = await getPurchaseItems(page,page_size,date_from, date_to);
             // тут треба зберегти дані
             purchaseItems.value = response.data.results;
             paginator.value = response.data.paginator;

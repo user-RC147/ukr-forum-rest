@@ -12,7 +12,12 @@ from core.paginator.paginator import paginate
 
 class PurchaseItemSelector:
     def get_all_purchase_item(
-        self, user_id: int, page: int, page_size: int
+        self,
+        user_id: int,
+        page: int,
+        page_size: int,
+        date_from: str | None,
+        date_to: str | None,
     ) -> PaginatorDTO[PurchaseItemOutDTO]:
 
         purchase_items = (
@@ -25,8 +30,14 @@ class PurchaseItemSelector:
                 "product",
                 "product__unit_of_measure",
             )
-            .distinct()
+            .distinct().order_by('-purchase__data_purchase')
         )
+
+        if date_to and date_from:
+            purchase_items = purchase_items.filter(
+                purchase__data_purchase__gte=date_from,
+                purchase__data_purchase__lte=date_to,
+            )
 
         count = purchase_items.count()
 
