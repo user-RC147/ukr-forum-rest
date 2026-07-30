@@ -10,12 +10,12 @@ from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
-
-from .dto import PageDTO, ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
-from .exceptions import ProductPermissionError
-from .repository import ProductRepository, get_repo
 from core.unit_of_work.uow import UnitOfWork
 from core.unit_of_work.uow_django import DjangoUnitOfWork
+
+from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
+from .exceptions import ProductPermissionError
+from .repository import ProductRepository, get_repo
 
 logger = logging.getLogger(__name__)
 
@@ -251,10 +251,6 @@ def _to_dto_product(data) -> ProductDTO:
         visible=data["visible"],
         files=data["files"],
     )
-
-
-def _to_dto_page(data: list[ProductDTO], total: int):
-    return PageDTO(items=data, total=total)
 
 
 def get_service() -> ProductService:
