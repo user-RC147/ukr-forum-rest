@@ -29,16 +29,16 @@ class FileRepository:
 
         return _to_dto(result)
 
-    def get_many(self, ids: list[int]):
+    def get_many(self, ids: list[int]) -> list[FileRepoDTO]:
         files = self.model.objects.filter(id__in=ids)
-        found_ids = {f.id for f in files}
-        missing = set(ids) - found_ids
-        if missing:
+        if len(files) < len(ids):
+            found_ids = {f.id for f in files}
+            missing = set(ids) - found_ids
             logger.warning(
                 "Files not found",
                 extra={"not_found_ids": missing, "event": "get_many_file"},
             )
-        return files
+        return [_to_dto(f) for f in files]
 
     def delete(self, id: int) -> str:
         instance = self._get_model(id, event="delete_file")
@@ -49,6 +49,13 @@ class FileRepository:
 
     def delete_many(self, ids: list[int]) -> list[str]:
         data = self.model.objects.filter(id__in=ids)
+        if len(data) < len(ids):
+            found_ids = {f.id for f in data}
+            missing = set(ids) - found_ids
+            logger.error(
+                "Not all files was deleted!",
+                extra={"not_found_ids": missing, "event": "delete_many_file"},
+            )
         file_paths = list(data.values_list("file", flat=True))
         data.delete()
 
@@ -69,7 +76,9 @@ class FileRepository:
         result = self.model.objects.filter(id__in=ids)
         return [_to_dto(r) for r in result]
 
-    def update_files_content(self, updates: dict[int, UploadedFile]) -> tuple[list[FileRepoDTO], list[str]]:
+    def update_files_content(
+        self, updates: dict[int, UploadedFile]
+    ) -> tuple[list[FileRepoDTO], list[str]]:
         ids = list(updates.keys())
         files_by_id = self.model.objects.filter(id__in=ids).in_bulk()
         old_paths = [files_by_id[i].file.name for i in ids]

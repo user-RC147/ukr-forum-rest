@@ -48,12 +48,7 @@ class FileService:
         if not file_ids:
             return {}
 
-        files = self.repo.filter_by_id(file_ids)
-
-        found_ids = {f.id for f in files}
-        missing = set(file_ids) - found_ids
-        if missing:
-            logger.warning("Files not found", extra={"not_found_ids": missing, "event": "get_many_file"})
+        files = self.repo.get_many(file_ids)
 
         return {f.id: _to_dto(f) for f in files}
 
