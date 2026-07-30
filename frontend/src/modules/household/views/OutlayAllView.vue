@@ -5,21 +5,102 @@
     import { useAssetStore } from '../stores/useAssetStore.js';
     import { usePurchaseItemStore } from '../stores/usePurchaseItemStore.js';
 
-    //=====purchaseItems =========
-    const currentPage = ref(1);
-    const purchaseItemStore = usePurchaseItemStore();
+    import PeriodFilter from '../components/filters/PeriodFilter.vue';
+    import { useMarketExpensesStore } from '../stores/useMarketExpenses.js';
 
-    function goNextPage() {
-        currentPage.value += 1;
-        purchaseItemStore.fetchPurchaseItems(currentPage.value);
+    //======PeriodFilter================
+
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const dateTo_items = ref(formatDate(today));
+    const dateFrom_items = ref(formatDate(firstDayOfMonth));
+    const period_items = ref(null);
+
+    const dateTo_market = ref(formatDate(today));
+    const dateFrom_market = ref(formatDate(firstDayOfMonth));
+    const period_market = ref(null);
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
-    function goPrevPage() {
-        currentPage.value -= 1;
-        purchaseItemStore.fetchPurchaseItems(currentPage.value);
+    //======================
+
+    //=====purchaseItems =========
+    const currentPageItems = ref(1);
+    const pageSizeItems = ref(5);
+    const purchaseItemStore = usePurchaseItemStore();
+
+    function goNextItemsPage() {
+        currentPageItems.value += 1;
+        purchaseItemStore.fetchPurchaseItems(
+            currentPageItems.value,
+            pageSizeItems.value,
+            dateFrom_items.value,
+            dateTo_items.value
+        );
+    }
+
+    function goPrevItemsPage() {
+        currentPageItems.value -= 1;
+        purchaseItemStore.fetchPurchaseItems(
+            currentPageItems.value,
+            pageSizeItems.value,
+            dateFrom_items.value,
+            dateTo_items.value
+        );
     }
 
     //==============
+
+    watch([dateFrom_items, dateTo_items], ([newDateFrom, newDateTo]) => {
+        currentPageItems.value = 1;
+        purchaseItemStore.fetchPurchaseItems(currentPageItems.value, pageSizeItems.value, newDateFrom, newDateTo);
+    });
+
+    //======MarketExpenses===========================
+    const currentPageMarkets = ref(1);
+    const pageSizeMarkets = ref(5);
+    const marketExpensesStore = useMarketExpensesStore();
+
+    watch([dateFrom_market, dateTo_market], ([newDateFrom, newDateTo]) => {
+        currentPageMarkets.value = 1;
+        marketExpensesStore.fetchMarketExpenses(
+            currentPageMarkets.value,
+            pageSizeMarkets.value,
+            newDateFrom,
+            newDateTo
+        );
+    });
+    const marketTotal = computed(() =>
+        marketExpensesStore.marketExpenses.reduce((s, item) => s + parseFloat(item.total), 0).toFixed(2)
+    );
+
+    function goPrevMarketPage() {
+        currentPageMarkets.value -= 1;
+        marketExpensesStore.fetchMarketExpenses(
+            currentPageMarkets.value,
+            pageSizeMarkets.value,
+            dateFrom_market.value,
+            dateTo_market.value
+        );
+    }
+
+    function goNextMarketPage() {
+        currentPageMarkets.value += 1;
+        marketExpensesStore.fetchMarketExpenses(
+            currentPageMarkets.value,
+            pageSizeMarkets.value,
+            dateFrom_market.value,
+            dateTo_market.value
+        );
+    }
+
+    //=================================
 
     //===Group====
     const groupStore = useGroupStore();
@@ -48,7 +129,6 @@
 
     watch(selectedGroupMembers, (newMembers) => {
         const found = newMembers.find((member) => member.user.id === userStore.user.id);
-
         activeMember.value = found ? found.id : null;
     });
 
@@ -63,7 +143,19 @@
         groupStore.fetchGroups();
         // При старті завантажуємо активи для "Всіх груп" (запит піде без group_id)
         assetStore.fetchAssets();
-        purchaseItemStore.fetchPurchaseItems(currentPage.value);
+        purchaseItemStore.fetchPurchaseItems(
+            currentPageItems.value,
+            pageSizeItems.value,
+            dateFrom_items.value,
+            dateTo_items.value
+        );
+
+        marketExpensesStore.fetchMarketExpenses(
+            currentPageMarkets.value,
+            pageSizeMarkets.value,
+            dateFrom_market.value,
+            dateTo_market.value
+        );
     });
 
     watch(selectedGroup, (newGroupId) => {
@@ -85,7 +177,6 @@
             .reduce((s, item) => s + parseFloat(item.quantity) * parseFloat(item.price_per_unit), 0)
             .toFixed(2)
     );
-    //const shopsTotal = computed(() => shops.value.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(2));
 </script>
 
 <template>
@@ -164,26 +255,11 @@
         <div class="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-8">
             <div class="flex justify-between items-center px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm">
                 <div class="font-medium">Загальні витрати за період</div>
-                <div class="flex justify-between">
-                    <select class="bg-transparent focus:outline-none text-sm cursor-pointer mx-6 w-full">
-                        <option disabled selected>За весь період</option>
-                        <option>День</option>
-                        <option>Тиждень</option>
-                        <option>Місяць</option>
-                        <option>Квартал</option>
-                        <option>Рік</option>
-                    </select>
-                    <div class="flex gap-2">
-                        <div class="flex items-center justify-end">
-                            <span>з</span>
-                            <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
-                        </div>
-                        <div class="flex items-center justify-end">
-                            <span>по</span>
-                            <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
-                        </div>
-                    </div>
-                </div>
+                <PeriodFilter
+                    v-model:period="period_items"
+                    v-model:date-from="dateFrom_items"
+                    v-model:date-to="dateTo_items"
+                />
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[600px] text-sm border-collapse">
@@ -216,7 +292,27 @@
                         </tr>
                     </tfoot>
                 </table>
-                <div class="text-center">десь тут пагінація</div>
+                <div class="flex justify-center items-center gap-4 py-3 border-t border-gray-200">
+                    <button
+                        class="px-2 rounded border"
+                        @click="goPrevItemsPage"
+                        :disabled="!purchaseItemStore.paginator?.has_previous"
+                    >
+                        ← Попередня
+                    </button>
+
+                    <div v-if="purchaseItemStore.paginator">
+                        Сторінка {{ purchaseItemStore.paginator.page }} із
+                        {{ purchaseItemStore.paginator.total_pages }}
+                    </div>
+                    <button
+                        class="px-2 rounded border"
+                        @click="goNextItemsPage"
+                        :disabled="!purchaseItemStore.paginator?.has_next"
+                    >
+                        Наступна →
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -226,26 +322,11 @@
             <div class="flex-1 min-w-75 border border-gray-200 rounded-2xl overflow-hidden bg-white">
                 <div class="flex justify-between px-4 py-3 bg-amber-50 border-b border-gray-200 text-sm font-medium">
                     <span>інші магазини</span>
-                    <div class="flex justify-between">
-                        <select class="bg-transparent focus:outline-none text-sm cursor-pointer mx-6 w-full">
-                            <option disabled selected>За весь період</option>
-                            <option>День</option>
-                            <option>Тиждень</option>
-                            <option>Місяць</option>
-                            <option>Квартал</option>
-                            <option>Рік</option>
-                        </select>
-                        <div class="flex gap-2">
-                            <div class="flex items-center justify-end">
-                                <span>з</span>
-                                <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
-                            </div>
-                            <div class="flex items-center justify-end">
-                                <span>по</span>
-                                <input type="date" class="border border-gray-300 p-1 ml-2 rounded-lg text-sm" />
-                            </div>
-                        </div>
-                    </div>
+                    <PeriodFilter
+                        v-model:period="period_market"
+                        v-model:date-from="dateFrom_market"
+                        v-model:date-to="dateTo_market"
+                    />
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm border-collapse">
@@ -258,20 +339,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(shop, i) in shops" :key="i" class="text-center">
+                            <tr v-for="(market, i) in marketExpensesStore.marketExpenses" :key="i" class="text-center">
                                 <td class="border border-gray-200 px-3 py-2">{{ i + 1 }}</td>
-                                <td class="border border-gray-200 px-3 py-2">{{ shop.name }}</td>
-                                <td class="border border-gray-200 px-3 py-2">{{ shop.location }}</td>
-                                <td class="border border-gray-200 px-3 py-2">{{ shop.total }}</td>
+                                <td class="border border-gray-200 px-3 py-2">{{ market.name }}</td>
+                                <td class="border border-gray-200 px-3 py-2">
+                                    {{ market.location.country.name }},
+                                    <!-- {{ market.location.region.name}}, -->
+                                    {{ market.location.city.name }},
+                                    {{ market.address_line }}
+                                </td>
+                                <td class="border border-gray-200 px-3 py-2">{{ market.total }}</td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-amber-50 font-semibold">
                             <tr>
                                 <td colspan="3" class="border border-gray-200 px-3 py-2 text-right">Разом</td>
-                                <td class="border border-gray-200 px-3 py-2 text-center">{{ shopsTotal }}</td>
+                                <td class="border border-gray-200 px-3 py-2 text-center">{{ marketTotal }}</td>
                             </tr>
                         </tfoot>
                     </table>
+                    <div class="flex justify-center items-center gap-4 py-3 border-t border-gray-200">
+                        <button
+                            class="px-2 rounded border"
+                            @click="goPrevMarketPage"
+                            :disabled="!marketExpensesStore.paginator?.has_previous"
+                        >
+                            ← Попередня
+                        </button>
+
+                        <div v-if="marketExpensesStore.paginator">
+                            Сторінка {{ marketExpensesStore.paginator.page }} із
+                            {{ marketExpensesStore.paginator.total_pages }}
+                        </div>
+                        <button
+                            class="px-2 rounded border"
+                            @click="goNextMarketPage"
+                            :disabled="!marketExpensesStore.paginator?.has_next"
+                        >
+                            Наступна →
+                        </button>
+                    </div>
                 </div>
             </div>
 

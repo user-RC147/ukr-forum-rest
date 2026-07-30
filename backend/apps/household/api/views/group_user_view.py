@@ -59,11 +59,6 @@ class GroupViewSet(viewsets.ViewSet):
 
         results = GroupOutSerializer(group_members,many=True).data
 
-        # print('===/===/==/====/==/===/=====/=====/==/====================')
-        # print('=================================================')
-        # print("results")
-        # print(results)
-        # print('=================================================')
 
         return Response({'results':results},status=status.HTTP_200_OK)
   
