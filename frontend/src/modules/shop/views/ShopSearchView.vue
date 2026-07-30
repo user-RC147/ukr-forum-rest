@@ -1,11 +1,12 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
 import { useProductSearchResults } from '../composables/useProductSearchResults'
 import SearchFiltersBar from '../components/SearchFiltersBar.vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
-const { products, isLoading, error, hasNext, page } = useProductSearchResults()
+const { products, isLoading, error, page, totalPages, hasNext, hasPrevious } =
+  useProductSearchResults()
 
 function goToPage(p) {
   router.push({ name: 'shop-search', query: { ...route.query, page: p } })
@@ -48,12 +49,12 @@ function goToPage(p) {
       За вашим запитом нічого не знайдено
     </p>
 
-    <nav v-if="page > 1 || hasNext" class="flex justify-center gap-2 my-8">
-      <button :disabled="page <= 1" @click="goToPage(page - 1)"
+    <nav v-if="totalPages > 1" class="flex items-center justify-center gap-3 my-8">
+      <button :disabled="!hasPrevious" @click="goToPage(page - 1)"
               class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         &laquo; Попередня
       </button>
-      <span class="px-4 py-2 text-gray-700 font-medium">{{ page }}</span>
+      <span class="px-2 text-gray-700 font-medium">Сторінка {{ page }} з {{ totalPages }}</span>
       <button :disabled="!hasNext" @click="goToPage(page + 1)"
               class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         Наступна &raquo;

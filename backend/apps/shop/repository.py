@@ -7,7 +7,7 @@ from django.db.models.manager import BaseManager
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 
-from .dto import PageDTO, ProductRepoDTO
+from .dto import ProductRepoDTO
 from .exceptions import ProductNotFoundError
 from .models import ProductModel
 
@@ -88,10 +88,6 @@ def _to_dto_product(data: ProductModel) -> ProductRepoDTO:
     dto_fields = {f.name for f in fields(ProductRepoDTO)}
     result = {field: getattr(data, field) for field in dto_fields}
     return ProductRepoDTO(**result)
-
-
-def _to_dto_page(data: list[ProductRepoDTO], total: int) -> PageDTO:
-    return PageDTO(items=data, total=total)
 
 
 def get_repo():

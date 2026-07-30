@@ -15,11 +15,11 @@ from apps.shop.schemas import (
 
 from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
 from .serializers import (
+    PageSerializer,
     ProductListQuerySerializer,
     ProductReadSerializer,
     ProductSerializer,
     ProductUpdateSerializer,
-    PageSerializer,
 )
 from .service import ProductService
 

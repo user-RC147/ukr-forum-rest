@@ -1,0 +1,9 @@
+from collections.abc import Callable
+from typing import Protocol, Self
+
+
+class UnitOfWork(Protocol):
+    def __enter__(self) -> Self: ...
+    def __exit__(self, exc_type, exc, tb) -> bool | None: ...
+
+    def on_commit(self, callback: Callable[[], None]) -> None: ...
