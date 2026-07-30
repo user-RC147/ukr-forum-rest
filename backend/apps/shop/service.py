@@ -1,8 +1,6 @@
 import dataclasses
 import logging
 
-from django.db import transaction
-
 from apps.files.contracts import get_file_contract
 from apps.files.dto import FileUpdatePlan
 from apps.geo.contracts.city_contract import get_city_contract
@@ -16,6 +14,8 @@ from core.paginator.paginator import paginate
 from .dto import PageDTO, ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
 from .exceptions import ProductPermissionError
 from .repository import ProductRepository, get_repo
+from core.unit_of_work.uow import UnitOfWork
+from core.unit_of_work.uow_django import DjangoUnitOfWork
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ class ProductService:
         self.file_contract = get_file_contract()
         self.category_contract = get_category_contract()
         self.user_contract = get_user_contract()
+        self.uow: UnitOfWork = DjangoUnitOfWork()
 
     def _fetch_map(self, ids: list[int | None], contract) -> dict:
         """Deduplicate ids and 1 batch-request via get_many"""
@@ -134,12 +135,14 @@ class ProductService:
 
         data: dict = dataclasses.asdict(dataclasses.replace(data, files=[]))
         data["owner_id"] = user.id
-        file_list = self.file_contract.create_many(files, data["owner_id"])
-        file_ids = [i.id for i in file_list]
-        data["file_ids"] = file_ids
-        data.pop("files")
 
-        product = self.repo.create(data)
+        with self.uow:
+            file_list = self.file_contract.create_many(files, data["owner_id"])
+            file_ids = [i.id for i in file_list]
+            data["file_ids"] = file_ids
+            data.pop("files")
+
+            product = self.repo.create(data)
 
         result = dataclasses.asdict(product)
         self._attach_products([result])
@@ -167,7 +170,7 @@ class ProductService:
         create_files = fields.pop("create_files", None)
         keep_files_ids = fields.pop("keep_files_ids", None)
 
-        with transaction.atomic():
+        with self.uow:
             has_file_changes = any(
                 v is not None
                 for v in (
@@ -212,7 +215,7 @@ class ProductService:
 
         ProductAccessPolicy.can_edit(user, product)
 
-        with transaction.atomic():
+        with self.uow:
             if product.files:
                 self.file_contract.delete_many([p["id"] for p in product.files])
             result = self.repo.delete(id)
