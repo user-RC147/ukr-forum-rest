@@ -1,37 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/shared/stores/useUserStore'
-import { getLatestProducts } from '../api/shop.js'
+import { useMyProducts } from '../composables/useMyProducts'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const products = ref([])
-const isLoading = ref(true)
-const error = ref(null)
-
-async function loadMyProducts() {
-  isLoading.value = true
-  error.value = null
-  try {
-    // Фільтрація по user_id тепер на бекенді — не тягнемо чужі товари й не
-    // залежимо від того, скільки товарів повертає "latest" ендпоінт
-    const { data } = await getLatestProducts({ user_id: userStore.user?.id })
-    products.value = data?.results ?? data ?? []
-  } catch (e) {
-    error.value = 'Не вдалося завантажити ваші товари'
-    console.error(e)
-  } finally {
-    isLoading.value = false
-  }
-}
+const { products, isLoading, error, page, totalPages, hasNext, hasPrevious, goToPage } =
+  useMyProducts(() => userStore.user?.id)
 
 onMounted(() => {
   if (!userStore.isAuthenticated) {
     router.push({ name: 'login' })
-  } else {
-    loadMyProducts()
   }
 })
 </script>
@@ -109,6 +90,24 @@ onMounted(() => {
         Додайте перший!
       </RouterLink>
     </p>
+
+    <nav v-if="totalPages > 1" class="flex items-center justify-center gap-3 my-4">
+      <button
+        :disabled="!hasPrevious"
+        @click="goToPage(page - 1)"
+        class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        &laquo; Попередня
+      </button>
+      <span class="px-2 text-gray-700 font-medium">Сторінка {{ page }} з {{ totalPages }}</span>
+      <button
+        :disabled="!hasNext"
+        @click="goToPage(page + 1)"
+        class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        Наступна &raquo;
+      </button>
+    </nav>
 
     <div class="text-center pt-4">
       <RouterLink
