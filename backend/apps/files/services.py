@@ -10,6 +10,8 @@ from apps.files.dto import FileDTO, FileUpdatePlan
 from apps.files.exceptions import FileExtensionError, FileNameError, FileSizeError, AppValidationError, FileNotFoundError
 from apps.files.models import FileModel
 from apps.files.file_storage import get_storage
+from core.unit_of_work.uow import UnitOfWork
+from core.unit_of_work.uow_django import DjangoUnitOfWork
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ class FileService:
     def __init__(self, model=FileModel) -> None:
         self.model = model
         self.storage = get_storage()
+        self.uow: UnitOfWork = DjangoUnitOfWork()
 
     def create(self, data: UploadedFile, user_id: int) -> FileDTO:
         self._validate_file(data, user_id)
@@ -58,7 +61,7 @@ class FileService:
         return {f.id: _to_dto(f) for f in files}
 
     def delete(self, file_id: int) -> None:
-        with transaction.atomic():
+        with self.uow:
             try:
                 instance = self.model.objects.get(id=file_id)
                 file_path = instance.file
@@ -66,7 +69,7 @@ class FileService:
             except ObjectDoesNotExist:
                 raise FileNotFoundError(extra={"file_id": file_id, "event": "delete_file"})
 
-            transaction.on_commit(lambda: self.storage.delete(file_path))
+            self.uow.on_commit(lambda: self.storage.delete(file_path))
 
         logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
@@ -76,10 +79,10 @@ class FileService:
         data = self.model.objects.filter(id__in=file_ids)
         file_paths = list(data.values_list("file", flat=True))
 
-        with transaction.atomic():
+        with self.uow:
             deleted_count, _ = data.delete()
 
-            transaction.on_commit(lambda: self.storage.delete(file_paths))
+            self.uow.on_commit(lambda: self.storage.delete(file_paths))
 
         logger.info(
             "Files was deleted",
@@ -103,7 +106,7 @@ class FileService:
         for d in data
         ]
 
-        with transaction.atomic():
+        with self.uow:
             result = self.model.objects.bulk_create(instances)
         dto = [_to_dto(r) for r in result]
 
@@ -130,14 +133,14 @@ class FileService:
 
         new_file_paths: list[str] = []
         try:
-            with transaction.atomic():
+            with self.uow:
                 result: list[FileDTO] = []
 
                 updated, old_paths = self._apply_updates(user_id, plan, update_files)
                 new_file_paths.extend(f.file.name for f in updated)
                 result.extend(_to_dto(f) for f in updated)
                 if old_paths:
-                    transaction.on_commit(lambda paths=old_paths: self.storage.delete(paths))
+                    self.uow.on_commit(lambda paths=old_paths: self.storage.delete(paths))
 
                 created = self._apply_creates(user_id, create_files)
                 result.extend(created)
