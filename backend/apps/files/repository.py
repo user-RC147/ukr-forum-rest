@@ -91,6 +91,6 @@ def _to_dto(data: FileModel) -> FileRepoDTO:
         name=data.name,
         created_at=data.created_at,
         owner_id=data.owner_id,
-        file=data.file.file.url,
+        file=data.file.url,
         visible=data.visible,
     )
