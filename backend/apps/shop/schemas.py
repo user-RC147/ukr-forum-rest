@@ -1,7 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 
-from apps.shop.serializers import ProductReadSerializer
+from apps.shop.serializers import ProductReadSerializer, PageSerializer
 
 product_create_schema = extend_schema(
     summary="Створити товар",
@@ -76,5 +76,5 @@ product_list_schema = extend_schema(
             description="Фільтрація товарів ID юзера (опціонально)",
         ),
     ],
-    responses={200: ProductReadSerializer(many=True)},
+    responses={200: PageSerializer(many=True)},
 )
