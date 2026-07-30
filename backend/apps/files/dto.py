@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 
 @dataclass(frozen=True)
@@ -6,6 +7,16 @@ class FileDTO:
     owner_id: int
     id: int
     file: str
+    visible: bool
+
+
+@dataclass(frozen=True)
+class FileRepoDTO:
+    owner_id: int
+    id: int
+    name: str
+    file: str
+    created_at: datetime
     visible: bool
 
 
