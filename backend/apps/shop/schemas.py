@@ -12,6 +12,7 @@ product_create_schema = extend_schema(
                 "title": {"type": "string"},
                 "description": {"type": "string"},
                 "price": {"type": "integer"},
+                "status": {"type": "string"},
                 "category_id": {"type": "integer"},
                 "country_id": {"type": "integer"},
                 "region_id": {"type": "integer"},
