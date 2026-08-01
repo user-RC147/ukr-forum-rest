@@ -1,4 +1,4 @@
-from apps.users.dto.user import UserDTO
+from apps.users.dto.user_dto import UserDTO
 from apps.users.porotocols.user_protocol import UserProtocol
 from apps.users.services.user_service import UserService  
 

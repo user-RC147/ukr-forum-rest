@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from apps.users.dto.user import UserDTO
+from apps.users.dto.user_dto import UserDTO
 
 
 class UserProtocol(Protocol):

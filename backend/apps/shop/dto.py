@@ -7,7 +7,7 @@ from apps.geo.dto.city import CityDTO
 from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.search.dto import CategoryDTO
-from apps.users.dto.user import UserDTO
+from apps.users.dto.user_dto import UserDTO
 
 from .enums import ProductStatus
 

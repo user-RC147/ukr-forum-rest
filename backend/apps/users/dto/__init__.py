@@ -1,14 +1,5 @@
-from .location import LocationUpdateDTO
-from .password import PasswordResetConfirmDTO, ChangePasswordDTO
-from .profile import ProfileUpdateDTO
-from .register import RegisterDTO
-from .user import UserDTO
+from .user_dto import UserOutDTO
 
-__all__=[
-    'RegisterDTO',
-    'ProfileUpdateDTO',
-    'PasswordResetConfirmDTO',
-    'ChangePasswordDTO',
-    'LocationUpdateDTO',
-    'UserDTO',
+__all__=[   
+    'UserOutDTO',
 ]
