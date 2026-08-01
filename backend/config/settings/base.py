@@ -225,3 +225,11 @@ sentry_sdk.init(
     send_default_pii=False,  # Not send personal identifiable info
     # environment=os.getenv("ENVIRONMENT", "production"),
 )
+
+# Redis
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "admin")}:{os.getenv("REDIS_PORT", 6379)}/1",
+    }
+}
