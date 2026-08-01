@@ -50,6 +50,25 @@ services:
     volumes:
       - db-data:/var/lib/postgresql
 
+  redis:
+    image: redis:8.10.0-trixie
+    container_name: redis
+    restart: unless-stopped
+
+    volumes:
+      - redis-data:/data
+
+    command: >
+      redis-server
+      --appendonly yes
+      --save 60 1000
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   loki:
     image: grafana/loki:3.7.3
     ports:
@@ -88,3 +107,4 @@ volumes:
   loki_data:
   grafana_data:
   django_logs:
+  redis-data:
