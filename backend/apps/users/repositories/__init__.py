@@ -1,9 +1,5 @@
-from .user_repository import user_repository,UserRepository
-from .consent_repository import consent_repository,ConsentRepository
+# Якщо __init__.py порожній — ви даєте сигнал розробнику: 
+# «Сюди не лізь загальним імпортом, імпортуй файли напряму (як у моделях)».
 
-__all_=[
-    'user_repository',
-    'UserRepository',
-    'consent_repository',
-    'ConsentRepository',
-]
+# Якщо __init__.py наповнений через __all__ — ви кажете: 
+# «Цей прошарок безпечний, ось список класів, які ти можеш брати через один імпорт».

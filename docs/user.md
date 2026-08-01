@@ -13,20 +13,21 @@
 - `refresh_token` — довгий термін (~14 днів), вузький `path` (наприклад `/api/users/token/refresh/`), щоб не літав з кожним запитом.
 - Фронт нічого не читає і нічого не підставляє вручну — `withCredentials: true`, все інше на бекенді.
 
-### Refresh Token Rotation + Blacklist
+### Refresh Token Rotation + Blacklist — на базі `djangorestframework-simplejwt`
 
-- Кожен виклик `refresh` видає **нову пару** токенів і одразу заносить старий `refresh_token` у блекліст (по `jti`).
-- **Reuse detection:** повторне використання вже списаного `refresh_token` → розлогін усіх сесій юзера (сигнал компрометації).
-- Access-токени в блекліст не потрапляють (інакше втрачається сенс stateless JWT).
+**Рішення (змінено):** замість власноруч написаної моделі `BlacklistedToken` і ручної логіки видачі/перевірки JWT — використовується бібліотека `djangorestframework-simplejwt`.
 
-**Модель `BlacklistedToken`:**
-| Поле | Тип | Примітка |
-|---|---|---|
-| `jti` | унікальний ID токена з payload | не сам токен цілком |
-| `expires_at` | дата | для майбутньої чистки |
+- Пакет: `djangorestframework-simplejwt`.
+- `INSTALLED_APPS` += `rest_framework_simplejwt`, `rest_framework_simplejwt.token_blacklist`.
+- `settings.py` → словник `SIMPLE_JWT`: `ROTATE_REFRESH_TOKENS=True`, `BLACKLIST_AFTER_ROTATION=True` (+ строки життя access/refresh).
+- Таблиці блеклиста (`OutstandingToken`, `BlacklistedToken`) створює сама бібліотека через власні міграції — **власну модель `BlacklistedToken` в `users` не пишемо, вона скасована.**
 
-- Сховище: **PostgreSQL зараз**, з можливим переходом на Redis пізніше (заміна лише в Repository/Selector, вище нічого не міняється).
-- **Чистка застарілих записів — відкладено** (технічний борг, реалізується разом із переходом на Redis або окремо, через management command).
+**Що лишається на нашій відповідальності (пишемо самі, поверх бібліотеки):**
+- **Cookie-обгортка** — `simplejwt` за замовчуванням віддає токени в тілі JSON-відповіді; потрібен власний шар (View/Service), що перекладає access/refresh у HttpOnly cookies при відповіді і читає їх із cookies при запиті, а не з заголовка `Authorization`.
+- **Reuse detection** — стандартний блекліст `simplejwt` лише відхиляє повторне використання вже зротованого refresh-токена; **автоматичний розлогін усіх сесій юзера** при виявленні реюзу (сигнал компрометації) — це кастомна логіка, дописується в `TokenRefreshService`.
+- Access-токени в блекліст не потрапляють (інакше втрачається сенс stateless JWT) — так само справедливо і для `simplejwt`.
+
+**Чистка застарілих записів блеклиста** — за замовчуванням лишається в БД бібліотеки; чистка (`flushexpiredtokens` — вбудована management-команда `simplejwt`) підключається пізніше, як і решта відкладеної періодичної чистки.
 
 ### Axios-interceptor (фронт)
 
@@ -237,7 +238,7 @@ POST /users/password-reset/confirm/  (token, new_password)
 
 ## 9. Технічний борг (відкладено свідомо)
 
-- Чистка `BlacklistedToken` (протухлі `jti`) — періодична задача.
+- Чистка блеклиста `simplejwt` (`flushexpiredtokens`) — підключити як періодичну задачу.
 - Фізичне видалення юзерів за `deletion_scheduled_at` — періодична задача (той самий механізм, що й вище).
 - Реалізація відправки email (верифікація + password reset) — `EmailService`, зараз тільки виклики-заглушки.
 - Contract `geo` для отримання назв локацій по `id` — після доопрацювання модуля `geo`.
