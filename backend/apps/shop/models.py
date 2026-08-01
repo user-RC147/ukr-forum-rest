@@ -1,4 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex, OpClass
+from django.contrib.postgres.search import SearchVector
 from django.db import models
 
 from .enums import PRODUCT_STATUS_LABELS, ProductStatus
@@ -31,6 +33,20 @@ class ProductModel(models.Model):
         ordering = ["-id"]
         verbose_name = "Товар"
         verbose_name_plural = "Товари"
+
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["category_id"]),
+            models.Index(fields=["country_id"]),
+            models.Index(fields=["region_id"]),
+            models.Index(fields=["city_id"]),
+            GinIndex(
+                SearchVector("title", "description", config="simple"), name="shop_product_search_gin"
+            ),
+            GinIndex(
+                OpClass("description", name="gin_trgm_ops"), name="description_trgm_idx"
+            ),
+        ]
 
     def __str__(self):
         if self.updated_at != self.created_at:
