@@ -28,3 +28,4 @@ urllib3==2.7.0
 attrs==26.1.0
 django-redis
 redis>=6.0
+celery
