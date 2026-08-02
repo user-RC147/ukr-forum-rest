@@ -10,6 +10,7 @@ from apps.files.file_storage import get_storage
 from core.unit_of_work.uow import UnitOfWork
 from core.unit_of_work.uow_django import DjangoUnitOfWork
 from .repository import FileRepository
+from .tasks import delete_files_task
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class FileService:
 
             file_path = self.repo.delete(file_id)
 
-            self.uow.on_commit(lambda: self.storage.delete(file_path))
+            self.uow.on_commit(lambda: delete_files_task.delay(file_path))
 
         logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
@@ -68,7 +69,7 @@ class FileService:
         with self.uow:
             file_paths = self.repo.delete_many(file_ids)
 
-            self.uow.on_commit(lambda: self.storage.delete(file_paths))
+            self.uow.on_commit(lambda: delete_files_task.delay(file_paths))
 
         logger.info(
             "Files was deleted",
