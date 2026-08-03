@@ -1,5 +1,5 @@
-# Якщо __init__.py порожній — ви даєте сигнал розробнику: 
-# «Сюди не лізь загальним імпортом, імпортуй файли напряму (як у моделях)».
-
-# Якщо __init__.py наповнений через __all__ — ви кажете: 
-# «Цей прошарок безпечний, ось список класів, які ти можеш брати через один імпорт».
+from .consent import ConsentText
+from .user import CustomUser
+from .referral_code import ReferralCode
+from .referral_usage import ReferralUsage
+from .password_reset_token import PasswordResetToken

@@ -1,42 +1,31 @@
-from dataclasses import dataclass
+# apps/users/dto/user_dto.py
 
-@dataclass(frozen=True)
-class UserShortOut:
-    """
-    Публічне представлення користувача.
-    Використовується іншими модулями — household, тощо.
-    Містить тільки те що безпечно показувати.
-    """
-    id:int
-    username:str
-    display_name:str
+# Реекспорт із core — єдина крапка входу для DTO юзера всередині цього модуля.
+# Якщо users колись треба відв'язати від core — замінити цей імпорт власним class.
+
+# далі — DTO, специфічні тільки для цього модуля:
+# UserPrivateOutDTO, UserPublicOutDTO, User_Id_PrivateOutDTO тощо
+
+import datetime
+from core.dto.users.user_dto import (
+    UserShortOutDTO,
+    UserFullOutDTO,
+    UserPublicOutDTO,
+    UserPrivateOutDTO,
+    User_Id_PublicOutDTO,
+    User_Id_PrivateOutDTO,
+    ConsentOutDTO,
+)
+
+from core.dto.geo.geo_dto import (
+    CountryShortDTO,
+    CountryOutDTO,
+    RegionShortDTO,
+    RegionOutDTO,
+    CityShortDTO,
+    CityOutDTO,
+)
+
+from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO
 
 
-
-@dataclass(frozen=True)
-class UserOutDTO:
-    username
-    display_name
-
-    first_name_public
-    last_name_public
-
-    email_public
-    is_email_verified
-
-    date_of_birth
-    date_of_birth_public
-
-    phone_number
-    phone_public
-
-    social_network
-    social_public
-
-    is_banned
-
-    deletion_scheduled_at
-
-    consent_given
-    consent_date
-    consent_version

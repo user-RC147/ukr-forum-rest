@@ -7,7 +7,7 @@ from apps.geo.dto.city import CityDTO
 from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.search.dto import CategoryDTO
-from apps.users.dto.user_dto import UserDTO
+from apps.users.dto.user_dto import UserShortOutDTO #UserDTO
 
 from .enums import ProductStatus
 
@@ -67,7 +67,7 @@ class ProductRepoDTO:
 @dataclass(frozen=True)
 class ProductDTO:
     id: int
-    owner: UserDTO
+    owner: UserShortOutDTO #UserDTO
     title: str
     description: str
     created_at: datetime

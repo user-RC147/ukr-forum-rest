@@ -1,11 +1,79 @@
-from apps.users.dto.user_dto import UserOutDTO
 from apps.users.selectors.user_selector import UserSelector
+from apps.users.repositories.user_repository import UserRepo
+
+from apps.users.dto import (
+    _to_dto_user_out,
+    _to_dto_short_user_out,
+    UserPrivateOutDTO,
+    UserPublicOutDTO,
+    UserShortOutDTO,
+)
+from apps.users.dto._to_dto_profile import _to_dto_out_profile
+from apps.users.dto._to_dto_location import _get_ids_location, _get_locations
+
+from apps.geo.contracts import (
+    get_country_contract,
+    get_region_contract,
+    get_city_contract,
+)
 
 
 class UserService:
 
     def __init__(self):
         self._selector = UserSelector()
+        self._repository = UserRepo()
 
-    def get_all_user(self) -> list[UserOutDTO]:
-        return self._selector.get_all_users()
+
+    def get_many(self, ids: list[int]) -> list[UserShortOutDTO]:
+        return self._selector.get_many(ids)
+
+    def get_all_user(self) -> list[UserShortOutDTO]:
+        users = self._selector.get_all_users()
+        dto = [_to_dto_short_user_out(user) for user in users]
+        return dto
+
+    def get_user_by_id(self, user_id) -> UserShortOutDTO:
+        user = self._selector.get_user_by_id(user_id)
+        dto = _to_dto_short_user_out(user)
+        return dto
+
+    def get_my_profile(self, user_id: int) -> UserPrivateOutDTO:
+        my_profile = self._selector.get_my_profile(user_id)
+        print('======================================================================')
+        print(my_profile)
+
+        print('======================================================================')
+
+        ids = _get_ids_location(my_profile)
+        print('======================================================================')
+        print(ids)
+
+        print('======================================================================')
+    
+        locations = _get_locations(
+            ids, get_country_contract(), get_region_contract(), get_city_contract()
+        )
+        print('======================================================================')
+        
+        dto = _to_dto_out_profile(my_profile, locations)
+        print('======================================================================')
+        print(dto)
+
+        print('======================================================================')
+        return dto
+    
+
+
+    def update_my_profile(self, user_id: int) -> UserPrivateOutDTO:
+
+        my_profile = self._repository.profile(user_id)
+
+        ids = _get_ids_location(my_profile)
+
+        locations = _get_locations(
+            ids, get_country_contract(), get_region_contract(), get_city_contract()
+        )
+
+        dto = _to_dto_out_profile(my_profile,locations)
+        return dto

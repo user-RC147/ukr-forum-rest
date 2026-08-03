@@ -5,7 +5,7 @@ export const registerUser = (data) => {
 }
 
 export const loginUser = (data) => {
-  return api.post('/users/login/', data)
+  return api.post('/auth/login/', data)
 }
 
 export const getProfile = () => {
@@ -37,5 +37,5 @@ export const confirmPasswordReset = (data) => {
 }
 
 export const logoutUser = () => {
-  return api.post('/users/logout/');
+  return api.post('/auth/logout/');
 }
