@@ -105,5 +105,6 @@ def _to_dto(data: FileModel) -> FileRepoDTO:
         created_at=data.created_at,
         owner_id=data.owner_id,
         file=data.file.url,
+        thumbnail=data.thumbnail.url if data.thumbnail else None,
         visible=data.visible,
     )

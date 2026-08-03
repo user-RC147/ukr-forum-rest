@@ -258,5 +258,6 @@ def _to_dto(file: FileRepoDTO) -> FileDTO:
         owner_id=file.owner_id,
         id=file.id,
         file=f"{settings.BASE_URL}{file.file}",
+        thumbnail=f"{settings.BASE_URL}{file.thumbnail}" if file.thumbnail else None,
         visible=file.visible,
     )
