@@ -10,7 +10,7 @@ from apps.files.file_storage import get_storage
 from core.unit_of_work.uow import UnitOfWork
 from core.unit_of_work.uow_django import DjangoUnitOfWork
 from .repository import FileRepository
-from .tasks import delete_files_task
+from .tasks import delete_files_task, process_file_task
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +56,11 @@ class FileService:
     def delete(self, file_id: int) -> None:
         with self.uow:
 
-            file_path = self.repo.delete(file_id)
+            file_path, thumbnail_path = self.repo.delete(file_id)
 
             self.uow.on_commit(lambda: delete_files_task.delay(file_path))
+            if thumbnail_path:
+                self.uow.on_commit(lambda: delete_files_task.delay(thumbnail_path))
 
         logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
@@ -67,9 +69,11 @@ class FileService:
             return
 
         with self.uow:
-            file_paths = self.repo.delete_many(file_ids)
+            file_paths, thumbnail_paths = self.repo.delete_many(file_ids)
 
             self.uow.on_commit(lambda: delete_files_task.delay(file_paths))
+            if thumbnail_paths:
+                self.uow.on_commit(lambda: delete_files_task.delay(thumbnail_paths))
 
         logger.info(
             "Files was deleted",
@@ -90,6 +94,9 @@ class FileService:
 
         with self.uow:
             result = self.repo.create_many(data, user_id)
+
+        for r in result:
+            process_file_task.delay(r.id)
         dto = [_to_dto(r) for r in result]
 
         logger.info("Files was created", extra={"file_ids": [d.id for d in dto], "event": "create_many_file"})
