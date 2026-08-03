@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='filemodel',
             name='file',
-            field=models.FileField(upload_to=apps.files.models.file_directory_path, verbose_name='Шлях до файлу'),
+            field=models.FileField(upload_to=apps.files.models.UploadToPath, verbose_name='Шлях до файлу'),
         ),
         migrations.AlterField(
             model_name='filemodel',

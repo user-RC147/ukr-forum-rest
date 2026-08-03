@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import UploadedFile
 from apps.files.models import FileModel
 
 from .dto import FileRepoDTO
+from .exceptions import FileNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +41,15 @@ class FileRepository:
             )
         return [_to_dto(f) for f in files]
 
-    def delete(self, id: int) -> str:
+    def delete(self, id: int) -> tuple[str, str | None]:
         instance = self._get_model(id, event="delete_file")
 
         file_path = instance.file
+        thumbnail_path = instance.thumbnail
         instance.delete()
-        return str(file_path)
+        return str(file_path), str(thumbnail_path) if thumbnail_path else None
 
-    def delete_many(self, ids: list[int]) -> list[str]:
+    def delete_many(self, ids: list[int]) -> tuple[list[str], list[str] | None]:
         data = self.model.objects.filter(id__in=ids)
         if len(data) < len(ids):
             found_ids = {f.id for f in data}
@@ -57,9 +59,11 @@ class FileRepository:
                 extra={"not_found_ids": missing, "event": "delete_many_file"},
             )
         file_paths = list(data.values_list("file", flat=True))
+        thumbnail_paths = list(data.values_list("thumbnail", flat=True))
+        thumbnail_paths = [i for i in thumbnail_paths if i]
         data.delete()
 
-        return file_paths
+        return file_paths, thumbnail_paths if thumbnail_paths else None
 
     def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileRepoDTO]:
         instances = [self.model(name=d.name, file=d, owner_id=user_id) for d in data]
@@ -101,5 +105,6 @@ def _to_dto(data: FileModel) -> FileRepoDTO:
         created_at=data.created_at,
         owner_id=data.owner_id,
         file=data.file.url,
+        thumbnail=data.thumbnail.url if data.thumbnail else None,
         visible=data.visible,
     )
