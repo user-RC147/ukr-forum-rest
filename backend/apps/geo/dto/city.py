@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from .region import RegionDTO
+
 
 @dataclass
 class CityDTO:
@@ -12,6 +14,6 @@ class CityDTO:
     name: str
     name_ua: str
     country_id: int
-    region: dict
+    region: RegionDTO
     latitude: Decimal | None = None
     longitude: Decimal | None = None
