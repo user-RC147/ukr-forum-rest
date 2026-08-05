@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { PlusIcon, Bars3Icon } from '@heroicons/vue/24/outline'
 import { useUserStore } from '@/shared/stores/useUserStore'
+import { getProductThumbnailUrl } from '@/shared/utils/media'
 import { getLatestProducts } from '../api/shop.js'
 import SearchFiltersBar from '../components/SearchFiltersBar.vue'
 import CategoriesSection from '../components/CategoriesSection.vue'
@@ -18,7 +19,6 @@ async function loadLatestProducts() {
   error.value = null
   try {
     const { data } = await getLatestProducts()
-    // /api/shop/products/ повертає Page { count, page, ..., items }
     products.value = data?.items ?? []
   } catch (e) {
     error.value = 'Не вдалося завантажити оголошення'
@@ -34,7 +34,6 @@ onMounted(loadLatestProducts)
 <template>
   <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
     <SearchFiltersBar />
-
     <CategoriesSection />
 
     <section>
@@ -59,8 +58,8 @@ onMounted(loadLatestProducts)
           <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full transition-shadow duration-200 group-hover:shadow-md">
             <div class="w-full h-40 bg-gray-100 overflow-hidden">
               <img
-                v-if="p.files?.[0]?.file"
-                :src="p.files[0].file"
+                v-if="getProductThumbnailUrl(p)"
+                :src="getProductThumbnailUrl(p)"
                 :alt="p.title"
                 class="w-full h-full object-cover"
                 loading="lazy"
@@ -94,7 +93,6 @@ onMounted(loadLatestProducts)
       </p>
     </section>
 
-    <!-- Floating actions -->
     <div class="fixed z-50 bottom-4 right-4 flex flex-col items-end gap-2">
       <div
         class="flex flex-col items-end gap-2 transition-all duration-300 ease-out"
