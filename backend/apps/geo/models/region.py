@@ -1,15 +1,18 @@
 from django.db import models
 
-from apps.geo.models.country import Country
+from apps.geo.models.country import CountryModel
 
 
-class Region(models.Model):
+class RegionModel(models.Model):
     name = models.CharField(max_length=100, verbose_name="Назва регіону")
     name_ua = models.CharField(
         max_length=100, blank=True, default="", verbose_name="Назва українською"
     )
     country = models.ForeignKey(
-        Country, on_delete=models.CASCADE, related_name="regions", verbose_name="Країна"
+        CountryModel,
+        on_delete=models.CASCADE,
+        related_name="regions",
+        verbose_name="Країна",
     )
     api_id = models.PositiveIntegerField(
         null=True, blank=True, verbose_name="ID в Geo API"
