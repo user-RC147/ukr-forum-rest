@@ -1,9 +1,7 @@
-from .resolve import CountrySerializer,RegionSerializer,CitySerializer
+from .resolve import CitySerializer, CountrySerializer, RegionSerializer
 
-
-
-__all__=[
-    'CountrySerializer',
-    'RegionSerializer',
-    'CitySerializer',
+__all__ = [
+    "CitySerializer",
+    "CountrySerializer",
+    "RegionSerializer",
 ]

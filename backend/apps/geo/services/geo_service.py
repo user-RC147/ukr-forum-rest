@@ -1,5 +1,6 @@
 # apps/geo/services/geo_service.py
 
+from dataclasses import asdict
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,7 +13,7 @@ from apps.geo.dto.country import CountryDTO
 from apps.geo.dto.region import RegionDTO
 from apps.geo.models import City, Country, Region
 from apps.geo.repositories.geo_repository import geo_repository
-from dataclasses import asdict
+
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +81,7 @@ class GeoService:
             )
 
             # Повертаємо регіони цієї країни, які вже є в локальній базі
-            return [_to_dto_region (r) for r in Region.objects.filter(country=country)]
+            return [_to_dto_region(r) for r in Region.objects.filter(country=country)]
 
     def fetch_and_save_cities(self, region_id: int) -> list[CityDTO]:
         """Отримує міста з зовнішнього API і зберігає в БД. Якщо API лежить — бере з локальної БД."""
@@ -100,7 +101,7 @@ class GeoService:
                     name=c.name,
                     name_ua=c.name_ua,
                     country_id=c.country_id,
-                    region=asdict(region_dto), # Змінено з region_id на region
+                    region=asdict(region_dto),  # Змінено з region_id на region
                 )
                 for c in City.objects.filter(region_id=region_id)
             ]
@@ -117,7 +118,7 @@ class GeoService:
                         name=city.name,
                         name_ua=city.name_ua,
                         country_id=city.country_id,
-                        region=asdict(region_dto), # Змінено з region_id на region
+                        region=asdict(region_dto),  # Змінено з region_id на region
                     )
                 )
             return result
@@ -131,7 +132,7 @@ class GeoService:
                     name=c.name,
                     name_ua=c.name_ua,
                     country_id=c.country_id,
-                    region=asdict(region_dto), # Змінено з region_id на region
+                    region=asdict(region_dto),  # Змінено з region_id на region
                 )
                 for c in City.objects.filter(region_id=region_id)
             ]
@@ -199,21 +200,22 @@ class GeoService:
             logger.warning("Cities not found for ids: %s", missing)
 
         return {c.id: _to_dto_city(c, self.get_region(c.region_id)) for c in cities}
-    
+
     def search_countries(self, query: str, limit: int = 10) -> list[CountryDTO]:
         query = query.strip()
         if len(query) < 2:
             return []
         objs = self.repository.search_country(query, limit)
         return [_to_dto_country(obj) for obj in objs]
-    
-    def search_cities(self, query: str, country_id: int, limit: int = 10) -> list[CityDTO]:
+
+    def search_cities(
+        self, query: str, country_id: int, limit: int = 10
+    ) -> list[CityDTO]:
         query = query.strip()
         if len(query) < 2:
             return []
         objs = self.repository.search_city(query, country_id, limit)
         return [_to_dto_city(obj, self.get_region(obj.region.id)) for obj in objs]
-
 
     def is_country_exists(self, country_id: int) -> bool:
         return Country.objects.filter(id=country_id).exists()
@@ -224,31 +226,31 @@ class GeoService:
     def is_city_exists(self, city_id: int) -> bool:
         return City.objects.filter(id=city_id).exists()
 
+
 def _to_dto_country(data: Country) -> CountryDTO:
-                return CountryDTO(
-                id=data.id,
-                name=data.name,
-                name_ua=data.name_ua,
-                code=data.code,
-                flag_emoji=data.flag_emoji,
-                currency=data.currency,
-            )
+    return CountryDTO(
+        id=data.id,
+        name=data.name,
+        name_ua=data.name_ua,
+        code=data.code,
+        flag_emoji=data.flag_emoji,
+        currency=data.currency,
+    )
+
 
 def _to_dto_region(data: Region) -> RegionDTO:
-                return RegionDTO(
-                id=data.id,
-                name=data.name,
-                name_ua=data.name_ua,
-                country_id=data.country.id
-            )
+    return RegionDTO(
+        id=data.id, name=data.name, name_ua=data.name_ua, country_id=data.country.id
+    )
+
 
 def _to_dto_city(data: City, region: RegionDTO) -> CityDTO:
-                return CityDTO(
-                id=data.id,
-                name=data.name,
-                name_ua=data.name_ua,
-                country_id=data.country.id,
-                region=asdict(region),
-                latitude=data.latitude,
-                longitude=data.longitude
-            )
+    return CityDTO(
+        id=data.id,
+        name=data.name,
+        name_ua=data.name_ua,
+        country_id=data.country.id,
+        region=asdict(region),
+        latitude=data.latitude,
+        longitude=data.longitude,
+    )

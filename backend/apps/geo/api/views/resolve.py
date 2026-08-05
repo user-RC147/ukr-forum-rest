@@ -1,10 +1,14 @@
 # apps/geo/api/views/resolve.py
 from django.apps import apps
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from apps.geo.api.serializers.resolve import CountrySerializer, RegionSerializer, CitySerializer
+from apps.geo.api.serializers.resolve import (
+    CitySerializer,
+    CountrySerializer,
+    RegionSerializer,
+)
 
 
 class GeoResolveView(APIView):
@@ -14,6 +18,7 @@ class GeoResolveView(APIView):
     Резолвить ids країн, регіонів і міст в повні об'єкти.
     Використовується фронтом після отримання даних з інших модулів.
     """
+
     permission_classes = [IsAuthenticated]
 
     def _parse_ids(self, param: str) -> list[int]:
@@ -26,7 +31,7 @@ class GeoResolveView(APIView):
             return []
         result = []
 
-        for raw in param.split(','):
+        for raw in param.split(","):
             try:
                 result.append(int(raw.strip()))
             except ValueError:
@@ -35,12 +40,12 @@ class GeoResolveView(APIView):
 
     def get(self, request):
         # 1. Парсимо ID з query-параметрів
-        country_ids = self._parse_ids(request.query_params.get('country_ids', ''))
-        region_ids = self._parse_ids(request.query_params.get('region_ids', ''))
-        city_ids = self._parse_ids(request.query_params.get('city_ids', ''))
+        country_ids = self._parse_ids(request.query_params.get("country_ids", ""))
+        region_ids = self._parse_ids(request.query_params.get("region_ids", ""))
+        city_ids = self._parse_ids(request.query_params.get("city_ids", ""))
 
         # 2. Отримуємо налаштований geo_service з IoC-контейнера
-        geo_service = apps.get_app_config('geo').service
+        geo_service = apps.get_app_config("geo").service
 
         # 3. Викликаємо ефективні масові методи сервісу (БЕЗ циклів та дублювання)
         countries = geo_service.get_countries(country_ids) if country_ids else []
@@ -48,8 +53,10 @@ class GeoResolveView(APIView):
         cities = geo_service.get_cities(city_ids) if city_ids else []
 
         # 4. Повертаємо серіалізовану відповідь
-        return Response({
-            'countries': CountrySerializer(countries, many=True).data,
-            'regions': RegionSerializer(regions, many=True).data,
-            'cities': CitySerializer(cities, many=True).data,
-        })
+        return Response(
+            {
+                "countries": CountrySerializer(countries, many=True).data,
+                "regions": RegionSerializer(regions, many=True).data,
+                "cities": CitySerializer(cities, many=True).data,
+            }
+        )

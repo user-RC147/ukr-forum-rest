@@ -1,9 +1,10 @@
+from dataclasses import fields
+
 from django.apps import apps
 
-from apps.geo.services.geo_service import GeoService
-from apps.geo.protocols.city import CityContractProtocol
 from apps.geo.dto.city import CityDTO
-from dataclasses import fields
+from apps.geo.protocols.city import CityContractProtocol
+from apps.geo.services.geo_service import GeoService
 
 
 class CityContract:
@@ -19,14 +20,14 @@ class CityContract:
         Тепер створення контракту повністю безпечне під час старту Django.
         """
         if self._service is None:
-            self._service = apps.get_app_config('geo').service
+            self._service = apps.get_app_config("geo").service
         return self._service
 
     def get(self, city_id: int) -> CityDTO:
         # self.service автоматично звертається до property вище
         data = self.service.get_city(city_id)
         return self._to_dto(data)
-    
+
     def get_many(self, city_ids: list[int]) -> dict[int, CityDTO]:
         # self.service автоматично звертається до property вище
         data = self.service.get_cities(city_ids)

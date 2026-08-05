@@ -1,6 +1,6 @@
-from .geo_api_client import geo_api_client,GeoApiClient
+from .geo_api_client import GeoApiClient, geo_api_client
 
-__all__=[
-    'geo_api_client',
-    'GeoApiClient',
+__all__ = [
+    "GeoApiClient",
+    "geo_api_client",
 ]
