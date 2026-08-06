@@ -2,12 +2,10 @@ from collections.abc import Iterable
 
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from geo.dto.region import RegionDTO
-from geo.exceptions.region_exc import RegionNotFoundError
-from geo.models.region import RegionModel
 
-from core.paginator.dto import PaginatorDTO
-from core.paginator.paginator import paginate
+from apps.geo.dto.region import RegionDTO
+from apps.geo.exceptions.region_exc import RegionNotFoundError
+from apps.geo.models.region import RegionModel
 
 
 class RegionRepository:
@@ -29,32 +27,21 @@ class RegionRepository:
 
     def get_many(
         self,
-        region_ids: Iterable[int] | None = None,
-        page: int = 1,
-        page_size: int = 10,
-    ) -> PaginatorDTO[list[RegionDTO]]:
-        result = self.model.objects.all().select_related("country")
+        region_ids: Iterable[int],
+    ) -> list[RegionDTO]:
 
-        offset = (page - 1) * page_size
+        qs = self.model.objects.filter(id__in=region_ids).select_related("country")
 
-        if region_ids is None:
-            key = "region:all"
-            result = cache.get(key)
-            if result is None:
-                total = result.count()
-                items = list(result[offset : offset + page_size])
-                result = paginate(
-                    [_to_dto_region(r) for r in items], total, page, page_size
-                )
-                cache.set(key, result, 1200 * 24 * 7)
-                return result
+        return [_to_dto_region(r) for r in qs]
 
-        result = result.filter(id__in=region_ids)
+    def get_by_country(self, country_id: int) -> list[RegionDTO]:
+        qs = self.model.objects.filter(country__id=country_id).select_related("country")
 
-        total = result.count()
-        items = list(result[offset : offset + page_size])
-
-        return paginate([_to_dto_region(r) for r in items], total, page, page_size)
+        return cache.get_or_set(
+            f"region:country:{country_id}",
+            lambda: [_to_dto_region(r) for r in qs],
+            1200 * 24 * 7,
+        )
 
 
 def _to_dto_region(data: RegionModel) -> RegionDTO:

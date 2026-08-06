@@ -5,12 +5,10 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Greatest
-from geo.dto.country import CountryDTO
-from geo.exceptions.country_exc import CountryNotFoundError
-from geo.models.country import CountryModel
 
-from core.paginator.dto import PaginatorDTO
-from core.paginator.paginator import paginate
+from apps.geo.dto.country import CountryDTO
+from apps.geo.exceptions.country_exc import CountryNotFoundError
+from apps.geo.models.country import CountryModel
 
 
 class CountryRepository:
@@ -28,34 +26,25 @@ class CountryRepository:
 
     def get(self, country_id: int) -> CountryDTO:
         result = self._get_model(country_id)
-        return _to_dto(result)
+        return _to_dto_country(result)
 
     def get_many(
         self,
         country_ids: Iterable[int] | None = None,
-        page: int = 1,
-        page_size: int = 10,
-    ) -> PaginatorDTO[list[CountryDTO]]:
-        result = self.model.objects.all()
-        offset = (page - 1) * page_size
+    ) -> list[CountryDTO]:
 
+        all_countries = cache.get_or_set(
+            "country:all",
+            lambda: [_to_dto_country(r) for r in self.model.objects.all()],
+            1200 * 24 * 7,
+        )
         if country_ids is None:
-            result = cache.get("country:all")
-            if result is None:
-                total = result.count()
-                items = list(result[offset : offset + page_size])
-                result = paginate([_to_dto(r) for r in items], total, page, page_size)
-                cache.set("country:all", result, 1200 * 24 * 7)
-                return result
+            return all_countries
 
-        result = result.filter(id__in=country_ids)
+        ids_set = set(country_ids)
+        return [c for c in all_countries if c.id in ids_set]
 
-        total = result.count()
-        items = list(result[offset : offset + page_size])
-
-        return paginate([_to_dto(r) for r in items], total, page, page_size)
-
-    def search(self, query: str, limit: int = 10) -> list[CountryDTO]:
+    def search(self, query: str) -> list[CountryDTO]:
         result = (
             self.model.objects.all()
             .only("id", "name", "name_ua")
@@ -70,12 +59,12 @@ class CountryRepository:
                 | Q(name_ua__istartswith=query)
                 | Q(similarity__gt=0.3)
             )
-            .order_by("-similarity", "name")[:limit]
+            .order_by("-similarity", "name")
         )
-        return [_to_dto(r) for r in result]
+        return [_to_dto_country(r) for r in result]
 
 
-def _to_dto(data: CountryModel) -> CountryDTO:
+def _to_dto_country(data: CountryModel) -> CountryDTO:
     return CountryDTO(
         id=data.id,
         name=data.name,

@@ -5,13 +5,11 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Greatest
-from geo.dto.city import CityDTO
-from geo.exceptions.city_exc import CityNotFoundError
-from geo.models.city import CityModel
-from geo.repositories.region_repository import _to_dto_region
 
-from core.paginator.dto import PaginatorDTO
-from core.paginator.paginator import paginate
+from apps.geo.dto.city import CityDTO
+from apps.geo.exceptions.city_exc import CityNotFoundError
+from apps.geo.models.city import CityModel
+from apps.geo.repositories.region_repository import _to_dto_region
 
 
 class CityRepository:
@@ -33,34 +31,26 @@ class CityRepository:
 
     def get_many(
         self,
-        city_ids: Iterable[int] | None = None,
-        page: int = 1,
-        page_size: int = 10,
-    ) -> PaginatorDTO[list[CityDTO]]:
-        result = self.model.objects.all().select_related("region", "country")
+        city_ids: Iterable[int],
+    ) -> list[CityDTO]:
+        qs = self.model.objects.filter(id__in=city_ids).select_related(
+            "region", "country"
+        )
 
-        offset = (page - 1) * page_size
+        qs = qs.filter(id__in=city_ids)
 
-        if city_ids is None:
-            key = "city:all"
-            result = cache.get(key)
-            if result is None:
-                total = result.count()
-                items = list(result[offset : offset + page_size])
-                result = paginate(
-                    [_to_dto_city(r) for r in items], total, page, page_size
-                )
-                cache.set(key, result, 1200 * 24 * 7)
-                return result
+        return [_to_dto_city(r) for r in qs]
 
-        result = result.filter(id__in=city_ids)
+    def get_by_region(self, region_id: int) -> list[CityDTO]:
+        qs = self.model.objects.filter(country__id=region_id).select_related("country")
 
-        total = result.count()
-        items = list(result[offset : offset + page_size])
+        return cache.get_or_set(
+            f"city:country:{region_id}",
+            lambda: [_to_dto_region(r) for r in qs],
+            1200 * 24 * 7,
+        )
 
-        return paginate([_to_dto_city(r) for r in items], total, page, page_size)
-
-    def search(self, query: str, limit: int) -> list[CityDTO]:
+    def search(self, query: str, country_id: int) -> list[CityDTO]:
         result = (
             self.model.objects.all()
             .only("id", "name", "name_ua")
@@ -74,8 +64,9 @@ class CityRepository:
                 Q(name__istartswith=query)
                 | Q(name_ua__istartswith=query)
                 | Q(similarity__gt=0.3)
+                | Q(country__id=country_id)
             )
-            .order_by("-similarity", "name")[:limit]
+            .order_by("-similarity", "name")
         )
         return [_to_dto_city(r) for r in result]
 
