@@ -1,7 +1,8 @@
-from django.contrib.postgres.indexes import GinIndex, OpClass
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 
 from apps.geo.models.country import CountryModel
+from apps.geo.models.region import RegionModel
 
 
 class CityModel(models.Model):
@@ -16,7 +17,7 @@ class CityModel(models.Model):
         verbose_name="Країна",
     )
     region = models.ForeignKey(
-        CountryModel,
+        RegionModel,
         on_delete=models.CASCADE,
         related_name="cities",
         verbose_name="Регіон",
@@ -38,8 +39,14 @@ class CityModel(models.Model):
         ordering = ["country__name", "region__name", "name"]
 
         indexes = [
-            GinIndex(OpClass("name", name="gin_trgm_ops"), name="name_trgm_idx"),
-            GinIndex(OpClass("name_ua", name="gin_trgm_ops"), name="name_ua_trgm_idx"),
+            GinIndex(
+                fields=["name"], name="city_name_trgm_idx", opclasses=["gin_trgm_ops"]
+            ),
+            GinIndex(
+                fields=["name_ua"],
+                name="city_name_ua_trgm_idx",
+                opclasses=["gin_trgm_ops"],
+            ),
         ]
 
     def __str__(self):
