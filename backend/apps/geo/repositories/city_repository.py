@@ -13,7 +13,7 @@ from apps.geo.repositories.region_repository import _to_dto_region
 
 
 class CityRepository:
-    def __init__(self, model=CityModel()) -> None:
+    def __init__(self, model=CityModel) -> None:
         self.model = model
 
     def _get_model(self, city_id: int) -> CityModel:

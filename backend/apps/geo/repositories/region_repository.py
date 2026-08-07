@@ -9,7 +9,7 @@ from apps.geo.models.region import RegionModel
 
 
 class RegionRepository:
-    def __init__(self, model=RegionModel()) -> None:
+    def __init__(self, model=RegionModel) -> None:
         self.model = model
 
     def _get_model(self, region_id: int) -> RegionModel:

@@ -7,7 +7,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0001_initial'),
         ('users', '0002_consenttext_customuser_age_customuser_city_public_and_more'),
     ]
 

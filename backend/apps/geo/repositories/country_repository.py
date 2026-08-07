@@ -12,7 +12,7 @@ from apps.geo.models.country import CountryModel
 
 
 class CountryRepository:
-    def __init__(self, model=CountryModel()) -> None:
+    def __init__(self, model=CountryModel) -> None:
         self.model = model
 
     def _get_model(self, country_id: int) -> CountryModel:
