@@ -3,7 +3,6 @@
 set -e
 
 echo "Apply migrations..."
-python manage.py migrate search --noinput
 python manage.py migrate --noinput
 
 echo "Create superuser..."

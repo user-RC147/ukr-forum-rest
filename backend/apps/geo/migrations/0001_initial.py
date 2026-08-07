@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ("search", "0003_enable_pg_trgm")
     ]
 
     operations = [

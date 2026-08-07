@@ -14,17 +14,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customuser',
             name='city',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_city', to='geo.city', verbose_name='Місто'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_city', to='geo.citymodel', verbose_name='Місто'),
         ),
         migrations.AddField(
             model_name='customuser',
             name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_country', to='geo.country', verbose_name='Країна'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_country', to='geo.countrymodel', verbose_name='Країна'),
         ),
         migrations.AddField(
             model_name='customuser',
             name='region',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_region', to='geo.region', verbose_name='Регіон'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_region', to='geo.regionmodel', verbose_name='Регіон'),
         ),
         migrations.AlterField(
             model_name='customuser',
