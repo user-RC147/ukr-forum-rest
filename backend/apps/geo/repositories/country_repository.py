@@ -9,6 +9,7 @@ from django.db.models.functions import Greatest
 from apps.geo.dto.country import CountryDTO
 from apps.geo.exceptions.country_exc import CountryNotFoundError
 from apps.geo.models.country import CountryModel
+from apps.geo.ports.repos import CountryRepositoryPort
 
 
 class CountryRepository:
@@ -73,3 +74,7 @@ def _to_dto_country(data: CountryModel) -> CountryDTO:
         flag_emoji=data.flag_emoji,
         currency=data.currency,
     )
+
+
+def get_repo_country() -> CountryRepositoryPort:
+    return CountryRepository()

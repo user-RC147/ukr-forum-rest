@@ -9,6 +9,7 @@ from django.db.models.functions import Greatest
 from apps.geo.dto.city import CityDTO
 from apps.geo.exceptions.city_exc import CityNotFoundError
 from apps.geo.models.city import CityModel
+from apps.geo.ports.repos import CityRepositoryPort
 from apps.geo.repositories.region_repository import _to_dto_region
 
 
@@ -42,10 +43,12 @@ class CityRepository:
         return [_to_dto_city(r) for r in qs]
 
     def get_by_region(self, region_id: int) -> list[CityDTO]:
-        qs = self.model.objects.filter(country__id=region_id).select_related("country")
+        qs = self.model.objects.filter(region__id=region_id).select_related(
+            "country", "region"
+        )
 
         return cache.get_or_set(
-            f"city:country:{region_id}",
+            f"city:region:{region_id}",
             lambda: [_to_dto_region(r) for r in qs],
             1200 * 24 * 7,
         )
@@ -53,18 +56,19 @@ class CityRepository:
     def search(self, query: str, country_id: int) -> list[CityDTO]:
         result = (
             self.model.objects.all()
-            .only("id", "name", "name_ua")
+            .select_related("region")
+            .only("id", "name", "name_ua", "region")
             .annotate(
                 similarity=Greatest(
                     TrigramSimilarity("name", query),
                     TrigramSimilarity("name_ua", query),
                 )
             )
+            .filter(country__id=country_id)
             .filter(
                 Q(name__istartswith=query)
                 | Q(name_ua__istartswith=query)
                 | Q(similarity__gt=0.3)
-                | Q(country__id=country_id)
             )
             .order_by("-similarity", "name")
         )
@@ -76,8 +80,12 @@ def _to_dto_city(data: CityModel) -> CityDTO:
         id=data.id,
         name=data.name,
         name_ua=data.name_ua,
-        country_id=data.country.id,
+        country_id=data.country_id,
         region=_to_dto_region(data.region),
         latitude=data.latitude,
         longitude=data.longitude,
     )
+
+
+def get_repo_city() -> CityRepositoryPort:
+    return CityRepository()

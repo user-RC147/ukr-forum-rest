@@ -31,21 +31,17 @@ class CitySerializer(serializers.Serializer):
     country_id = serializers.IntegerField()
 
 
-class SearchQuerySerializer(serializers.Serializer):
-    q = serializers.CharField(required=False)
+class CityQuerySerializer(serializers.Serializer):
+    region_id = serializers.IntegerField(required=True)
 
 
-class RegionSearchQuerySerializer(serializers.Serializer):
+class RegionQuerySerializer(serializers.Serializer):
     country_id = serializers.IntegerField(required=True)
 
 
-class CitySearchQuerySerializer(SearchQuerySerializer):
-    country_id = serializers.IntegerField(required=False)
-    region_id = serializers.IntegerField(required=False)
+class SearchQuerySerializer(serializers.Serializer):
+    q = serializers.CharField(required=True)
 
-    def validate(self, attrs):
-        if not attrs.get("country_id") and not attrs.get("region_id"):
-            raise serializers.ValidationError(
-                "Необхідно вказати country_id або region_id."
-            )
-        return attrs
+
+class CitySearchQuerySerializer(SearchQuerySerializer):
+    country_id = serializers.IntegerField(required=True)

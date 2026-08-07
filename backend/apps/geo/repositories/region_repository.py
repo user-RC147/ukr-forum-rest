@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from apps.geo.dto.region import RegionDTO
 from apps.geo.exceptions.region_exc import RegionNotFoundError
 from apps.geo.models.region import RegionModel
+from apps.geo.ports.repos import RegionRepositoryPort
 
 
 class RegionRepository:
@@ -48,3 +49,7 @@ def _to_dto_region(data: RegionModel) -> RegionDTO:
     return RegionDTO(
         id=data.id, name=data.name, name_ua=data.name_ua, country_id=data.country.id
     )
+
+
+def get_repo_region() -> RegionRepositoryPort:
+    return RegionRepository()

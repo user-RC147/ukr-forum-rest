@@ -1,6 +1,7 @@
 from typing import Any
 
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -9,18 +10,18 @@ from apps.geo.api.serializers.resolve import (
     CountrySerializer,
     SearchQuerySerializer,
 )
-from apps.geo.services.country_service import CountryService
+from apps.geo.services.country_service import get_service_country
 
 
 class CountryView(viewsets.ViewSet):
     serializer_class = CountrySerializer
 
-    def __init__(self, service=CountryService(), **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.service = service
+        self.service = get_service_country()
 
-    def retrieve(self, request: Request, id: int):
-        result = self.service.get(id)
+    def retrieve(self, request: Request, pk: int):
+        result = self.service.get(pk)
 
         return Response(self.serializer_class(result).data, status=status.HTTP_200_OK)
 
@@ -29,6 +30,7 @@ class CountryView(viewsets.ViewSet):
 
         return Response(self.serializer_class(result).data, status=status.HTTP_200_OK)
 
+    @action(methods=["get"], detail=False)
     @country_search_schema
     def search(self, request: Request):
         qp = SearchQuerySerializer(data=request.query_params)
