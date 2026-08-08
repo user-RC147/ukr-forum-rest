@@ -49,7 +49,7 @@ class CityRepository:
 
         return cache.get_or_set(
             f"city:region:{region_id}",
-            lambda: [_to_dto_region(r) for r in qs],
+            lambda: [_to_dto_city(r) for r in qs],
             1200 * 24 * 7,
         )
 
