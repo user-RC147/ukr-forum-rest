@@ -1,7 +1,7 @@
-from .geo_dto import CountryDTO, RegionDTO, CityDTO
+from .geo_dto import CityDTO, CountryDTO, RegionDTO
 
-__all__=[
-    'CountryDTO',
-    'RegionDTO',
-    'CityDTO',
+__all__ = [
+    "CityDTO",
+    "CountryDTO",
+    "RegionDTO",
 ]

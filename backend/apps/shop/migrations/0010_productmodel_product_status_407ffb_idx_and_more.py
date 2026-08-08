@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('shop', '0009_productmodel_status'),
+        ("search", "0003_enable_pg_trgm"),
     ]
 
     operations = [

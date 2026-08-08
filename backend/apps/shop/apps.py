@@ -14,9 +14,9 @@ class ShopConfig(AppConfig):
         from apps.shop import signals
 
         senders = [
-            ("geo", "Country", "country_id"),
-            ("geo", "Region", "region_id"),
-            ("geo", "City", "city_id"),
+            ("geo", "CountryModel", "country_id"),
+            ("geo", "RegionModel", "region_id"),
+            ("geo", "CityModel", "city_id"),
         ]
 
         for app_label, model_name, field_name in senders:

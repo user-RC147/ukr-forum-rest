@@ -1,11 +1,11 @@
-from .resolve import GeoResolveView
+from .cities import CityListView
 from .countries import CountryListView
 from .regions import RegionListView
-from .cities import CityListView
+from .resolve import GeoResolveView
 
-__all__=[
-    'GeoResolveView',
-    'CountryListView',
-    'RegionListView',
-    'CityListView',
+__all__ = [
+    "CityListView",
+    "CountryListView",
+    "GeoResolveView",
+    "RegionListView",
 ]

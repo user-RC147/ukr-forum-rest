@@ -1,6 +1,6 @@
-from .geo_repository import geo_repository, GeoRepository
+# from .geo_repository import GeoRepository, geo_repository
 
-__all__=[
-    'geo_repository',
-    'GeoRepository',
-]
+# __all__ = [
+#     "GeoRepository",
+#     "geo_repository",
+# ]

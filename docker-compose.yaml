@@ -72,6 +72,7 @@ services:
   celery:
     build:
       context: ./backend
+    entrypoint: []
     container_name: celery
     restart: unless-stopped
     command: celery -A config worker --loglevel=info
@@ -89,6 +90,7 @@ services:
   celery-beat:
     build:
       context: ./backend
+    entrypoint: []
     container_name: celery-beat
     restart: unless-stopped
     command: celery -A config beat --loglevel=info
