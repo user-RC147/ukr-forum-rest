@@ -87,21 +87,21 @@ services:
       - ./backend:/app
       - django_logs:/app/logs
 
-  celery-beat:
-    build:
-      context: ./backend
-    entrypoint: []
-    container_name: celery-beat
-    restart: unless-stopped
-    command: celery -A config beat --loglevel=info
-    env_file:
-      - ./backend/.env
-    depends_on:
-      redis:
-        condition: service_started
-    volumes:
-      - ./backend:/app
-      - django_logs:/app/logs
+  # celery-beat:
+  #   build:
+  #     context: ./backend
+  #   entrypoint: []
+  #   container_name: celery-beat
+  #   restart: unless-stopped
+  #   command: celery -A config beat --loglevel=info
+  #   env_file:
+  #     - ./backend/.env
+  #   depends_on:
+  #     redis:
+  #       condition: service_started
+  #   volumes:
+  #     - /app
+  #     - django_logs:/app/logs
 
   loki:
     image: grafana/loki:3.7.3
