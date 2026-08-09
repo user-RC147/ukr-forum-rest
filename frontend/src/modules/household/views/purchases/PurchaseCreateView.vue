@@ -15,7 +15,7 @@
     import CreateMarketModal from '../../components/markets/CreateMarketModal.vue';
 
     // Ініціалізуємо сховища даних
-    const purchaseStore=usePurchaseStore();
+    const purchaseStore = usePurchaseStore();
     const categoryStore = useCategoryStore();
     const groupStore = useGroupStore();
     const assetStore = useAssetStore();
@@ -34,15 +34,13 @@
     const checkDate = ref(new Date().toISOString().substr(0, 10));
 
     // Масив чернеток — кожен елемент це один рядок таблиці
-    const draftItem = ref(
-        {
-            product_id: null,
-            name: '',
-            unit: '',
-            qty: 1,
-            price: 0,
-        },
-    );
+    const draftItem = ref({
+        product_id: null,
+        name: '',
+        unit: '',
+        qty: 1,
+        price: 0,
+    });
 
     function addItemToCheck() {
         if (!draftItem.value.product_id) return;
@@ -50,7 +48,7 @@
 
         checkItems.value.push({ ...draftItem.value });
 
-        draftItem.value ={
+        draftItem.value = {
             product_id: null,
             name: '',
             unit: null,
@@ -60,7 +58,7 @@
     }
 
     function removeItemFromCheck(index) {
-        checkItems.value.splice(index, 1)
+        checkItems.value.splice(index, 1);
     }
 
     // Масив уже доданих до чека товарів
@@ -122,37 +120,40 @@
         }
     });
 
-    watch(() => draftItem.value.product_id,(productId)=>{
-        if (!productId) {
-            draftItem.value.name = ''
-            draftItem.value.unit = ''
-            return
+    watch(
+        () => draftItem.value.product_id,
+        (productId) => {
+            if (!productId) {
+                draftItem.value.name = '';
+                draftItem.value.unit = '';
+                return;
+            }
+            const product = productStore.products.find((p) => p.id === productId);
+            if (product) {
+                draftItem.value.name = product.name;
+                draftItem.value.unit = product.unit_of_measure;
+            }
         }
-        const product =  productStore.products.find(p=>p.id === productId)
-        if (product){
-            draftItem.value.name = product.name
-            draftItem.value.unit = product.unit_of_measure
-        }
-    })
+    );
 
     async function handleSavePurchase() {
-        if (!selectedMarket.value) return
-        if (!selectedAsset.value) return
-        if (checkItems.value.length === 0) return
+        if (!selectedMarket.value) return;
+        if (!selectedAsset.value) return;
+        if (checkItems.value.length === 0) return;
 
         const payload = {
             asset_id: selectedAsset.value,
             market_id: selectedMarket.value,
             data_purchase: checkDate.value,
-            
-            items: checkItems.value.map(item => ({
+
+            items: checkItems.value.map((item) => ({
                 product_id: item.product_id,
                 quantity: Number(item.qty),
                 price_per_unit: Number(item.price),
-            }))
-        }
+            })),
+        };
 
-        await purchaseStore.createPurchase(payload)
+        await purchaseStore.createPurchase(payload);
     }
 </script>
 
@@ -167,11 +168,12 @@
                 ← Повернутися
             </router-link>
 
-            <button 
+            <button
                 type="button"
                 @click="handleSavePurchase"
                 :disabled="!selectedAsset || checkItems.length === 0"
-                class="bg-[#CEC526] hover:bg-[#F2E70A] text-[#33332E] text-lg font-semibold px-5 py-3 rounded-xl transition transform hover:scale-105 w-full sm:w-auto">
+                class="bg-[#CEC526] hover:bg-[#F2E70A] text-[#33332E] text-lg font-semibold px-5 py-3 rounded-xl transition transform hover:scale-105 w-full sm:w-auto"
+            >
                 Зберегти
             </button>
         </div>
@@ -189,7 +191,7 @@
             <div class="bg-amber-100 px-4 py-3 rounded-2xl flex min-w-[130px]">
                 <select v-model="selectedGroup" class="w-full bg-transparent focus:outline-none">
                     <option :value="null">Всі групи</option>
-                    
+
                     <option v-for="group in groupStore.groups" :key="group.id" :value="group.id">
                         {{ group.name }}
                     </option>
@@ -317,35 +319,36 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        <tr class="border-b"
-                            v-for="(item, index) in checkItems"
-                            :key="index">
+                        <tr class="border-b" v-for="(item, index) in checkItems" :key="index">
                             <td class="border-r py-3">{{ index + 1 }}</td>
                             <td class="border-r py-3">{{ item.name }}</td>
                             <td class="border-r py-3">{{ item.unit?.code }}</td>
                             <td class="border-r py-3">
-                                <input type="number" v-model="item.qty" class="w-full text-center focus:outline-none">
+                                <input type="number" v-model="item.qty" class="w-full text-center focus:outline-none" />
                             </td>
                             <td class="border-r py-3">
-                                <input type="number" v-model="item.price" class="w-full text-center focus:outline-none">
+                                <input
+                                    type="number"
+                                    v-model="item.price"
+                                    class="w-full text-center focus:outline-none"
+                                />
                             </td>
                             <td class="py-3">{{ (Number(item.qty) * Number(item.price)).toFixed(2) }}</td>
                             <td class="py-3">
-                            <button 
-                                type="button"
-                                @click="removeItemFromCheck(index)"
-                                class="text-red-500 hover:text-red-700 text-sm"
-                            >
-                                ✕
-                            </button>
-                        </td>
+                                <button
+                                    type="button"
+                                    @click="removeItemFromCheck(index)"
+                                    class="text-red-500 hover:text-red-700 text-sm"
+                                >
+                                    ✕
+                                </button>
+                            </td>
                         </tr>
                         <tr v-if="checkItems.length === 0">
                             <td colspan="6" class="py-8 text-gray-400 italic bg-gray-50/50">
                                 У чеку поки немає товарів. Додайте перший товар вище.
                             </td>
                         </tr>
-                        
                     </tbody>
                     <tfoot>
                         <tr class="font-semibold bg-amber-50">
@@ -465,6 +468,10 @@
             @cancel="isProductModalOpen = false"
         />
 
-        <CreateMarketModal v-if="isMarketModalOpen" @submit="handleMarketCreated" @cancel="isMarketModalOpen = false" />
+        <CreateMarketModal 
+            v-if="isMarketModalOpen" 
+            @submit="handleMarketCreated" 
+            @cancel="isMarketModalOpen = false"
+        />
     </div>
 </template>

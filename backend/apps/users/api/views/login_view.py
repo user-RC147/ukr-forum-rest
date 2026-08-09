@@ -10,11 +10,12 @@ from drf_spectacular.utils import extend_schema
 
 from apps.users.api.serialazers.login_in_serializer import LoginInSerializer
 from apps.users.services.login_in_service import LoginInService
+from core.users.csrf_permission import CsrfPermission
 
 
 class LoginViewSet(ViewSet):
     
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny, CsrfPermission]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

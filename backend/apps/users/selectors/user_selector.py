@@ -1,4 +1,6 @@
-from apps.users.models.user import CustomUser
+from apps.users.models import CustomUser,ReferralUsage
+
+from apps.users.models.referral_code import ReferralCode
 from apps.users.dto.user_dto import User_Id_PrivateOutDTO, UserShortOutDTO
 
 from apps.users.dto._to_dto_user import _to_dto_short_user_out
@@ -7,6 +9,15 @@ from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
 
 class UserSelector:
 
+    def get_by_code(self,dto)->bool:
+
+        ReferralCode.objects.get(code=dto)
+
+
+
+        return 
+      
+
     def get_my_profile(self,user_id:int)->User_Id_PrivateOutDTO:        
 
         my_profile = CustomUser.objects.get(id=user_id)      
@@ -14,8 +25,15 @@ class UserSelector:
         return _to_dto_id_location_profile(my_profile)
     
 
-    def get_many(self, ids: list[int]) -> list[UserShortOutDTO]:
-        return None
+    def get_many(self,ids: set[int] | list[int],) -> dict[int,UserShortOutDTO]:
+
+        users = CustomUser.objects.filter(id__in=ids)
+
+        return {user.id:_to_dto_short_user_out(user)for user in users}
+
+
+
+
 
     def get_all_users(self) -> list[UserShortOutDTO]:
 

@@ -2,7 +2,10 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
+from apps.users.api import serialazers
+from apps.users.dto.user_dto import CreateUserInDTO
 from apps.users.services.user_service import UserService
 from apps.users.api.serialazers.user_serializer import (
     UserShortOutSerializer,
@@ -10,7 +13,13 @@ from apps.users.api.serialazers.user_serializer import (
     UserPrivatOutSerializer,
 )
 
+from apps.users.api.serialazers.register_serializer import RegisterInSerializer
+
 from apps.users.services import UserService
+from core.users.csrf_permission import CsrfPermission
+
+from drf_spectacular.utils import extend_schema
+
 
 
 class UserViewSet(ViewSet):
@@ -20,6 +29,12 @@ class UserViewSet(ViewSet):
 
         self._service = UserService()
 
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve", "create"]:
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
+    
 
     @action(detail=False,methods=["get"],url_path="profile")
     def profile(self,request):
@@ -54,8 +69,36 @@ class UserViewSet(ViewSet):
 
         return Response({"results": results}, status=status.HTTP_200_OK)
 
-    # def create(self, request):
-    #     pass
+    @extend_schema(request=RegisterInSerializer(), responses=RegisterInSerializer())
+    def create(self, request):
+
+        serializer = RegisterInSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+
+        _dto = CreateUserInDTO(
+            username=data['username'],
+            password=data['password'],
+            display_name=data['display_name'],
+            email=data['email'],
+            referral_code=data.get('referral_code'),
+            consent_given=data['consent_given'],   
+        )
+
+        try:
+            dto = self._service.create(_dto)
+        except ValueError:
+            return Response(
+                {"detail": "Помилка реєстрації"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {"detail": "Реєстрація успішна"},
+            status=status.HTTP_201_CREATED,
+        )
+
 
     # def update(self, request, pk=None):
     #     pass

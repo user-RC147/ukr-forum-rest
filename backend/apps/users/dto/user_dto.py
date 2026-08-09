@@ -7,6 +7,8 @@
 # UserPrivateOutDTO, UserPublicOutDTO, User_Id_PrivateOutDTO тощо
 
 import datetime
+from typing import Optional
+from uuid import UUID
 from core.dto.users.user_dto import (
     UserShortOutDTO,
     UserFullOutDTO,
@@ -29,3 +31,19 @@ from core.dto.geo.geo_dto import (
 from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO
 
 
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class CreateUserInDTO:
+    username: str
+    password:str
+    display_name: str
+    email:str
+    referral_code: UUID | None
+    consent_given:bool
+
+
+@dataclass(frozen=True)
+class UserDTO:
+    ...

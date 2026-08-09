@@ -99,17 +99,16 @@ AUTH_USER_MODEL = "users.CustomUser"
 # --- DRF + JWT ---
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        'apps.users.api.jwt.authentication.CookieJWTAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',        # САМЕ ДЛЯ api-auth/login/
+        'core.users.authentication.CookieJWTAuthentication',
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+        "core.users.csrf_permission.CsrfPermission",
+    ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "config.drf_err_handler.custom_exception_handler",
 }
 
-# DEFAULT_PERMISSION_CLASSES=[
-#     'rest_framework.permissions.IsAuthenticated',
-# ]
 
 # --- OpenAPI документація (drf-spectacular) ---
 SPECTACULAR_SETTINGS = {
@@ -162,7 +161,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя фай
 
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     # Refresh токен зазвичай роблять довшим (наприклад, 7 днів),
     # щоб користувач не переавторизовувався щодня
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),

@@ -30,11 +30,7 @@ class AssetViewSet(ViewSet):
       
         serializer = AssetListFilterSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
-       
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+               
         dto = ListAssetDTO(
             group_id=serializer.validated_data.get('group_id'),
         )

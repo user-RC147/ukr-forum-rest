@@ -6,11 +6,12 @@ from rest_framework.permissions import AllowAny
 from django.conf import settings
 
 from apps.users.services.refresh_service import RefreshService
+from core.users.csrf_permission import CsrfPermission
 
 
 class RefreshViewSet(ViewSet):
 
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny, CsrfPermission]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -19,6 +20,9 @@ class RefreshViewSet(ViewSet):
 
     def create(self, request):
         # 1. Дістати refresh_token із cookie (не з тіла запиту!)
+        
+        x_csrf_token = request.COOKIES.get('X-CSRFToken')
+        enforce_csrf(request)
         refresh_token_str = request.COOKIES.get("refresh_token")
 
         if refresh_token_str is None:

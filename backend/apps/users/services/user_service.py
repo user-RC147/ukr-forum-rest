@@ -7,7 +7,9 @@ from apps.users.dto import (
     UserPrivateOutDTO,
     UserPublicOutDTO,
     UserShortOutDTO,
+    CreateUserInDTO,
 )
+
 from apps.users.dto._to_dto_profile import _to_dto_out_profile
 from apps.users.dto._to_dto_location import _get_ids_location, _get_locations
 
@@ -24,8 +26,7 @@ class UserService:
         self._selector = UserSelector()
         self._repository = UserRepo()
 
-
-    def get_many(self, ids: list[int]) -> list[UserShortOutDTO]:
+    def get_many(self, ids: list[int]) -> dict[int, UserShortOutDTO]:
         return self._selector.get_many(ids)
 
     def get_all_user(self) -> list[UserShortOutDTO]:
@@ -40,30 +41,36 @@ class UserService:
 
     def get_my_profile(self, user_id: int) -> UserPrivateOutDTO:
         my_profile = self._selector.get_my_profile(user_id)
-        print('======================================================================')
+        print("======================================================================")
         print(my_profile)
 
-        print('======================================================================')
+        print("======================================================================")
 
         ids = _get_ids_location(my_profile)
-        print('======================================================================')
+        print("======================================================================")
         print(ids)
 
-        print('======================================================================')
-    
+        print("======================================================================")
+
         locations = _get_locations(
             ids, get_country_contract(), get_region_contract(), get_city_contract()
         )
-        print('======================================================================')
-        
+        print("======================================================================")
+
         dto = _to_dto_out_profile(my_profile, locations)
-        print('======================================================================')
+        print("======================================================================")
         print(dto)
 
-        print('======================================================================')
+        print("======================================================================")
         return dto
-    
 
+    def create(self, dto: CreateUserInDTO) -> UserShortOutDTO:
+        referral_code = None
+
+        #if dto.referral_code:
+            #referral_code = self._selector.get_by_code(dto.referral_code)
+
+        return self._repository.create(dto=dto,referral_code=dto.referral_code)
 
     def update_my_profile(self, user_id: int) -> UserPrivateOutDTO:
 
@@ -75,5 +82,5 @@ class UserService:
             ids, get_country_contract(), get_region_contract(), get_city_contract()
         )
 
-        dto = _to_dto_out_profile(my_profile,locations)
+        dto = _to_dto_out_profile(my_profile, locations)
         return dto
