@@ -21,7 +21,7 @@ from .serializers import (
     ProductSerializer,
     ProductUpdateSerializer,
 )
-from .service import ProductService
+from .service import get_service
 
 
 class RequiresAuthIfUserIdParam(BasePermission):
@@ -38,7 +38,7 @@ class ProductViewSet(viewsets.ViewSet):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.service = ProductService()
+        self.service = get_service()
 
     def get_permissions(self):
         if self.action in ["create", "destroy", "partial_update"]:

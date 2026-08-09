@@ -10,13 +10,14 @@ from core.paginator.paginator import paginate
 from .dto import ProductRepoDTO
 from .exceptions import ProductNotFoundError
 from .models import ProductModel
+from .ports import ProductRepositoryPort
 
 logger = logging.getLogger(__name__)
 
 
 class ProductRepository:
-    def __init__(self) -> None:
-        self.model = ProductModel
+    def __init__(self, model=ProductModel) -> None:
+        self.model = model
 
     def _get_model(self, id: int) -> ProductModel:
         try:
@@ -90,5 +91,5 @@ def _to_dto_product(data: ProductModel) -> ProductRepoDTO:
     return ProductRepoDTO(**result)
 
 
-def get_repo():
+def get_repo() -> ProductRepositoryPort:
     return ProductRepository()
