@@ -7,6 +7,7 @@ class FileDTO:
     owner_id: int
     id: int
     file: str
+    thumbnail: str | None
     visible: bool
 
 
@@ -16,6 +17,7 @@ class FileRepoDTO:
     id: int
     name: str
     file: str
+    thumbnail: str | None
     created_at: datetime
     visible: bool
 

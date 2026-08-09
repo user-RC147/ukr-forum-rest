@@ -15,20 +15,22 @@ export function useProductSearchResults() {
   const hasPrevious = ref(false)
 
   const products = computed(() =>
-    rawResults.value.map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      price: item.meta?.price,
-      // files теперь массив объектов {id, file, visible}, а не строк —
-      // достаём url первого файла так же, как и раньше
-      image: item.meta?.files?.[0]?.file ?? null,
-      createdAt: item.meta?.created_at,
-      city: item.meta?.city?.name_ua ?? item.meta?.city?.name,
-      region: item.meta?.region?.name_ua ?? item.meta?.region?.name,
-      country: item.meta?.country?.name_ua ?? item.meta?.country?.name,
-      currency: item.meta?.country?.currency,
-    }))
+    rawResults.value.map((item) => {
+      // Берём первый видимый файл; thumbnail если готов, иначе полный файл
+      const firstVisible = item.meta?.files?.find((f) => f.visible !== false)
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        price: item.meta?.price,
+        image: firstVisible?.thumbnail ?? firstVisible?.file ?? null,
+        createdAt: item.meta?.created_at,
+        city: item.meta?.city?.name_ua ?? item.meta?.city?.name,
+        region: item.meta?.region?.name_ua ?? item.meta?.region?.name,
+        country: item.meta?.country?.name_ua ?? item.meta?.country?.name,
+        currency: item.meta?.country?.currency,
+      }
+    })
   )
 
   function buildParams(query) {
@@ -39,15 +41,12 @@ export function useProductSearchResults() {
     if (query.city_id) params.city_id = query.city_id
     if (query.radius && query.city_id) params.radius = query.radius
     if (query.status) params.status = query.status
-    // date_sort: 'date' (нові) / '-date' (старі) / '' (релевантність — sort не шлемо)
     const dateSort = query.date_sort || ''
     if (dateSort === 'date') params.sort = 'newest'
     else if (dateSort === '-date') params.sort = 'oldest'
     return params
   }
 
-  // requestToken защищает от гонки: если старый (медленный) запрос
-  // ответит позже нового — его результат просто игнорируется
   let requestToken = 0
   async function fetchProducts(query) {
     const token = ++requestToken
@@ -59,8 +58,6 @@ export function useProductSearchResults() {
       const { data } = await searchProducts(params)
       if (token !== requestToken) return
 
-      // ВАЖНО: у /search/list_shop/ пагинация вложена в data.results,
-      // а не в корень ответа (в отличие от /shop/products/)
       const pageData = data?.results ?? {}
       rawResults.value = pageData.items ?? []
       page.value = pageData.page ?? requestedPage
@@ -77,8 +74,6 @@ export function useProductSearchResults() {
     }
   }
 
-  // Единственный источник правды — route.query. Работает и при первом
-  // заходе (immediate), и при повторной навигации на этот же роут
   watch(() => route.query, fetchProducts, { immediate: true })
 
   return { products, isLoading, error, page, totalPages, count, hasNext, hasPrevious }

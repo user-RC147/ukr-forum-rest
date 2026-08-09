@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/shared/stores/useUserStore'
+import { getProductThumbnailUrl } from '@/shared/utils/media'
 import { useMyProducts } from '../composables/useMyProducts'
 
 const router = useRouter()
@@ -37,15 +38,12 @@ onMounted(() => {
 
     <div v-else-if="products.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
       <div v-for="p in products" :key="p.id" class="group">
-        <RouterLink
-          :to="{ name: 'shop-product', params: { pk: p.id } }"
-          class="block mb-2"
-        >
+        <RouterLink :to="{ name: 'shop-product', params: { pk: p.id } }" class="block mb-2">
           <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full transition-shadow duration-200 group-hover:shadow-md">
             <div class="w-full h-40 bg-gray-100 overflow-hidden">
               <img
-                v-if="p.files?.[0]?.file"
-                :src="p.files[0].file"
+                v-if="getProductThumbnailUrl(p)"
+                :src="getProductThumbnailUrl(p)"
                 :alt="p.title"
                 class="w-full h-full object-cover"
                 loading="lazy"
@@ -83,37 +81,23 @@ onMounted(() => {
 
     <p v-else class="text-center font-semibold text-lg italic py-12 text-gray-700">
       У вас ще немає товарів.
-      <RouterLink
-        :to="{ name: 'shop-create-product' }"
-        class="text-blue-600 underline hover:opacity-80 ml-1"
-      >
+      <RouterLink :to="{ name: 'shop-create-product' }" class="text-blue-600 underline hover:opacity-80 ml-1">
         Додайте перший!
       </RouterLink>
     </p>
 
     <nav v-if="totalPages > 1" class="flex items-center justify-center gap-3 my-4">
-      <button
-        :disabled="!hasPrevious"
-        @click="goToPage(page - 1)"
-        class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
+      <button :disabled="!hasPrevious" @click="goToPage(page - 1)" class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         &laquo; Попередня
       </button>
       <span class="px-2 text-gray-700 font-medium">Сторінка {{ page }} з {{ totalPages }}</span>
-      <button
-        :disabled="!hasNext"
-        @click="goToPage(page + 1)"
-        class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
+      <button :disabled="!hasNext" @click="goToPage(page + 1)" class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         Наступна &raquo;
       </button>
     </nav>
 
     <div class="text-center pt-4">
-      <RouterLink
-        :to="{ name: 'shop-index' }"
-        class="text-blue-600 hover:underline font-medium"
-      >
+      <RouterLink :to="{ name: 'shop-index' }" class="text-blue-600 hover:underline font-medium">
         ← Назад до всіх товарів
       </RouterLink>
     </div>

@@ -224,3 +224,21 @@ sentry_sdk.init(
     send_default_pii=False,  # Not send personal identifiable info
     # environment=os.getenv("ENVIRONMENT", "production"),
 )
+
+# Redis
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "admin")}:{os.getenv("REDIS_PORT", 6379)}/1",
+    }
+}
+
+#Celery
+CELERY_BROKER_URL = (
+    f"redis://{os.getenv('REDIS_HOST', 'redis')}:"
+    f"{os.getenv('REDIS_PORT', 6379)}/0"
+)
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TIMEZONE = os.getenv("TIMEZONE", "Europe/Berlin")

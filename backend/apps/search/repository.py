@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
 from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
@@ -20,8 +21,13 @@ class CategoryRepository:
 
     def get_many(self, ids: list[int] | None = None) -> list[CategoryDTO]:
         result = self.model.objects.prefetch_related("tags")
-        if ids is not None:
-            result = result.filter(id__in=ids)
+        if ids is None:
+            return cache.get_or_set(
+                "category:all", lambda: [_to_dto_category(r) for r in result], 60 * 5
+            )
+
+        result = result.filter(id__in=ids)
+
         return [_to_dto_category(r) for r in result]
 
 
@@ -39,8 +45,12 @@ class TagRepository:
 
     def get_many(self, ids: list[int] | None = None) -> list[TagDTO]:
         result = self.model.objects.all()
-        if ids is not None:
-            result = result.filter(id__in=ids)
+        if ids is None:
+            return cache.get_or_set(
+                "tag:all", lambda: [_to_dto_tag(r) for r in result], 60 * 5
+            )
+
+        result = result.filter(id__in=ids)
         return [_to_dto_tag(r) for r in result]
 
 

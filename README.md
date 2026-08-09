@@ -81,6 +81,9 @@ python manage.py migrate --settings=config.settings.dev
 # Створити суперкористувача
 python manage.py createsuperuser --settings=config.settings.dev
 
+# Для гео: 
+python manage.py load_geo_data
+
 # Запустити сервер
 python manage.py runserver --settings=config.settings.dev
 ```
