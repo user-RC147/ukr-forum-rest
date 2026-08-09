@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class ProductService:
     def __init__(self, repo: ProductRepository | None = None) -> None:
-        self.repo = repo or get_repo()
+        self.repo = repo if repo is not None else get_repo()
         self.country_contract = get_country_contract()
         self.region_contract = get_region_contract()
         self.city_contract = get_city_contract()
