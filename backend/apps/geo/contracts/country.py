@@ -1,6 +1,6 @@
 from apps.geo.dto.country import CountryDTO
 from apps.geo.protocols.country import CountryContractProtocol
-from apps.geo.services.country_service import CountryService
+from apps.geo.services.country import CountryService
 
 
 class CountryContract:

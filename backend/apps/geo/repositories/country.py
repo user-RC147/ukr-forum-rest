@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.db.models.functions import Greatest
 
 from apps.geo.dto.country import CountryDTO
-from apps.geo.exceptions.country_exc import CountryNotFoundError
+from apps.geo.exceptions.country import CountryNotFoundError
 from apps.geo.models.country import CountryModel
 from apps.geo.ports.repos import CountryRepositoryPort
 

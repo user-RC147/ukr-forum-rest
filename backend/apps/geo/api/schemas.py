@@ -4,7 +4,7 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 
-from apps.geo.api.serializers.resolve import CitySerializer
+from apps.geo.api.serializers import CitySerializer, CountrySerializer
 
 city_search_schema = extend_schema(
     summary="Результати пошуку міст",
@@ -25,4 +25,19 @@ city_search_schema = extend_schema(
         ),
     ],
     responses={200: CitySerializer(many=True)},
+)
+
+
+country_search_schema = extend_schema(
+    summary="Результати пошуку країн",
+    parameters=[
+        OpenApiParameter(
+            name="q",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Пошуковий запит",
+            required=False,
+        ),
+    ],
+    responses={200: CountrySerializer(many=True)},
 )

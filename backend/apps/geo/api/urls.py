@@ -17,9 +17,7 @@
 
 from rest_framework import routers
 
-from apps.geo.api.views.city_view import CityView
-from apps.geo.api.views.country_view import CountryView
-from apps.geo.api.views.region_view import RegionView
+from apps.geo.api.views import CityView, CountryView, RegionView
 
 APP_NAME = "geo"
 
