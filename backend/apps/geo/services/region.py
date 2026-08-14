@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from apps.geo.dto.region import RegionDTO
 from apps.geo.ports.repos import RegionRepositoryPort
-from apps.geo.repositories.region_repository import get_repo_region
+from apps.geo.repositories.region import get_repo_region
 
 
 class RegionService:

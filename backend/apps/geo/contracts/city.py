@@ -1,6 +1,6 @@
 from apps.geo.dto.city import CityDTO
 from apps.geo.protocols.city import CityContractProtocol
-from apps.geo.services.city_service import CityService
+from apps.geo.services.city import CityService
 
 
 class CityContract:
