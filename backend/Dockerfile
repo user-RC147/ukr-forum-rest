@@ -8,10 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY  requirements/ requirements/
+COPY  requirements/requirements.txt requirements/requirements.txt
+COPY  requirements/requirements-dev.txt requirements/requirements-dev.txt
 
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --user -r requirements/dev.txt
+    pip install --no-cache-dir --user -r requirements/requirements-dev.txt
 
 # ---------- Stage 2: runtime ----------
 FROM python:3.13.14-slim-trixie
