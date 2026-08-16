@@ -22,5 +22,7 @@ class UserRepo:
             )
 
         return _to_dto_short_user_out(user)
+   
 
-    def profile(self, user_id: int): ...
+    def update_my_profile(dto:,user_id:int)->UserShortOutDTO:
+        ...

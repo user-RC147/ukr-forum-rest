@@ -1,3 +1,4 @@
+from apps.users.dto.user_dto import ProfilUserUpdateInDTO
 from apps.users.selectors.user_selector import UserSelector
 from apps.users.repositories.user_repository import UserRepo
 
@@ -72,9 +73,9 @@ class UserService:
 
         return self._repository.create(dto=dto,referral_code=dto.referral_code)
 
-    def update_my_profile(self, user_id: int) -> UserPrivateOutDTO:
+    def update_my_profile(self, dto:ProfilUserUpdateInDTO, user_id: int) -> UserPrivateOutDTO:
 
-        my_profile = self._repository.profile(user_id)
+        my_profile = self._repository.update_my_profile(dto, user_id)
 
         ids = _get_ids_location(my_profile)
 

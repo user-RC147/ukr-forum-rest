@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from core.dto.geo.location_dto import Location_Id_OutDTO,LocationOutDTO
+from apps.users.dto.user_dto import Location_Id_OutDTO,LocationOutDTO
+from core.dto.geo.location_dto import Location_Id_InDTO
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,38 @@ class User_Id_PublicOutDTO:
     social_public: bool
 
 @dataclass(frozen=True)
+class User_Id_PrivateOutDTO:
+    id:int
+    username: str
+    display_name: str
+
+    first_name_public: bool
+    last_name_public: bool
+
+    email:str
+    email_public: bool
+    is_email_verified: bool
+
+    date_of_birth: datetime
+    date_of_birth_public: bool
+
+    phone_number: str
+    phone_public: bool
+
+    social_network: str
+    social_public: bool
+
+    is_banned: bool
+
+    deletion_scheduled_at: datetime
+
+    consent_given: bool
+    consent_date: datetime
+    consent_version: Optional[ConsentOutDTO]
+    location:Optional[Location_Id_OutDTO]
+
+
+@dataclass(frozen=True)
 class UserPublicOutDTO:
     id:int
     username: str
@@ -71,6 +104,7 @@ class UserPublicOutDTO:
 
     social_network: str
     social_public: bool
+    location:Optional[LocationOutDTO]
 
 
 @dataclass(frozen=True)
@@ -104,33 +138,4 @@ class UserPrivateOutDTO:
     consent_version: Optional[ConsentOutDTO]
     location:Optional[LocationOutDTO]
 
-@dataclass(frozen=True)
-class User_Id_PrivateOutDTO:
-    id:int
-    username: str
-    display_name: str
 
-    first_name_public: bool
-    last_name_public: bool
-
-    email:str
-    email_public: bool
-    is_email_verified: bool
-
-    date_of_birth: datetime
-    date_of_birth_public: bool
-
-    phone_number: str
-    phone_public: bool
-
-    social_network: str
-    social_public: bool
-
-    is_banned: bool
-
-    deletion_scheduled_at: datetime
-
-    consent_given: bool
-    consent_date: datetime
-    consent_version: Optional[ConsentOutDTO]
-    location:Optional[Location_Id_OutDTO]

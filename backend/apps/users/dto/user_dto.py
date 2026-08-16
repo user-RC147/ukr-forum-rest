@@ -26,9 +26,10 @@ from core.dto.geo.geo_dto import (
     RegionOutDTO,
     CityShortDTO,
     CityOutDTO,
+    
 )
 
-from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO
+from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO,Location_Id_InDTO
 
 
 from dataclasses import dataclass
@@ -47,3 +48,25 @@ class CreateUserInDTO:
 @dataclass(frozen=True)
 class UserDTO:
     ...
+
+@dataclass(frozen=True)
+class ProfilUserUpdateInDTO:
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+
+    first_name_public: Optional[bool] = None
+    last_name_public: Optional[bool] = None
+
+    email:Optional[str] = None
+    email_public: Optional[str] = None
+
+    date_of_birth: Optional[datetime] = None
+    date_of_birth_public: Optional[bool] = None
+
+    phone_number: Optional[str] = None
+    phone_public: Optional[bool] = None
+
+    social_network: Optional[str] = None
+    social_public: Optional[bool] = None
+    
+    location:Optional[Location_Id_InDTO] = None

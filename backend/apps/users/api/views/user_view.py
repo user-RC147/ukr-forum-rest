@@ -5,18 +5,23 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated,AllowAny
 
 from apps.users.api import serialazers
-from apps.users.dto.user_dto import CreateUserInDTO
+from apps.users.dto.user_dto import CreateUserInDTO, ProfilUserUpdateInDTO
+from apps.users.dto._to_dto_user import _to_dto_user_in
 from apps.users.services.user_service import UserService
 from apps.users.api.serialazers.user_serializer import (
     UserShortOutSerializer,
     UserPublicOutSerializer,
     UserPrivatOutSerializer,
+
 )
 
-from apps.users.api.serialazers.register_serializer import RegisterInSerializer
+from core.users.csrf_permission import CsrfPermission
+
+from apps.users.api.serialazers.register_serializer import RegisterInSerializer,ProfileUpdateInSerializer
 
 from apps.users.services import UserService
-from core.users.csrf_permission import CsrfPermission
+
+
 
 from drf_spectacular.utils import extend_schema
 
@@ -100,11 +105,25 @@ class UserViewSet(ViewSet):
         )
 
 
-    # def update(self, request, pk=None):
-    #     pass
+    def update(self, request, pk=None):
+        user_id = request.user.id
+        if int(user_id) != int(pk):
+            return Response(
+                {"detail": "Ви можете редагувати тільки власний профіль"},
+            status=status.HTTP_403_FORBIDDEN,)
+        
+        serialiser = ProfileUpdateInSerializer(data =request.data,partial=True)
+        serialiser.is_valid(raise_exception=True)
+
+        dto = _to_dto_user_in(serialiser.validated_data)
+
+        results =self._service.update_my_profile(dto,user_id)
+
+        return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
 
     # def partial_update(self, request, pk=None):
     #     pass
+        
 
     # def destroy(self, request, pk=None):
     #     pass

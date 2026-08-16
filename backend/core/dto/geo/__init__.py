@@ -6,7 +6,7 @@ from .geo_dto import (
     RegionShortDTO,
     RegionOutDTO,
 )
-from .location_dto import Location_Id_OutDTO,LocationOutDTO,LocationShortOutDTO
+from .location_dto import Location_Id_OutDTO,LocationOutDTO,LocationShortOutDTO,Location_Id_InDTO
 
 __all__ = [
     #Geo
@@ -19,6 +19,7 @@ __all__ = [
 
     #Location
     'Location_Id_OutDTO',
+    'Location_Id_InDTO',
     'LocationOutDTO',
     'LocationShortOutDTO',
 

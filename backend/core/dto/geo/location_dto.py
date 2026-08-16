@@ -18,6 +18,12 @@ class LocationShortOutDTO:
 
 
 @dataclass(frozen=True)
+class Location_Id_InDTO:
+    country_id: int
+    region_id: int
+    city_id: int
+
+@dataclass(frozen=True)
 class Location_Id_OutDTO:
     country_id: int
     region_id: int
