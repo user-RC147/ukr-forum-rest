@@ -1,9 +1,9 @@
 # apps/geo/admin.py
 from django.contrib import admin
 
-from apps.geo.models.city import CityModel
-from apps.geo.models.country import CountryModel
-from apps.geo.models.region import RegionModel
+from apps.geo.models.city_model import CityModel
+from apps.geo.models.country_model import CountryModel
+from apps.geo.models.region_model import RegionModel
 
 
 @admin.register(CountryModel)

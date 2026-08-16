@@ -3,9 +3,9 @@ from apps.household.dto.market_dto import CreateMarketInDTO, MarketExpenseOutDTO
 from apps.household.models import market
 from apps.household.repositories.maket_repo import MarketRepo
 from apps.household.selectors.market_select import MarketSelector
-from apps.geo.contracts.country import get_country_contract
-from apps.geo.contracts.region import get_region_contract
-from apps.geo.contracts.city import get_city_contract
+from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.region_contract import get_region_contract
+from apps.geo.contracts.city_contract import get_city_contract
 
 from apps.household.dto.location_dto import (
     LocationOutDTO,

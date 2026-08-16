@@ -4,7 +4,7 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 
-from apps.geo.api.serializers import CitySerializer, CountrySerializer
+from apps.geo.api.geo_serializers import CitySerializer, CountrySerializer
 
 city_search_schema = extend_schema(
     summary="Результати пошуку міст",

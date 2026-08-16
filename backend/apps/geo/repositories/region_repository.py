@@ -3,10 +3,10 @@ from collections.abc import Iterable
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
-from apps.geo.dto.region import RegionDTO
-from apps.geo.exceptions.region import RegionNotFoundError
-from apps.geo.models.region import RegionModel
-from apps.geo.ports.repos import RegionRepositoryPort
+from apps.geo.dto.region_dto import RegionDTO
+from apps.geo.exceptions.region_exception import RegionNotFoundError
+from apps.geo.models.region_model import RegionModel
+from apps.geo.ports.repo_ports import RegionRepositoryPort
 
 
 class RegionRepository:

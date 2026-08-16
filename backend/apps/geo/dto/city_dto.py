@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from .region import RegionDTO
+from .region_dto import RegionDTO
 
 
 @dataclass

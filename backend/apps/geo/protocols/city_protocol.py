@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from apps.geo.dto.city import CityDTO
+from apps.geo.dto.city_dto import CityDTO
 
 
 class CityContractProtocol(Protocol):

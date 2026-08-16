@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 
 class CountrySerializer(serializers.Serializer):
-    """Серіалізатор країни для resolve відповіді."""
 
     id = serializers.IntegerField()
     name = serializers.CharField()
@@ -13,7 +12,6 @@ class CountrySerializer(serializers.Serializer):
 
 
 class RegionSerializer(serializers.Serializer):
-    """Серіалізатор регіону для resolve відповіді."""
 
     id = serializers.IntegerField()
     name = serializers.CharField()
@@ -22,13 +20,14 @@ class RegionSerializer(serializers.Serializer):
 
 
 class CitySerializer(serializers.Serializer):
-    """Серіалізатор міста для resolve відповіді."""
 
     id = serializers.IntegerField()
     name = serializers.CharField()
     name_ua = serializers.CharField()
     region = RegionSerializer()
     country_id = serializers.IntegerField()
+    # latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    # longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
 
 
 class CityQuerySerializer(serializers.Serializer):

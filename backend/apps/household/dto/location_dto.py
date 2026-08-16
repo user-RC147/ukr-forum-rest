@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from apps.geo.dto import country
+from apps.geo.dto import country_dto
 
 
 @dataclass(frozen=True)

@@ -3,9 +3,9 @@ import logging
 
 from apps.files.contracts import get_file_contract
 from apps.files.dto import FileUpdatePlan
-from apps.geo.contracts.city import get_city_contract
-from apps.geo.contracts.country import get_country_contract
-from apps.geo.contracts.region import get_region_contract
+from apps.geo.contracts.city_contract import get_city_contract
+from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 from core.paginator.dto import PaginatorDTO

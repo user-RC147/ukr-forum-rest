@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from apps.geo.dto.country import CountryDTO
+from apps.geo.dto.country_dto import CountryDTO
 
 
 class CountryContractProtocol(Protocol):
