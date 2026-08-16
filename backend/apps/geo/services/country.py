@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from apps.geo.dto.country import CountryDTO
 from apps.geo.ports.repos import CountryRepositoryPort
-from apps.geo.repositories.country_repository import get_repo_country
+from apps.geo.repositories.country import get_repo_country
 
 
 class CountryService:

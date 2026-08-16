@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
 from apps.geo.dto.region import RegionDTO
-from apps.geo.exceptions.region_exc import RegionNotFoundError
+from apps.geo.exceptions.region import RegionNotFoundError
 from apps.geo.models.region import RegionModel
 from apps.geo.ports.repos import RegionRepositoryPort
 

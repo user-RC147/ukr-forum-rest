@@ -1,139 +1,132 @@
-# Коло Українців — ukr-forum
+<div align="center">
 
-Платформа для об'єднання українців у світі. Дозволяє знаходити земляків, ділитись досвідом, публікувати оголошення та статті.
+# UkrKolo — Модульний моноліт (Backend)
 
----
+**Продакшн-рівня платформа форуму та маркетплейсу на Django/DRF з чистою архітектурою.**
 
-## Технологічний стек
+[![Python](https://img.shields.io/badge/python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)]()
+[![Django](https://img.shields.io/badge/Django-DRF-092E20?style=flat-square&logo=django&logoColor=white)]()
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)]()
+[![Celery](https://img.shields.io/badge/Celery-37814A?style=flat-square&logo=celery&logoColor=white)]()
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)]()
 
-| Частина | Технологія |
+[~~Демо~~](https://ukrkolo.site) · [Повідомити про баг](../../issues) · [Запропонувати фічу](../../issues)
+
+<br>
+
+🇺🇦 **Українська** · [🇬🇧 English](README.en.md)
+
+</div>
+
+<br>
+
+<p align="center">
+  <img src="docs/media/demo.gif" alt="UkrKolo demo" width="800">
+</p>
+
+<br>
+
+## Про проєкт
+
+UkrKolo — це повнофункціональна платформа форуму та маркетплейсу, побудована як **модульний моноліт** із принципами чистої архітектури — просто запускається зараз і легко розділяється на сервіси в майбутньому. Проєкт почався як особисте занурення в продакшн-інженерію бекенду, а зараз розвивається у реальний продукт для української спільноти.
+
+**Чому цей проєкт вирізняється:**
+- Це не CRUD-туторіал — реалізовані Protocol-based контракти, service/repository-шари та DTO-межі між шарами
+- Продакшн-observability: структуроване логування та дашборди Grafana/Loki для моніторингу стану системи
+
+<br>
+
+## ✨ Ключові інженерні рішення
+
+| Виклик | Рішення |
 |---|---|
-| Backend | Django 5 + Django REST Framework |
-| Автентифікація | JWT (djangorestframework-simplejwt) |
-| Frontend | Vue 3 + Vite |
-| Стан | Pinia |
-| Стилі | Tailwind CSS 4 |
-| База даних | PostgreSQL |
-| API документація | drf-spectacular (Swagger) |
+| Безпечне зберігання токена без доступу з JS | JWT-автентифікація через `httpOnly`-cookie з кастомним `CookieJWTAuthentication` + CSRF-захист |
+| Крос-модульний пошук по різнорідних сутностях | Патерн `SearchRegistry` / `SearchHandler` для гнучкої, модуль-агностичної оркестрації пошуку |
+| Повнотекстовий пошук українською | GIN-індекси PostgreSQL з text search конфігурацією під українську мову |
+| Відв'язка бізнес-логіки від персистентності | Protocol-based контракти + service/repository-шари з окремим `DTO` під кожен use case |
+| Часткові оновлення без неоднозначних "порожніх" значень | Патерн PATCH-sentinel для розрізнення "поле не передане" від "поле встановлене в null" |
+| Швидка діагностика проблем у продакшені | Централізоване JSON-логування через Promtail → Loki, візуалізація в Grafana |
 
----
+<br>
 
-## Структура проекту
+## 🏗 Архітектура
 
-```
-ukr-forum/
-├── backend/          ← Django бекенд
-│   ├── apps/         ← модулі додатку
-│   │   ├── users/    ← користувачі
-│   │   └── geo/      ← геолокація
-│   ├── config/       ← налаштування
-│   │   └── settings/
-│   │       ├── base.py
-│   │       ├── dev.py
-│   │       └── prod.py
-│   └── core/         ← спільні міксини, пермішени
-├── frontend/         ← Vue фронтенд
-│   └── src/
-│       ├── api/      ← спільний axios
-│       ├── modules/  ← модулі
-│       │   ├── users/
-│       │   └── geo/
-│       ├── shared/   ← спільні layouts
-│       └── router/   ← маршрути
-├── requirements/
-│   ├── base.txt
-│   ├── dev.txt
-│   └── prod.txt
-└── logs/
+```mermaid
+flowchart TD
+    A[Vue 3 SPA] -->|REST / JWT via httpOnly cookie| B[DRF API Layer]
+    B --> C[Service Layer<br/>business logic, Protocols]
+    C --> D[Repository Layer<br/>data access, DTO mapping]
+    D --> E[(PostgreSQL)]
+    C -->|async tasks| G[Celery Workers]
+    G -->|broker| F[(Redis)]
+    C -.->|cache| F
 ```
 
----
+<sub>Модулі: `users` · `household` · `files` · `shop` · `articles` · `search` — кожен зі своїми service/repository/DTO-шарами.</sub>
 
-## Як запустити локально
+<br>
 
-### 1. Клонувати репозиторій
+## 🛠 Технологічний стек
+
+**Backend:** Django, Django REST Framework, PostgreSQL, Redis, Celery
+
+**Frontend:** Vue 3 (SPA), Axios (з refresh-token mutex-патерном)
+
+**Infra:** Docker, Docker Compose, nginx(заплановано), Gunicorn(заплановано)
+
+**Observability:** Grafana, Loki, Promtail, Sentry
+
+<br>
+
+## 🚀 Швидкий старт
+
+**1. Клонувати репозиторій**
 
 ```bash
-git clone <repo-url>
-cd ukr-forum
+git clone https://github.com/user-RC147/ukr-forum-rest.git
+cd ukr-forum-rest
 ```
 
-### 2. Бекенд
-
 ```bash
-# Створити віртуальне середовище
-python -m venv venvUkrForum
-source venvUkrForum/bin/activate  # Linux/Mac
-# або
-venvUkrForum\Scripts\activate     # Windows
-
-# Встановити залежності
-pip install -r requirements/dev.txt
-
-# Створити .env файл
 cp backend/.env.example backend/.env
 # заповнити змінні (див. нижче)
 
-# Застосувати міграції
-cd backend
-python manage.py migrate --settings=config.settings.dev
-
-# Створити суперкористувача
-python manage.py createsuperuser --settings=config.settings.dev
-
-# Для гео: 
-python manage.py load_geo_data
-
-# Запустити сервер
-python manage.py runserver --settings=config.settings.dev
+docker compose up --build
 ```
-
-### 3. Фронтенд
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Відкрити в браузері
 
 | URL | Опис |
 |---|---|
 | `http://localhost:5173` | Vue фронтенд |
-| `http://localhost:8000/api/docs/` | Swagger документація |
-| `http://localhost:8000/admin/` | Django адмін панель |
+| `http://localhost:8080/api/docs/` | Swagger документація |
+| `http://localhost:8080/admin/` | Django адмін-панель |
 
----
+<br>
 
-## Змінні середовища (backend/.env)
+## 📁 Структура проєкту
 
-```env
-SECRET_KEY=your-secret-key
-
-# База даних
-DB_NAME=ukr_forum
-DB_USER=postgres
-DB_PASSWORD=your-password
-DB_HOST=localhost
-DB_PORT=5432
-
-# Зовнішній Geo API
-GEO_API_URL=https://api.ukrkolo.site
-GEO_API_TOKEN=your-geo-token
-
-# Email
-DEFAULT_FROM_EMAIL=noreply@ukr-forum.com
-
-# Frontend URL (для посилань в email)
-FRONTEND_URL=http://localhost:5173
+```
+.
+├── backend/
+│   ├── apps/
+│      ├── users/          # JWT-автентифікація, робота з cookie
+│      ├── household/      # домашня бухгалтерія
+│      ├── files/          # модуль обробки файлів (у т.ч. медіа)
+│      ├── shop/           # модуль маркетплейсу
+│      ├── articles/       # модуль питань/відповідей
+│      └── search/         # крос-модульний пошуковий реєстр
+│   ├── core/           # спільні контракти та перевикористовуваний код (DRY)
+│   ├── config/         # конфігурація django та інших компонентів
+│   └── requirements/   # залежності бекенду
+├── frontend/           # весь фронтенд для модулів вище
+├── monitoring/         # observability
+└── docs/               # нотатки з архітектури, діаграми
 ```
 
----
+<br>
 
-## Запуск тестів
+## 🗺 Дорожня карта
 
-```bash
-cd backend
-python manage.py test --settings=config.settings.dev
-```
+- [ ] Чат між користувачами в реальному часі
+- [ ] Інтеграція з платіжними системами
+
+<br>

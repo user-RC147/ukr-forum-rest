@@ -7,10 +7,10 @@ from django.db.models import Q
 from django.db.models.functions import Greatest
 
 from apps.geo.dto.city import CityDTO
-from apps.geo.exceptions.city_exc import CityNotFoundError
+from apps.geo.exceptions.city import CityNotFoundError
 from apps.geo.models.city import CityModel
 from apps.geo.ports.repos import CityRepositoryPort
-from apps.geo.repositories.region_repository import _to_dto_region
+from apps.geo.repositories.region import _to_dto_region
 
 
 class CityRepository:

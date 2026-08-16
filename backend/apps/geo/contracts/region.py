@@ -1,6 +1,6 @@
 from apps.geo.dto.region import RegionDTO
 from apps.geo.protocols.region import RegionContractProtocol
-from apps.geo.services.region_service import RegionService
+from apps.geo.services.region import RegionService
 
 
 class RegionContract:
@@ -16,7 +16,7 @@ class RegionContract:
         return data
 
     def get_by_country(self, country_id: int) -> dict[int, RegionDTO]:
-        data = self.service.get_by_region(country_id)
+        data = self.service.get_by_country(country_id)
         data = {d.id: d for d in data}
         return data
 
