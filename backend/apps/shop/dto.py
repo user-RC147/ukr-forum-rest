@@ -3,9 +3,9 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import UploadedFile
 
-from apps.geo.dto.city import CityDTO
-from apps.geo.dto.country import CountryDTO
-from apps.geo.dto.region import RegionDTO
+from apps.geo.dto.city_dto import CityDTO
+from apps.geo.dto.country_dto import CountryDTO
+from apps.geo.dto.region_dto import RegionDTO
 from apps.search.dto import CategoryDTO
 from apps.users.dto.user import UserDTO
 

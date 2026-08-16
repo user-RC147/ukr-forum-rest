@@ -1,8 +1,8 @@
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 
-from apps.geo.models.country import CountryModel
-from apps.geo.models.region import RegionModel
+from apps.geo.models.country_model import CountryModel
+from apps.geo.models.region_model import RegionModel
 
 
 class CityModel(models.Model):

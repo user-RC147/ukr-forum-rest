@@ -6,8 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.geo.api.schemas import city_search_schema, country_search_schema
-from apps.geo.api.serializers import (
+from apps.geo.api.geo_schemas import city_search_schema, country_search_schema
+from apps.geo.api.geo_serializers import (
     CityQuerySerializer,
     CitySearchQuerySerializer,
     CitySerializer,
@@ -16,9 +16,9 @@ from apps.geo.api.serializers import (
     RegionSerializer,
     SearchQuerySerializer,
 )
-from apps.geo.services.city import get_service_city
-from apps.geo.services.country import get_service_country
-from apps.geo.services.region import get_service_region
+from apps.geo.services.city_service import get_service_city
+from apps.geo.services.country_service import get_service_country
+from apps.geo.services.region_service import get_service_region
 
 
 class CityView(viewsets.ViewSet):

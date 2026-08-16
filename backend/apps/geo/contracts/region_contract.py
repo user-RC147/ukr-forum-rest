@@ -1,6 +1,6 @@
-from apps.geo.dto.region import RegionDTO
-from apps.geo.protocols.region import RegionContractProtocol
-from apps.geo.services.region import RegionService
+from apps.geo.dto.region_dto import RegionDTO
+from apps.geo.protocols.region_protocol import RegionContractProtocol
+from apps.geo.services.region_service import RegionService
 
 
 class RegionContract:

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.geo.models.country import CountryModel
+from apps.geo.models.country_model import CountryModel
 
 
 class RegionModel(models.Model):
