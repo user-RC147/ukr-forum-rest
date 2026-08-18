@@ -1,6 +1,8 @@
 from rest_framework import routers
 
-from apps.geo.api.geo_views import CityView, CountryView, RegionView
+from .views.city_views import CityView
+from .views.country_views import CountryView
+from .views.region_views import RegionView
 
 APP_NAME = "geo"
 
