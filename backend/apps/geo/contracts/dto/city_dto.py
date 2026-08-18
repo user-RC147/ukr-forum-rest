@@ -6,10 +6,6 @@ from .region_dto import RegionDTO
 
 @dataclass
 class CityDTO:
-    """
-    Публічне представлення міста.
-    """
-
     id: int
     name: str
     name_ua: str

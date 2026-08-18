@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from apps.geo.dto.region_dto import RegionDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 from apps.geo.ports.repo_ports import RegionRepositoryPort
 from apps.geo.repositories.region_repository import get_repo_region
 

@@ -1,9 +1,9 @@
 from collections.abc import Iterable
 from typing import Protocol
 
-from apps.geo.dto.city_dto import CityDTO
-from apps.geo.dto.country_dto import CountryDTO
-from apps.geo.dto.region_dto import RegionDTO
+from apps.geo.contracts.dto.city_dto import CityDTO
+from apps.geo.contracts.dto.country_dto import CountryDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 
 
 class CityRepositoryPort(Protocol):

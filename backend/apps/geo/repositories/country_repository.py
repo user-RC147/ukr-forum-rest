@@ -6,8 +6,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Greatest
 
-from apps.geo.dto.country_dto import CountryDTO
-from apps.geo.exceptions.country_exception import CountryNotFoundError
+from apps.geo.contracts.dto.country_dto import CountryDTO
+from apps.geo.contracts.exceptions.country_exception import CountryNotFoundError
 from apps.geo.models.country_model import CountryModel
 from apps.geo.ports.repo_ports import CountryRepositoryPort
 
