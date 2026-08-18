@@ -1,11 +1,14 @@
 from typing import Protocol
 
-from apps.shop.dto import ProductDTO
+from apps.shop.contracts.dto import ProductDTO
+from core.paginator.dto import PaginatorDTO
 
 
 class ProductContractProtocol(Protocol):
     # set user_id value(with int type) for return owned products
-    def all_products(self, user_id: int | None) -> ProductDTO: ...
+    def get_all(self, user_id: int | None) -> PaginatorDTO[ProductDTO]: ...
 
-    # user_id for validation user==owner
-    def delete_product(self, id: int, user_id: int) -> None: ...
+
+def get_many(
+    self, product_ids: list[int], page: int, page_size: int
+) -> PaginatorDTO[ProductDTO]: ...
