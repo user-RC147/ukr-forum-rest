@@ -13,7 +13,8 @@ from apps.shop.schemas import (
     product_update_schema,
 )
 
-from .dto import ProductCreateDTO, ProductUpdateDTO, RequestUserDTO
+from .contracts.dto import ProductCreateDTO, ProductUpdateDTO
+from .dto import RequestUserDTO
 from .serializers import (
     PageSerializer,
     ProductListQuerySerializer,

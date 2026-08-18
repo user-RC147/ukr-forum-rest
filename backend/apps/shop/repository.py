@@ -8,7 +8,7 @@ from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 
 from .dto import ProductRepoDTO
-from .exceptions import ProductNotFoundError
+from .contracts.exceptions import ProductNotFoundError
 from .models import ProductModel
 from .ports import ProductRepositoryPort
 

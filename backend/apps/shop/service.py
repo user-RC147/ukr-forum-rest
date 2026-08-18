@@ -13,8 +13,9 @@ from core.paginator.paginator import paginate
 from core.unit_of_work.uow import UnitOfWork
 from core.unit_of_work.uow_django import DjangoUnitOfWork
 
-from .dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO, RequestUserDTO
-from .exceptions import ProductPermissionError
+from .contracts.dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO
+from .contracts.exceptions import ProductPermissionError
+from .dto import RequestUserDTO
 from .repository import ProductRepository, get_repo
 
 logger = logging.getLogger(__name__)

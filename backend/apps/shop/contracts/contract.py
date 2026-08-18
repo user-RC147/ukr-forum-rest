@@ -1,9 +1,9 @@
 from dataclasses import fields
 
-from shop.protocols import ProductContractProtocol
+from apps.shop.contracts.dto import ProductDTO
+from backend.apps.shop.contracts.protocols import ProductContractProtocol
 
-from .dto import ProductDTO
-from .service import ProductService
+from ..service import ProductService
 
 
 class ProductContract:
@@ -18,11 +18,6 @@ class ProductContract:
         else:
             data = self.service.get_all()
         return [self._to_dto(d) for d in data]
-
-    # user_id for validation user==owner
-    def delete_product(self, id: int, user_id: int):
-        self.service.delete(id, user_id)
-        return None
 
     def _to_dto(self, data) -> ProductDTO:
         dto_fields = {f.name for f in fields(self.dto_class)}
