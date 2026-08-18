@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from apps.geo.dto.city_dto import CityDTO
+from apps.geo.contracts.dto.city_dto import CityDTO
 from apps.geo.ports.repo_ports import CityRepositoryPort
 from apps.geo.repositories.city_repository import get_repo_city
 

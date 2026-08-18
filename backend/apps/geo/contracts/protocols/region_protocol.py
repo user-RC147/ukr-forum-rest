@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from apps.geo.dto.region_dto import RegionDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 
 
 class RegionContractProtocol(Protocol):
