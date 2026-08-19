@@ -7,8 +7,12 @@ from django.contrib.postgres.search import (
 from django.db.models import Q
 from django.http import QueryDict
 
-from apps.search.contracts.protocols import SearchParams, SearchResultItem
-from apps.search.dto import ResourceType, SortOrder
+from apps.search.contracts.dto import (
+    ResourceType,
+    SearchParams,
+    SearchResultItem,
+    SortOrder,
+)
 from apps.shop.contracts.exceptions import ProductValidationError
 from apps.shop.repository import get_repo
 from core.paginator.dto import PaginatorDTO

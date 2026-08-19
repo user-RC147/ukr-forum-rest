@@ -22,3 +22,7 @@ class SearchRegistry:
     @classmethod
     def all(cls) -> dict[str, Searchable]:
         return dict(cls._handlers)
+
+
+def get_search_registry() -> type[SearchRegistry]:
+    return SearchRegistry
