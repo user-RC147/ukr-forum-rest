@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .contracts.dto import CategoryDTO, TagDTO
 from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .models import CategoryModel, TagModel
+from .ports import CategoryRepositoryPort, TagRepositoryPort
 
 
 class CategoryRepository:
@@ -66,9 +67,9 @@ def _to_dto_tag(data) -> TagDTO:
     return TagDTO(id=data.id, name=data.name)
 
 
-def get_category_repo() -> CategoryRepository:
+def get_category_repo() -> CategoryRepositoryPort:
     return CategoryRepository()
 
 
-def get_tag_repo() -> TagRepository:
+def get_tag_repo() -> TagRepositoryPort:
     return TagRepository()
