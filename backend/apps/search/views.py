@@ -7,13 +7,12 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .dto import PaginationParams, SearchParams, SortOrder, SortParams
+from .contracts.dto import PaginationParams, SearchParams, SortOrder, SortParams
+from .contracts.serializers import CategorySerializer, TagSerializer
 from .registry import SearchRegistry
 from .serializers import (
-    CategorySerializer,
     PageSerializer,
     SearchResultItemSerializer,
-    TagSerializer,
 )
 from .services import SearchService
 

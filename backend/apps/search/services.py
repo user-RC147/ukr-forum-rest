@@ -4,8 +4,8 @@ import logging
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 
+from .contracts.dto import CategoryDTO, SearchParams, TagDTO
 from .contracts.protocols import SearchResultItem
-from .dto import CategoryDTO, SearchParams, TagDTO
 from .registry import SearchRegistry
 from .repository import get_category_repo, get_tag_repo
 

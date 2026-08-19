@@ -6,7 +6,7 @@ from apps.files.dto import FileDTO
 from apps.geo.contracts.dto.city_dto import CityDTO
 from apps.geo.contracts.dto.country_dto import CountryDTO
 from apps.geo.contracts.dto.region_dto import RegionDTO
-from apps.search.dto import CategoryDTO
+from apps.search.contracts.dto import CategoryDTO
 from apps.shop.enums import ProductStatus
 from apps.users.dto.user import UserDTO
 

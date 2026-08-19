@@ -1,5 +1,5 @@
-from ..dto import TagDTO
 from ..services import SearchService
+from .dto import TagDTO
 from .protocols import TagProtocol
 
 

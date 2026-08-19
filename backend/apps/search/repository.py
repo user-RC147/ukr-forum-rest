@@ -1,8 +1,8 @@
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
+from .contracts.dto import CategoryDTO, TagDTO
 from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
-from .dto import CategoryDTO, TagDTO
 from .models import CategoryModel, TagModel
 
 

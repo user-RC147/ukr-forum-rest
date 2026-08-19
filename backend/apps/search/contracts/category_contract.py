@@ -1,5 +1,5 @@
-from ..dto import CategoryDTO
 from ..services import SearchService
+from .dto import CategoryDTO
 from .protocols import CategoryProtocol
 
 

@@ -2,7 +2,7 @@ from typing import Protocol, runtime_checkable
 
 from core.paginator.dto import PaginatorDTO
 
-from ..dto import CategoryDTO, SearchParams, SearchResultItem, TagDTO
+from .dto import CategoryDTO, SearchParams, SearchResultItem, TagDTO
 
 
 @runtime_checkable
