@@ -13,12 +13,26 @@ const { filters, RADII, applyFilters, resetFilters } = useSearchFilters()
 const { categories, load: loadCategories } = useCategories()
 loadCategories()
 
+const filterKeys = ['category_id', 'country_id', 'city_id', 'radius', 'status', 'date_sort']
+const shouldAutoOpen = ['shop-index', 'shop-search'].includes(route.name)
 const filtersOpen = ref(false)
+let openTimer = null
 const root = ref(null)
 const countryActiveIndex = ref(-1)
 const cityActiveIndex = ref(-1)
 const countryListboxId = 'shop-search-country-suggestions'
 const cityListboxId = 'shop-search-city-suggestions'
+
+function hasActiveFilters() {
+  return filterKeys.some((key) => filters[key] !== '' && filters[key] != null)
+}
+
+function scheduleAutoOpen() {
+  clearTimeout(openTimer)
+  openTimer = setTimeout(() => {
+    filtersOpen.value = true
+  }, 180)
+}
 
 function closeIfOutside(event) {
   if (root.value && !root.value.contains(event.target)) {
@@ -83,6 +97,16 @@ onMounted(() => {
   if (filters.city_id && !cityAutocomplete.cityId) {
     cityAutocomplete.cityId = filters.city_id
   }
+
+  if (shouldAutoOpen && hasActiveFilters()) {
+    scheduleAutoOpen()
+  }
+})
+
+watch(hasActiveFilters, (isActive, wasActive) => {
+  if (shouldAutoOpen && isActive && !wasActive) {
+    scheduleAutoOpen()
+  }
 })
 
 // Обновляем фильтры при выборе страны
@@ -138,7 +162,10 @@ watch(() => route.query, () => {
 }, { deep: true })
 
 onMounted(() => document.addEventListener('pointerdown', closeIfOutside))
-onBeforeUnmount(() => document.removeEventListener('pointerdown', closeIfOutside))
+onBeforeUnmount(() => {
+  clearTimeout(openTimer)
+  document.removeEventListener('pointerdown', closeIfOutside)
+})
 
 function onReset() {
   // Используем методы close/reset которые уже есть в composables
@@ -363,7 +390,10 @@ function onReset() {
               <button
                 type="button"
                 @click="onReset"
-                class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
+                :class="hasActiveFilters()
+                  ? 'border-transparent bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200/70 hover:from-emerald-600 hover:to-green-700 hover:shadow-emerald-300/80 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2'
+                  : 'border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400'"
+                class="inline-flex items-center gap-1.5 rounded-xl border px-5 py-2.5 text-sm font-semibold transition-all duration-200"
               >
                 <XMarkIcon class="w-4 h-4" />
                 Скинути фільтри

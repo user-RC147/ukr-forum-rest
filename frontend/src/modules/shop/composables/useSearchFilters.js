@@ -18,40 +18,63 @@ function buildFilters(query, userStore) {
   }
 }
 
+const FILTER_KEYS = [
+  'q',
+  'category_id',
+  'country_id',
+  'country_name',
+  'city_id',
+  'city_name',
+  'radius',
+  'status',
+  'date_sort',
+]
+
+const sharedFilters = reactive({
+  q: '',
+  category_id: '',
+  country_id: '',
+  country_name: '',
+  city_id: '',
+  city_name: '',
+  radius: '',
+  status: '',
+  date_sort: '',
+})
+
+let isInitialized = false
+
 const DEFAULTS = { date_sort: '' }
+
+function hasFilterQuery(query) {
+  return FILTER_KEYS.some((key) => query[key] != null && query[key] !== '')
+}
 
 export function useSearchFilters() {
   const route = useRoute()
   const router = useRouter()
   const userStore = useUserStore()
-
-  const filters = reactive(buildFilters(route.query, userStore))
-
-  // Следим за изменениями URL параметров и обновляем фильтры
+  if (route.name === 'shop-search' && hasFilterQuery(route.query)) {
+    Object.assign(sharedFilters, buildFilters(route.query, userStore))
+    isInitialized = true
+  } else if (!isInitialized) {
+    Object.assign(sharedFilters, buildFilters(route.query, userStore))
+    isInitialized = true
+  }
   watch(
     () => route.query,
     (newQuery) => {
-      Object.assign(filters, buildFilters(newQuery, userStore))
+      if (route.name === 'shop-search' && hasFilterQuery(newQuery)) {
+        Object.assign(sharedFilters, buildFilters(newQuery, userStore))
+      }
     },
     { deep: true },
   )
 
   function buildQuery() {
     const query = {}
-    const allowedKeys = [
-      'q',
-      'category_id',
-      'country_id',
-      'country_name',
-      'city_id',
-      'city_name',
-      'radius',
-      'status',
-      'date_sort',
-    ]
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (!allowedKeys.includes(key)) return
+    Object.entries(sharedFilters).forEach(([key, value]) => {
+      if (!FILTER_KEYS.includes(key)) return
       if (value !== '' && value != null && DEFAULTS[key] !== value) query[key] = value
     })
     return query
@@ -62,11 +85,11 @@ export function useSearchFilters() {
   }
 
   function resetFilters() {
-    Object.assign(filters, buildFilters({}, null))
+    Object.assign(sharedFilters, buildFilters({}, null))
     if (route.name === 'shop-search') {
       router.push({ name: 'shop-search', query: {} })
     }
   }
 
-  return { filters, RADII, applyFilters, resetFilters }
+  return { filters: sharedFilters, RADII, applyFilters, resetFilters }
 }
