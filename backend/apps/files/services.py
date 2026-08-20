@@ -185,7 +185,7 @@ class FileService:
             )
 
     def _validate_update_mapping(
-        self, plan: FileUpdatePlan, update_files: dict[int, UploadedFileLike]
+        self, plan: FileUpdatePlan, update_files: Mapping[int, UploadedFileLike]
     ) -> None:
         expected = set(plan.update_ids)
         got = set(update_files.keys())
@@ -200,7 +200,7 @@ class FileService:
             )
 
     def _apply_updates(
-        self, plan: FileUpdatePlan, update_files: dict[int, UploadedFileLike]
+        self, plan: FileUpdatePlan, update_files: Mapping[int, UploadedFileLike]
     ) -> tuple[list[FileRepoDTO], list[str]]:
         if not plan.update_ids:
             return [], []
@@ -214,7 +214,7 @@ class FileService:
         return updated, old_paths
 
     def _apply_creates(
-        self, user_id: int, create_files: list[UploadedFileLike]
+        self, user_id: int, create_files: Sequence[UploadedFileLike]
     ) -> list[FileDTO]:
         if not create_files:
             return []

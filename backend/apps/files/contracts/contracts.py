@@ -27,7 +27,7 @@ class FileContract:
 
         return self.service.delete(file_id)
 
-    def delete_many(self, files_ids: list[int]) -> None:
+    def delete_many(self, files_ids: Sequence[int]) -> None:
         return self.service.delete_many(files_ids)
 
     def update_many(

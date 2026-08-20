@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping
 from typing import Protocol, runtime_checkable
 
 from .dtos import FileRepoDTO
@@ -36,5 +36,5 @@ class FileRepositoryPort(Protocol):
     def filter_by_id(self, ids: Iterable[int]) -> list[FileRepoDTO]: ...
 
     def update_files_content(
-        self, updates: dict[int, UploadedFileLike]
+        self, updates: Mapping[int, UploadedFileLike]
     ) -> tuple[list[FileRepoDTO], list[str]]: ...

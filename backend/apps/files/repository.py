@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -83,7 +83,7 @@ class FileRepository:
         return [_to_dto(r) for r in result]
 
     def update_files_content(
-        self, updates: dict[int, UploadedFileLike]
+        self, updates: Mapping[int, UploadedFileLike]
     ) -> tuple[list[FileRepoDTO], list[str]]:
         ids = list(updates.keys())
         files_by_id = self.model.objects.filter(id__in=ids).in_bulk()
