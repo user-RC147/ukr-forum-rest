@@ -1,14 +1,17 @@
+from collections.abc import Mapping, Sequence
 from typing import Protocol
 
 from django.core.files.uploadedfile import UploadedFile
 
-from apps.files.dto import FileDTO, FileUpdatePlan
+from apps.files.contracts.dtos import FileDTO, FileUpdatePlan
 
 
 class FileProtocol(Protocol):
     def create(self, data: UploadedFile, user_id: int) -> FileDTO: ...
 
-    def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileDTO]: ...
+    def create_many(
+        self, data: Sequence[UploadedFile], user_id: int
+    ) -> list[FileDTO]: ...
 
     def get(self, file_id: int) -> FileDTO: ...
 
@@ -23,6 +26,6 @@ class FileProtocol(Protocol):
         user_id: int,
         item_ids: list[int],
         plan: FileUpdatePlan | None = None,
-        update_files: dict[int, UploadedFile] | None = None,
-        create_files: list[UploadedFile] | None = None,
-    ) -> list[FileDTO]:...
+        update_files: Mapping[int, UploadedFile] | None = None,
+        create_files: Sequence[UploadedFile] | None = None,
+    ) -> list[FileDTO]: ...

@@ -1,8 +1,8 @@
 import dataclasses
 import logging
 
-from apps.files.contracts import get_file_contract
-from apps.files.dto import FileUpdatePlan
+from apps.files.contracts.contracts import get_file_contract
+from apps.files.contracts.dtos import FileUpdatePlan
 from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
 from apps.geo.contracts.region_contract import get_region_contract
@@ -10,8 +10,8 @@ from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
-from core.unit_of_work.uow import UnitOfWork
-from core.unit_of_work.uow_django import DjangoUnitOfWork
+from core.unit_of_work.uow_protocol import UnitOfWork
+from core.unit_of_work.uow import DjangoUnitOfWork
 
 from .contracts.dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO
 from .contracts.exceptions import ProductPermissionError
