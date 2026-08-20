@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, toRef, onMounted } from 'vue'
+import { ref, watch, toRef, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useCategories } from '../composables/useCategories'
@@ -13,7 +13,61 @@ const { filters, RADII, applyFilters, resetFilters } = useSearchFilters()
 const { categories, load: loadCategories } = useCategories()
 loadCategories()
 
+const filterKeys = ['category_id', 'country_id', 'city_id', 'radius', 'status', 'date_sort']
+const shouldAutoOpen = ['shop-index', 'shop-search'].includes(route.name)
 const filtersOpen = ref(false)
+let openTimer = null
+const root = ref(null)
+const countryActiveIndex = ref(-1)
+const cityActiveIndex = ref(-1)
+const countryListboxId = 'shop-search-country-suggestions'
+const cityListboxId = 'shop-search-city-suggestions'
+
+function hasActiveFilters() {
+  return filterKeys.some((key) => filters[key] !== '' && filters[key] != null)
+}
+
+function scheduleAutoOpen() {
+  clearTimeout(openTimer)
+  openTimer = setTimeout(() => {
+    filtersOpen.value = true
+  }, 180)
+}
+
+function closeIfOutside(event) {
+  if (root.value && !root.value.contains(event.target)) {
+    countryAutocomplete.close()
+    cityAutocomplete.close()
+  }
+}
+
+function handleFocusout(event) {
+  if (!event.relatedTarget || !root.value?.contains(event.relatedTarget)) {
+    countryAutocomplete.close()
+    cityAutocomplete.close()
+  }
+}
+
+function handleAutocompleteKeydown(event, autocomplete, activeIndex, listboxId) {
+  const lastIndex = autocomplete.suggestions.length - 1
+  if (event.key === 'Escape') {
+    autocomplete.close()
+    activeIndex.value = -1
+    return
+  }
+  if (!autocomplete.isOpen || lastIndex < 0) return
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    activeIndex.value = activeIndex.value >= lastIndex ? 0 : activeIndex.value + 1
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    activeIndex.value = activeIndex.value <= 0 ? lastIndex : activeIndex.value - 1
+  } else if (event.key === 'Enter' && activeIndex.value >= 0) {
+    event.preventDefault()
+    autocomplete.select(autocomplete.suggestions[activeIndex.value])
+    activeIndex.value = -1
+  }
+}
 
 // Инициализируем автокомплит с текущими значениями фильтров
 const countryAutocomplete = useCountryAutocomplete({
@@ -43,11 +97,29 @@ onMounted(() => {
   if (filters.city_id && !cityAutocomplete.cityId) {
     cityAutocomplete.cityId = filters.city_id
   }
+
+  if (shouldAutoOpen && hasActiveFilters()) {
+    scheduleAutoOpen()
+  }
+})
+
+watch(hasActiveFilters, (isActive, wasActive) => {
+  if (shouldAutoOpen && isActive && !wasActive) {
+    scheduleAutoOpen()
+  }
 })
 
 // Обновляем фильтры при выборе страны
 watch(() => countryAutocomplete.countryId, (val) => {
-  if (!val) return
+  if (!val) {
+    filters.country_id = ''
+    filters.country_name = ''
+    filters.city_id = ''
+    filters.city_name = ''
+    filters.radius = ''
+    cityAutocomplete.reset()
+    return
+  }
   filters.country_id = val
   filters.country_name = countryAutocomplete.query
   // Сбрасываем город при смене страны
@@ -59,20 +131,40 @@ watch(() => countryAutocomplete.countryId, (val) => {
 
 // Обновляем фильтры при выборе города
 watch(() => cityAutocomplete.cityId, (val) => {
-  if (!val) return
+  if (!val) {
+    filters.city_id = ''
+    filters.city_name = ''
+    filters.radius = ''
+    return
+  }
   filters.city_id = val
   filters.city_name = cityAutocomplete.query
 })
 
+watch(() => countryAutocomplete.query, (value) => {
+  filters.country_name = value
+})
+
+watch(() => cityAutocomplete.query, (value) => {
+  filters.city_name = value
+})
+
 // Синхронизируем фильтры когда меняется route.query (вернулись на страницу поиска)
 watch(() => route.query, () => {
-  if (!filters.country_id) {
-    countryAutocomplete.query = ''
-    countryAutocomplete.countryId = ''
-  }
-  if (!filters.city_id) {
+  countryAutocomplete.query = filters.country_name
+  countryAutocomplete.countryId = filters.country_id
+  if (filters.city_id) {
+    cityAutocomplete.query = filters.city_name
+    cityAutocomplete.cityId = filters.city_id
+  } else {
     cityAutocomplete.reset()
   }
+}, { deep: true })
+
+onMounted(() => document.addEventListener('pointerdown', closeIfOutside))
+onBeforeUnmount(() => {
+  clearTimeout(openTimer)
+  document.removeEventListener('pointerdown', closeIfOutside)
 })
 
 function onReset() {
@@ -88,7 +180,7 @@ function onReset() {
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+  <div ref="root" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6" @focusout="handleFocusout">
     <form @submit.prevent="applyFilters" class="space-y-4">
 
       <div class="flex flex-col sm:flex-row gap-3">
@@ -149,21 +241,31 @@ function onReset() {
                 <input
                   :value="countryAutocomplete.query"
                   @input="countryAutocomplete.onInput($event.target.value)"
-                  @focus="countryAutocomplete.onFocus()"
+                  @keydown="handleAutocompleteKeydown($event, countryAutocomplete, countryActiveIndex, countryListboxId)"
+                  @focus="countryAutocomplete.onFocus(); countryActiveIndex = -1"
                   type="text"
                   autocomplete="off"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-haspopup="listbox"
+                  :aria-expanded="countryAutocomplete.isOpen"
+                  :aria-controls="countryListboxId"
                   placeholder="Оберіть країну..."
                   class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
                 <ul
                   v-if="countryAutocomplete.isOpen && countryAutocomplete.suggestions.length"
+                  :id="countryListboxId"
+                  role="listbox"
                   class="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg"
                 >
                   <li
                     v-for="item in countryAutocomplete.suggestions"
                     :key="item.id"
                     @mousedown.prevent="countryAutocomplete.select(item)"
-                    class="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+                    role="option"
+                    :aria-selected="item === countryAutocomplete.suggestions[countryActiveIndex]"
+                    :class="['px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer', item === countryAutocomplete.suggestions[countryActiveIndex] && 'bg-blue-50 text-blue-700']"
                   >
                     {{ item.name }}
                     <span v-if="item.name_ua" class="text-xs text-gray-400">— {{ item.name_ua }}</span>
@@ -181,22 +283,32 @@ function onReset() {
                 <input
                   :value="cityAutocomplete.query"
                   @input="cityAutocomplete.onInput($event.target.value)"
-                  @focus="cityAutocomplete.onFocus()"
+                  @keydown="handleAutocompleteKeydown($event, cityAutocomplete, cityActiveIndex, cityListboxId)"
+                  @focus="cityAutocomplete.onFocus(); cityActiveIndex = -1"
                   type="text"
                   autocomplete="off"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-haspopup="listbox"
+                  :aria-expanded="cityAutocomplete.isOpen"
+                  :aria-controls="cityListboxId"
                   :disabled="!filters.country_id"
                   :placeholder="filters.country_id ? 'Оберіть місто...' : 'Спочатку оберіть країну'"
                   class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-50 disabled:text-gray-400"
                 />
                 <ul
                   v-if="cityAutocomplete.isOpen && cityAutocomplete.suggestions.length"
+                  :id="cityListboxId"
+                  role="listbox"
                   class="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg"
                 >
                   <li
                     v-for="item in cityAutocomplete.suggestions"
                     :key="item.id"
                     @mousedown.prevent="cityAutocomplete.select(item)"
-                    class="px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+                    role="option"
+                    :aria-selected="item === cityAutocomplete.suggestions[cityActiveIndex]"
+                    :class="['px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer', item === cityAutocomplete.suggestions[cityActiveIndex] && 'bg-blue-50 text-blue-700']"
                   >
                     {{ item.name_ua || item.name || item.city }}
                     <span v-if="item.region" class="text-xs text-gray-400">
@@ -278,7 +390,10 @@ function onReset() {
               <button
                 type="button"
                 @click="onReset"
-                class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
+                :class="hasActiveFilters()
+                  ? 'border-transparent bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200/70 hover:from-emerald-600 hover:to-green-700 hover:shadow-emerald-300/80 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2'
+                  : 'border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400'"
+                class="inline-flex items-center gap-1.5 rounded-xl border px-5 py-2.5 text-sm font-semibold transition-all duration-200"
               >
                 <XMarkIcon class="w-4 h-4" />
                 Скинути фільтри

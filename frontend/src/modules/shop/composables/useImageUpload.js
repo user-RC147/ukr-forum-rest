@@ -169,9 +169,9 @@ export function useImageUpload(existingImages = [], mode = 'create') {
     showToast('Фото буде видалено після збереження', 'info', 3500)
   }
 
-  function onDrop(event) {
+  async function onDrop(event) {
     isDragging.value = false
-    addFiles(event.dataTransfer.files)
+    await addFiles(event.dataTransfer.files)
   }
 
   async function validateAllBeforeSubmit() {

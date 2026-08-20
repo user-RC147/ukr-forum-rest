@@ -94,7 +94,10 @@ export function useProductForm({ mode, product = null }) {
     if (!name.value.trim()) errors.name = 'Вкажіть назву товару'
     if (!description.value.trim()) errors.description = 'Вкажіть опис товару'
     if (!categoryId.value) errors.category = 'Оберіть категорію'
-    if (!price.value || Number(price.value) <= 0) errors.price = 'Вкажіть коректну ціну'
+    const numericPrice = Number(price.value)
+    if (!price.value || !Number.isInteger(numericPrice) || numericPrice <= 0) {
+      errors.price = 'Вкажіть коректну ціну цілим числом'
+    }
 
     if (!cityAutocomplete.cityId) {
       errors.city_id = 'Оберіть місто зі списку підказок'
@@ -111,7 +114,7 @@ export function useProductForm({ mode, product = null }) {
     // Захист від повторних кліків: без цього кожен клік по кнопці, поки
     // ще триває перевірка чи запит, породжував ще одну спробу і ще один
     // toast — як подвійний POST без блокування кнопки в Django-admin.
-    if (isSubmitting.value) return
+    if (isSubmitting.value || imageUpload.isValidating) return
     isSubmitting.value = true
     clearErrors()
 
