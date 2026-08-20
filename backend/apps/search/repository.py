@@ -11,7 +11,7 @@ class CategoryRepository:
     def __init__(self) -> None:
         self.model = CategoryModel
 
-    def get(self, id: int):
+    def get(self, id: int) -> CategoryDTO:
         try:
             result = self.model.objects.prefetch_related("tags").get(id=id)
         except ObjectDoesNotExist:
@@ -59,7 +59,7 @@ def _to_dto_category(data: CategoryModel) -> CategoryDTO:
     return CategoryDTO(
         id=data.id,
         name=data.name,
-        tags={t.id: _to_dto_tag(t) for t in data.tags.all()},
+        tags=[_to_dto_tag(t) for t in data.tags.all()],
     )
 
 

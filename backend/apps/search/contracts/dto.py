@@ -4,16 +4,16 @@ from typing import Any
 
 
 @dataclass(frozen=True)
-class CategoryDTO:
-    id: int
-    name: str
-    tags: dict
-
-
-@dataclass(frozen=True)
 class TagDTO:
     id: int
     name: str
+
+
+@dataclass(frozen=True)
+class CategoryDTO:
+    id: int
+    name: str
+    tags: list[TagDTO]
 
 
 class ResourceType(StrEnum):
