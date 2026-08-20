@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import BinaryIO
 
-from apps.files.dto import FileDTO
+from apps.files.contracts.dtos import FileDTO
 from apps.geo.contracts.dto.city_dto import CityDTO
 from apps.geo.contracts.dto.country_dto import CountryDTO
 from apps.geo.contracts.dto.region_dto import RegionDTO

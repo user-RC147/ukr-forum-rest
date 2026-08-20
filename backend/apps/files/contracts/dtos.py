@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from datetime import datetime
 
 
 @dataclass(frozen=True)
@@ -8,17 +7,6 @@ class FileDTO:
     id: int
     file: str
     thumbnail: str | None
-    visible: bool
-
-
-@dataclass(frozen=True)
-class FileRepoDTO:
-    owner_id: int
-    id: int
-    name: str
-    file: str
-    thumbnail: str | None
-    created_at: datetime
     visible: bool
 
 

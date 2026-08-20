@@ -1,14 +1,14 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import UploadedFile
 
 from apps.files.models import FileModel
 
-from .dto import FileRepoDTO
-from .exceptions import FileNotFoundError
+from .contracts.exceptions import FileNotFoundError
+from .dtos import FileRepoDTO
+from .ports import FileRepositoryPort, UploadedFileLike
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class FileRepository:
         instance.delete()
         return str(file_path), str(thumbnail_path) if thumbnail_path else None
 
-    def delete_many(self, ids: list[int]) -> tuple[list[str], list[str] | None]:
+    def delete_many(self, ids: Sequence[int]) -> tuple[list[str], list[str] | None]:
         data = self.model.objects.filter(id__in=ids)
         if len(data) < len(ids):
             found_ids = {f.id for f in data}
@@ -65,14 +65,16 @@ class FileRepository:
 
         return file_paths, thumbnail_paths if thumbnail_paths else None
 
-    def create_many(self, data: list[UploadedFile], user_id: int) -> list[FileRepoDTO]:
+    def create_many(
+        self, data: Iterable[UploadedFileLike], user_id: int
+    ) -> list[FileRepoDTO]:
         instances = [self.model(name=d.name, file=d, owner_id=user_id) for d in data]
 
         result = self.model.objects.bulk_create(instances)
 
         return [_to_dto(r) for r in result]
 
-    def create(self, data, file: UploadedFile, user_id: int) -> FileRepoDTO:
+    def create(self, data, file: UploadedFileLike, user_id: int) -> FileRepoDTO:
         result = self.model.objects.create(name=data.name, file=file, owner_id=user_id)
         return _to_dto(result)
 
@@ -81,7 +83,7 @@ class FileRepository:
         return [_to_dto(r) for r in result]
 
     def update_files_content(
-        self, updates: dict[int, UploadedFile]
+        self, updates: dict[int, UploadedFileLike]
     ) -> tuple[list[FileRepoDTO], list[str]]:
         ids = list(updates.keys())
         files_by_id = self.model.objects.filter(id__in=ids).in_bulk()
@@ -108,3 +110,7 @@ def _to_dto(data: FileModel) -> FileRepoDTO:
         thumbnail=data.thumbnail.url if data.thumbnail else None,
         visible=data.visible,
     )
+
+
+def get_file_repo() -> FileRepositoryPort:
+    return FileRepository()
