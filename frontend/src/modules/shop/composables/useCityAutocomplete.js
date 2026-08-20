@@ -29,6 +29,7 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   const isLoading = ref(false)
 
   let debounceTimer = null
+  let requestToken = 0
 
   // Витягує region_id/region_name з об'єкта міста незалежно від того,
   // в якому форматі бекенд його віддав (об'єкт {id, name} чи плоскі поля).
@@ -50,11 +51,12 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
     // Фиксируем страну на момент запроса — если пользователь успеет
     // переключить страну пока летит запрос, устаревший ответ не применится.
     const requestedCountryId = countryIdRef.value
+    const token = ++requestToken
     isLoading.value = true
     try {
       const results = await searchCities(q, requestedCountryId)
 
-      if (countryIdRef.value !== requestedCountryId) return
+      if (token !== requestToken || countryIdRef.value !== requestedCountryId) return
 
       // "Защита от дурака": даже если backend вдруг вернёт город не из
       // запрошенной країни — отфильтровываем его на фронте.
@@ -63,11 +65,12 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
       )
       isOpen.value = suggestions.value.length > 0
     } finally {
-      isLoading.value = false
+      if (token === requestToken) isLoading.value = false
     }
   }
 
   function onInput(value) {
+    requestToken++
     query.value = value
     cityId.value = ''
     regionId.value = ''
@@ -92,6 +95,7 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   }
 
   function select(city) {
+    requestToken++
     // "Защита от дурака": если city.country_id не совпадает с обраною
     // країною (наприклад, бо список не встиг оновитися) — не дозволяємо вибір.
     if (countryIdRef.value && city.country_id != null && String(city.country_id) !== String(countryIdRef.value)) {
@@ -117,11 +121,14 @@ export function useCityAutocomplete(initial = {}, countryIdRef) {
   }
 
   function close() {
+    requestToken++
+    clearTimeout(debounceTimer)
     isOpen.value = false
   }
 
   /** Сбросить город (и регион) — вызывается при смене страны. */
   function reset() {
+    requestToken++
     query.value = ''
     cityId.value = ''
     regionId.value = ''

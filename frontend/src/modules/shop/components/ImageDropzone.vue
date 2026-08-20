@@ -9,8 +9,8 @@ const props = defineProps({
 
 const fileInput = ref(null)
 
-function onFileInputChange(event) {
-  props.upload.addFiles(event.target.files)
+async function onFileInputChange(event) {
+  await props.upload.addFiles(event.target.files)
   event.target.value = ''
 }
 </script>
@@ -30,13 +30,14 @@ function onFileInputChange(event) {
     >
       <CloudArrowUpIcon class="mx-auto mb-2 h-8 w-8 text-gray-400" />
       Перенесіть фото сюди або
-      <button type="button" class="text-blue-600 underline" @click="fileInput.click()">завантажте</button>
+      <button type="button" class="text-blue-600 underline disabled:cursor-not-allowed disabled:opacity-50" :disabled="upload.isValidating" @click="fileInput.click()">завантажте</button>
       <input
         ref="fileInput"
         type="file"
         accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
         multiple
         hidden
+        :disabled="upload.isValidating"
         @change="onFileInputChange"
       />
       <p class="mt-3 text-xs text-gray-500">
@@ -57,7 +58,8 @@ function onFileInputChange(event) {
           <img :src="image.url" class="h-full w-full rounded-lg object-cover shadow" alt="" />
           <button
             type="button"
-            class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            aria-label="Видалити існуюче фото"
+            class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100"
             @click="upload.removeExistingImage(image.id)"
           >
             <XMarkIcon class="h-5 w-5" />
@@ -76,7 +78,8 @@ function onFileInputChange(event) {
         <img :src="item.previewUrl" class="h-full w-full rounded-lg border-2 border-gray-200 object-cover shadow-md" :alt="item.file.name" />
         <button
           type="button"
-          class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-red-700"
+          aria-label="Видалити нове фото"
+          class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100 hover:bg-red-700"
           @click="upload.removeNewFile(index)"
         >
           <XMarkIcon class="h-5 w-5" />

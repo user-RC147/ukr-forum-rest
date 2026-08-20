@@ -87,8 +87,9 @@ function fieldClass(hasError) {
     <input
       v-model="form.price"
       type="number"
-      min="0"
-      step="0.01"
+      min="1"
+      step="1"
+      inputmode="numeric"
       :class="fieldClass(!!form.fieldErrors.price)"
     />
     <p v-if="form.fieldErrors.price" class="mt-1 text-sm font-medium text-red-600">
@@ -151,7 +152,7 @@ function fieldClass(hasError) {
       </RouterLink>
       <button
         type="submit"
-        :disabled="form.isSubmitting"
+        :disabled="form.isSubmitting || form.imageUpload.isValidating"
         class="rounded px-6 py-2.5 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
         :class="isUpdate ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"
       >
