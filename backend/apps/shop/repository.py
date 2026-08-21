@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import fields
 import logging
 
@@ -34,7 +35,7 @@ class ProductRepository:
         page: int,
         page_size: int = 20,
         user_id: int | None = None,
-        product_ids: list[int] | None = None,
+        product_ids: Iterable[int] | None = None,
     ) -> PaginatorDTO:
         if product_ids:
             qs = self.model.objects.filter(id__in=product_ids)

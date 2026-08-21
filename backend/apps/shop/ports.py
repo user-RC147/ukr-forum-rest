@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import Protocol
 
 from django.db.models.manager import BaseManager
@@ -14,7 +15,7 @@ class ProductRepositoryPort(Protocol):
         page: int,
         page_size: int = 20,
         user_id: int | None = None,
-        product_ids: list[int] | None = None,
+        product_ids: Iterable[int] | None = None,
     ) -> PaginatorDTO: ...
 
     def get(self, id: int) -> ProductRepoDTO: ...
