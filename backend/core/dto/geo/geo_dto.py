@@ -38,33 +38,5 @@ class CityShortDTO:
     name_ua:str
     region_id:int
 
-#===================================
-
-@dataclass(frozen=True)
-class CountryOutDTO:
-    id:int
-    name:str
-    name_ua:str
-    code:str
-    flag_emoji:str
-    currency:str
-
-@dataclass(frozen=True)
-class RegionOutDTO:
-    id:int
-    name:str
-    name_ua:str
-    country_id:int
-
-@dataclass(frozen=True)
-class CityOutDTO:
-    id:int
-    name:int
-    name_ua:str
-    country_id:int
-    region_id:int
-    latitude:Decimal
-    longitude:Decimal
 
 
-#================================================

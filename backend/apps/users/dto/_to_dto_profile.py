@@ -4,7 +4,7 @@ from apps.users.dto._to_dto_location import (
     _to_dto_out_id_location,
     _to_dto_out_location,
 )
-from core.dto.users.user_dto import UserPrivateOutDTO
+from apps.users.dto.user_dto import UserPrivateOutDTO
 
 
 def _to_dto_out_consent(data) -> ConsentOutDTO:

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from apps.household.api.serializers.location_serializer import LocationInSerializer
-
+from core.serializers.location_serializer import LocationInSerializer,LocationOutSerializer
 
 class RegisterInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)
@@ -31,6 +30,7 @@ class ProfileUpdateInSerializer(serializers.Serializer):
     first_name_public = serializers.BooleanField(required=False)
     last_name_public = serializers.BooleanField(required=False)
 
+    email = serializers.BooleanField(required=False)
     email_public = serializers.BooleanField(required=False)
 
     date_of_birth = serializers.DateField(required=False)
@@ -43,3 +43,4 @@ class ProfileUpdateInSerializer(serializers.Serializer):
     social_public = serializers.BooleanField(required=False)
 
     location=LocationInSerializer()
+    

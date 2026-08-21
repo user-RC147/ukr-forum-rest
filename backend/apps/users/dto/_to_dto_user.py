@@ -1,8 +1,9 @@
-from .user_dto import UserShortOutDTO,UserFullOutDTO,UserPublicOutDTO,ProfilUserUpdateInDTO
+from .user_dto import ProfilUserUpdateInDTO
+
+from core.dto.users.user_dto import UserShortOutDTO,UserFullOutDTO,UserPublicOutDTO
 
 def _to_dto_user_in(data)->ProfilUserUpdateInDTO:
     return ProfilUserUpdateInDTO(
-        username=data.get("display_name"),
         display_name=data.get("display_name"),
 
         first_name_public=data.get("first_name_public"),

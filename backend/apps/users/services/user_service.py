@@ -3,12 +3,9 @@ from apps.users.selectors.user_selector import UserSelector
 from apps.users.repositories.user_repository import UserRepo
 
 from apps.users.dto import (
-    _to_dto_user_out,
     _to_dto_short_user_out,
     UserPrivateOutDTO,
-    UserPublicOutDTO,
-    UserShortOutDTO,
-    CreateUserInDTO,
+    CreateUserInDTO
 )
 
 from apps.users.dto._to_dto_profile import _to_dto_out_profile
@@ -20,6 +17,7 @@ from apps.geo.contracts import (
     get_city_contract,
 )
 
+from core.dto.users.user_dto import UserShortOutDTO
 
 class UserService:
 
@@ -42,27 +40,17 @@ class UserService:
 
     def get_my_profile(self, user_id: int) -> UserPrivateOutDTO:
         my_profile = self._selector.get_my_profile(user_id)
-        print("======================================================================")
-        print(my_profile)
-
-        print("======================================================================")
-
+      
         ids = _get_ids_location(my_profile)
-        print("======================================================================")
-        print(ids)
 
-        print("======================================================================")
-
+      
         locations = _get_locations(
             ids, get_country_contract(), get_region_contract(), get_city_contract()
         )
-        print("======================================================================")
+   
 
         dto = _to_dto_out_profile(my_profile, locations)
-        print("======================================================================")
-        print(dto)
-
-        print("======================================================================")
+    
         return dto
 
     def create(self, dto: CreateUserInDTO) -> UserShortOutDTO:

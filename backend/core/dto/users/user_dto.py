@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from apps.users.dto.user_dto import Location_Id_OutDTO,LocationOutDTO
-from core.dto.geo.location_dto import Location_Id_InDTO
+from core.dto.geo.location_dto import Location_Id_OutDTO,LocationOutDTO
 
 
 @dataclass(frozen=True)
@@ -107,35 +106,6 @@ class UserPublicOutDTO:
     location:Optional[LocationOutDTO]
 
 
-@dataclass(frozen=True)
-class UserPrivateOutDTO:
-    id:int
-    username: str
-    display_name: str
 
-    first_name_public: bool
-    last_name_public: bool
-
-    email:str
-    email_public: str
-    is_email_verified: bool
-
-    date_of_birth: datetime
-    date_of_birth_public: bool
-
-    phone_number: str
-    phone_public: bool
-
-    social_network: str
-    social_public: bool
-
-    is_banned: bool
-
-    deletion_scheduled_at: datetime
-
-    consent_given: bool
-    consent_date: datetime
-    consent_version: Optional[ConsentOutDTO]
-    location:Optional[LocationOutDTO]
 
 

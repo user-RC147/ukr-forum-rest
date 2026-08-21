@@ -7,15 +7,15 @@ from apps.users.dto._to_dto_user import _to_dto_short_user_out
 from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
 
 
+from core.func_print import prt
+
 class UserSelector:
 
     def get_by_code(self,dto)->bool:
 
-        ReferralCode.objects.get(code=dto)
+        ref_code = ReferralCode.objects.get(code=dto)
 
-
-
-        return 
+        return  ref_code
       
 
     def get_my_profile(self,user_id:int)->User_Id_PrivateOutDTO:        
@@ -32,9 +32,6 @@ class UserSelector:
         return {user.id:_to_dto_short_user_out(user)for user in users}
 
 
-
-
-
     def get_all_users(self) -> list[UserShortOutDTO]:
 
         users = CustomUser.objects.all()
@@ -45,7 +42,12 @@ class UserSelector:
 
     def get_user_by_id(self, user_id: int) -> UserShortOutDTO:
 
+        prt(user_id)
+        
+
         user = CustomUser.objects.get(id=user_id)
+        prt(user)
+        
 
         dto = _to_dto_short_user_out(user)
 

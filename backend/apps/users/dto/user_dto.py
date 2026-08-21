@@ -1,34 +1,13 @@
 # apps/users/dto/user_dto.py
 
-# Реекспорт із core — єдина крапка входу для DTO юзера всередині цього модуля.
-# Якщо users колись треба відв'язати від core — замінити цей імпорт власним class.
-
-# далі — DTO, специфічні тільки для цього модуля:
-# UserPrivateOutDTO, UserPublicOutDTO, User_Id_PrivateOutDTO тощо
-
 import datetime
 from typing import Optional
 from uuid import UUID
-from core.dto.users.user_dto import (
-    UserShortOutDTO,
-    UserFullOutDTO,
-    UserPublicOutDTO,
-    UserPrivateOutDTO,
-    User_Id_PublicOutDTO,
-    User_Id_PrivateOutDTO,
-    ConsentOutDTO,
-)
 
-from core.dto.geo.geo_dto import (
-    CountryShortDTO,
-    CountryOutDTO,
-    RegionShortDTO,
-    RegionOutDTO,
-    CityShortDTO,
-    CityOutDTO,
-    
-)
 
+
+from core.dto.users.user_dto import ConsentOutDTO,UserShortOutDTO,User_Id_PrivateOutDTO
+from core.dto.geo.geo_dto import CountryShortDTO,RegionShortDTO, CityShortDTO
 from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO,Location_Id_InDTO
 
 
@@ -45,13 +24,9 @@ class CreateUserInDTO:
     consent_given:bool
 
 
-@dataclass(frozen=True)
-class UserDTO:
-    ...
 
 @dataclass(frozen=True)
 class ProfilUserUpdateInDTO:
-    username: Optional[str] = None
     display_name: Optional[str] = None
 
     first_name_public: Optional[bool] = None
@@ -70,3 +45,37 @@ class ProfilUserUpdateInDTO:
     social_public: Optional[bool] = None
     
     location:Optional[Location_Id_InDTO] = None
+
+
+
+@dataclass(frozen=True)
+class UserPrivateOutDTO:
+    id:int
+    username: str
+    display_name: str
+
+    first_name_public: bool
+    last_name_public: bool
+
+    email:str
+    email_public: str
+    is_email_verified: bool
+
+    date_of_birth: datetime
+    date_of_birth_public: bool
+
+    phone_number: str
+    phone_public: bool
+
+    social_network: str
+    social_public: bool
+
+    is_banned: bool
+
+    deletion_scheduled_at: datetime
+
+    consent_given: bool
+    consent_date: datetime
+    consent_version: Optional[ConsentOutDTO]
+    location:Optional[LocationOutDTO]
+

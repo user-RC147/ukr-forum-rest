@@ -4,10 +4,11 @@ from core.dto.geo.geo_dto import (
     CountryShortDTO,
     RegionShortDTO,
     CityShortDTO,
-    CountryOutDTO,
-    RegionOutDTO,
-    CityOutDTO,
 )
+
+from apps.geo.dto.country import CountryDTO
+from apps.geo.dto.region import RegionDTO
+from apps.geo.dto.city import CityDTO
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,6 @@ class Location_Id_OutDTO:
 
 @dataclass(frozen=True)
 class LocationOutDTO:
-    country: CountryOutDTO
-    region: RegionOutDTO
-    city: CityOutDTO
+    country: CountryDTO
+    region: RegionDTO
+    city: CityDTO

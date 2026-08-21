@@ -2,7 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from apps.users.api import serialazers
 from apps.users.dto.user_dto import CreateUserInDTO, ProfilUserUpdateInDTO
@@ -12,19 +12,22 @@ from apps.users.api.serialazers.user_serializer import (
     UserShortOutSerializer,
     UserPublicOutSerializer,
     UserPrivatOutSerializer,
-
 )
 
 from core.users.csrf_permission import CsrfPermission
 
-from apps.users.api.serialazers.register_serializer import RegisterInSerializer,ProfileUpdateInSerializer
+from apps.users.api.serialazers.register_serializer import (
+    RegisterInSerializer,
+    ProfileUpdateInSerializer,
+)
 
 from apps.users.services import UserService
 
 
-
 from drf_spectacular.utils import extend_schema
 
+
+from core.func_print import prt
 
 
 class UserViewSet(ViewSet):
@@ -34,22 +37,19 @@ class UserViewSet(ViewSet):
 
         self._service = UserService()
 
-
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create"]:
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
-    
 
-    @action(detail=False,methods=["get"],url_path="profile")
-    def profile(self,request):
+    @action(detail=False, methods=["get"], url_path="profile")
+    def profile(self, request):
         user = self._service.get_my_profile(request.user.id)
         serializer = UserPrivatOutSerializer(user)
 
         results = serializer.data
 
-        return Response({'results':results},status=status.HTTP_200_OK)
-
+        return Response({"results": results}, status=status.HTTP_200_OK)
 
     def list(self, request):
 
@@ -62,11 +62,20 @@ class UserViewSet(ViewSet):
         return Response({"results": results}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
+        user_id = getattr(request.user, "id", None)
+        try:
+            if int(pk) != user_id:
+                return Response(
+                    {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        user_id = int(request.user.id)
-
-        pk = int(pk)
-        user = self._service.get_user_by_id(pk)
+        user = self._service.get_user_by_id(user_id)
 
         serialazer = UserPublicOutSerializer(user)
 
@@ -81,14 +90,13 @@ class UserViewSet(ViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-
         _dto = CreateUserInDTO(
-            username=data['username'],
-            password=data['password'],
-            display_name=data['display_name'],
-            email=data['email'],
-            referral_code=data.get('referral_code'),
-            consent_given=data['consent_given'],   
+            username=data["username"],
+            password=data["password"],
+            display_name=data["display_name"],
+            email=data["email"],
+            referral_code=data.get("referral_code"),
+            consent_given=data["consent_given"],
         )
 
         try:
@@ -104,26 +112,25 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-
     def update(self, request, pk=None):
         user_id = request.user.id
         if int(user_id) != int(pk):
             return Response(
                 {"detail": "Ви можете редагувати тільки власний профіль"},
-            status=status.HTTP_403_FORBIDDEN,)
-        
-        serialiser = ProfileUpdateInSerializer(data =request.data,partial=True)
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serialiser = ProfileUpdateInSerializer(data=request.data, partial=True)
         serialiser.is_valid(raise_exception=True)
 
         dto = _to_dto_user_in(serialiser.validated_data)
 
-        results =self._service.update_my_profile(dto,user_id)
+        results = self._service.update_my_profile(dto, user_id)
 
         return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
 
     # def partial_update(self, request, pk=None):
     #     pass
-        
 
     # def destroy(self, request, pk=None):
     #     pass
