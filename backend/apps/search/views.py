@@ -4,26 +4,31 @@ import logging
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .dto import PaginationParams, SearchParams, SortOrder, SortParams
-from .registry import SearchRegistry
+from .contracts.dto import PaginationParams, SearchParams, SortOrder, SortParams
+from .contracts.serializers import CategorySerializer, TagSerializer
+from .registry import get_search_registry
 from .serializers import (
-    CategorySerializer,
     PageSerializer,
     SearchResultItemSerializer,
-    TagSerializer,
 )
-from .services import SearchService
+from .services import get_category_service, get_search_service, get_tag_service
 
 logger = logging.getLogger(__name__)
 
 
 class SearchView(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    serializer_class = SearchResultItemSerializer
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.registry = SearchRegistry
+        self.registry = get_search_registry()
+        self.service = get_search_service()
 
     serializer_class = SearchResultItemSerializer
 
@@ -57,9 +62,10 @@ class SearchView(viewsets.ViewSet):
             request, query, sort_params, extra_filters, pagination
         )
 
-        service = SearchService()
         results = (
-            service.search(params, scope=scope) if scope else service.search(params)
+            self.service.search(params, scope=scope)
+            if scope
+            else self.service.search(params)
         )
 
         return Response({"query": query, "results": PageSerializer(results).data})
@@ -108,22 +114,23 @@ class SearchView(viewsets.ViewSet):
 
 
 class CategoryView(viewsets.ViewSet):
+    permission_classes = [AllowAny]
     serializer_class = CategorySerializer
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.service = SearchService()
+        self.service = get_category_service()
 
     def retrieve(self, request: Request, pk: int) -> Response:
 
-        result = self.service.get_category(pk)
+        result = self.service.get(pk)
 
         serializer = CategorySerializer(result)
 
         return Response(serializer.data)
 
     def list(self, request: Request) -> Response:
-        result = self.service.get_categories()
+        result = self.service.get_many()
 
         serializer = CategorySerializer(result, many=True)
 
@@ -131,22 +138,23 @@ class CategoryView(viewsets.ViewSet):
 
 
 class TagView(viewsets.ViewSet):
+    permission_classes = [AllowAny]
     serializer_class = TagSerializer
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.service = SearchService()
+        self.service = get_tag_service()
 
     def retrieve(self, request: Request, pk: int) -> Response:
 
-        result = self.service.get_tag(pk)
+        result = self.service.get(pk)
 
         serializer = TagSerializer(result)
 
         return Response(serializer.data)
 
     def list(self, request: Request) -> Response:
-        result = self.service.get_tags()
+        result = self.service.get_many()
 
         serializer = TagSerializer(result, many=True)
 

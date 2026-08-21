@@ -1,16 +1,17 @@
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
+from .contracts.dto import CategoryDTO, TagDTO
 from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
-from .dto import CategoryDTO, TagDTO
 from .models import CategoryModel, TagModel
+from .ports import CategoryRepositoryPort, TagRepositoryPort
 
 
 class CategoryRepository:
     def __init__(self) -> None:
         self.model = CategoryModel
 
-    def get(self, id: int):
+    def get(self, id: int) -> CategoryDTO:
         try:
             result = self.model.objects.prefetch_related("tags").get(id=id)
         except ObjectDoesNotExist:
@@ -58,7 +59,7 @@ def _to_dto_category(data: CategoryModel) -> CategoryDTO:
     return CategoryDTO(
         id=data.id,
         name=data.name,
-        tags={t.id: _to_dto_tag(t) for t in data.tags.all()},
+        tags=[_to_dto_tag(t) for t in data.tags.all()],
     )
 
 
@@ -66,9 +67,9 @@ def _to_dto_tag(data) -> TagDTO:
     return TagDTO(id=data.id, name=data.name)
 
 
-def get_category_repo() -> CategoryRepository:
+def get_category_repo() -> CategoryRepositoryPort:
     return CategoryRepository()
 
 
-def get_tag_repo() -> TagRepository:
+def get_tag_repo() -> TagRepositoryPort:
     return TagRepository()

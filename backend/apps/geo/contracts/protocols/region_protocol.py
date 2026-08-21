@@ -1,0 +1,9 @@
+from typing import Protocol
+
+from apps.geo.contracts.dto.region_dto import RegionDTO
+
+
+class RegionContractProtocol(Protocol):
+    def get(self, region_id: int) -> RegionDTO: ...
+    def get_many(self, region_ids: list[int]) -> dict[int, RegionDTO]: ...
+    def get_by_country(self, country_id: int) -> dict[int, RegionDTO]: ...

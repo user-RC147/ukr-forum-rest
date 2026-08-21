@@ -20,18 +20,23 @@ export function useCountryAutocomplete(initial = {}) {
   const isLoading = ref(false)
 
   let debounceTimer = null
+  let requestToken = 0
 
   async function fetchAndShow(q) {
+    const token = ++requestToken
     isLoading.value = true
     try {
-      suggestions.value = await searchCountries(q)
-      isOpen.value = suggestions.value.length > 0
+      const results = await searchCountries(q)
+      if (token !== requestToken) return
+      suggestions.value = results
+      isOpen.value = results.length > 0
     } finally {
-      isLoading.value = false
+      if (token === requestToken) isLoading.value = false
     }
   }
 
   function onInput(value) {
+    requestToken++
     query.value = value
     countryId.value = ''
     currency.value = ''
@@ -45,6 +50,7 @@ export function useCountryAutocomplete(initial = {}) {
   }
 
   function select(country) {
+    requestToken++
     query.value = country.name
     countryId.value = country.id ?? ''
     currency.value = country.currency ?? ''
@@ -52,6 +58,8 @@ export function useCountryAutocomplete(initial = {}) {
   }
 
   function close() {
+    requestToken++
+    clearTimeout(debounceTimer)
     isOpen.value = false
   }
 
@@ -71,7 +79,9 @@ export function useCountryAutocomplete(initial = {}) {
     if (countryId.value) return true
     const name = query.value.trim()
     if (!name) return false
+    const token = ++requestToken
     const list = await searchCountries(name)
+    if (token !== requestToken || query.value.trim() !== name) return false
     if (!list.length) return false
     select(list[0])
     return true

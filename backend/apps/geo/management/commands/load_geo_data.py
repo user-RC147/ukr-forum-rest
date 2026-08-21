@@ -5,9 +5,9 @@ import os
 
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.geo.models.city import CityModel
-from apps.geo.models.country import CountryModel
-from apps.geo.models.region import RegionModel
+from apps.geo.models.city_model import CityModel
+from apps.geo.models.country_model import CountryModel
+from apps.geo.models.region_model import RegionModel
 
 # Файли за замовчуванням лежать поруч зі скриптом
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

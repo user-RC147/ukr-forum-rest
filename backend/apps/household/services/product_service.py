@@ -6,7 +6,7 @@ from apps.household.models.product import Product
 from apps.household.dto.product_dto import CreateProductInDTO,ProductOutDTO
 from apps.household.exceptions import ProductNotFoundException, ProductAlreadyExistsException
 from apps.shop import serializers
-from apps.shop.dto import ProductDTO
+from apps.shop.contracts.dto import ProductDTO
 from apps.users.exceptions import UserNotFoundException
 
 

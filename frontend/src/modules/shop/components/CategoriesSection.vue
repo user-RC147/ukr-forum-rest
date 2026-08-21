@@ -1,9 +1,9 @@
 <script setup>
-import { useRouter } from 'vue-router'
 import { TagIcon } from '@heroicons/vue/24/outline'
 import { useCategories } from '../composables/useCategories'
+import { useSearchFilters } from '../composables/useSearchFilters'
 
-const router = useRouter()
+const { filters, applyFilters } = useSearchFilters()
 const { categories, isLoading, load } = useCategories()
 load()
 
@@ -20,7 +20,8 @@ const gradients = [
 const gradientFor = (id) => gradients[id % gradients.length]
 
 function openCategory(category) {
-  router.push({ name: 'shop-search', query: { category_id: category.id } })
+  filters.category_id = category.id
+  applyFilters()
 }
 </script>
 
