@@ -1,17 +1,16 @@
 from collections.abc import Mapping, Sequence
 
-from django.core.files.uploadedfile import UploadedFile
-
 from apps.files.contracts.dtos import FileDTO, FileUpdatePlan
 from apps.files.contracts.protocols import FileProtocol
 from apps.files.services import FileService, get_file_service
+from core.contracts.ports.files import UploadedFileLike
 
 
 class FileContract:
     def __init__(self, service: FileService) -> None:
         self.service = service
 
-    def create(self, data: UploadedFile, user_id: int) -> FileDTO:
+    def create(self, data: UploadedFileLike, user_id: int) -> FileDTO:
         return self.service.create(data, user_id)
 
     def get(self, file_id: int) -> FileDTO:
@@ -20,7 +19,9 @@ class FileContract:
     def get_many(self, files_ids: list[int]) -> dict[int, FileDTO]:
         return self.service.get_many(files_ids)
 
-    def create_many(self, data: Sequence[UploadedFile], user_id: int) -> list[FileDTO]:
+    def create_many(
+        self, data: Sequence[UploadedFileLike], user_id: int
+    ) -> list[FileDTO]:
         return self.service.create_many(data, user_id)
 
     def delete(self, file_id: int) -> None:
@@ -35,8 +36,8 @@ class FileContract:
         user_id: int,
         item_ids: list[int],
         plan: FileUpdatePlan | None = None,
-        update_files: Mapping[int, UploadedFile] | None = None,
-        create_files: Sequence[UploadedFile] | None = None,
+        update_files: Mapping[int, UploadedFileLike] | None = None,
+        create_files: Sequence[UploadedFileLike] | None = None,
     ) -> list[FileDTO]:
         return self.service.update_many(
             user_id, item_ids, plan, update_files, create_files

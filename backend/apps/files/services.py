@@ -12,10 +12,11 @@ from apps.files.contracts.exceptions import (
 )
 from apps.files.dtos import FileRepoDTO
 from apps.files.file_storage import Storage, get_storage
+from core.contracts.ports.files import UploadedFileLike
 from core.unit_of_work.uow import get_unit_of_work
 from core.unit_of_work.uow_protocol import UnitOfWork
 
-from .ports import FileRepositoryPort, UploadedFileLike
+from .ports import FileRepositoryPort
 from .repository import get_file_repo
 from .tasks import delete_files_task, process_file_task
 

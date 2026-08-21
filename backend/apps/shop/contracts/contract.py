@@ -1,14 +1,15 @@
+from collections.abc import Iterable
+
 from apps.shop.contracts.dto import ProductDTO
 from backend.apps.shop.contracts.protocols import ProductContractProtocol
 from core.paginator.dto import PaginatorDTO
 
-from ..service import ProductService
+from ..service import ProductService, get_service
 
 
 class ProductContract:
-    def __init__(self, service: ProductService | None = None):
-        self.service = service if service is not None else ProductService()
-        self.dto_class = ProductDTO
+    def __init__(self, service: ProductService):
+        self.service = service
 
     # set user_id value(with int type) for return owned products
     def get_all(self, user_id: int | None = None) -> PaginatorDTO[ProductDTO]:
@@ -19,10 +20,10 @@ class ProductContract:
         return data
 
     def get_many(
-        self, product_ids: list[int], page: int = 1, page_size: int = 20
+        self, product_ids: Iterable[int], page: int = 1, page_size: int = 20
     ) -> PaginatorDTO[ProductDTO]:
         return self.service.get_many(product_ids, page, page_size)
 
 
 def get_product_contract() -> ProductContractProtocol:
-    return ProductContract()
+    return ProductContract(service=get_service())

@@ -170,7 +170,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
     const userStore = useUserStore()
 
-    if (!userStore.ready) {
+    if (to.meta.requiresAuth && !userStore.ready) {
         await new Promise((resolve) => {
             const unwatch = userStore.$subscribe((mutation, state) => {
                 if (state.ready) {
