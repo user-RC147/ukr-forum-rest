@@ -10,8 +10,8 @@ from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
-from core.unit_of_work.uow_protocol import UnitOfWork
 from core.unit_of_work.uow import DjangoUnitOfWork
+from core.unit_of_work.uow_protocol import UnitOfWork
 
 from .contracts.dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO
 from .contracts.exceptions import ProductPermissionError

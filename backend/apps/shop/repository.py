@@ -7,8 +7,8 @@ from django.db.models.manager import BaseManager
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 
-from .dto import ProductRepoDTO
 from .contracts.exceptions import ProductNotFoundError
+from .dto import ProductRepoDTO
 from .models import ProductModel
 from .ports import ProductRepositoryPort
 

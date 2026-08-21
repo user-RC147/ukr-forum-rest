@@ -41,7 +41,8 @@ class ProductModel(models.Model):
             models.Index(fields=["region_id"]),
             models.Index(fields=["city_id"]),
             GinIndex(
-                SearchVector("title", "description", config="simple"), name="shop_product_search_gin"
+                SearchVector("title", "description", config="simple"),
+                name="shop_product_search_gin",
             ),
             GinIndex(
                 OpClass("description", name="gin_trgm_ops"), name="description_trgm_idx"
