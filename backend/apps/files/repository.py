@@ -5,10 +5,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
 
 from apps.files.models import FileModel
+from core.contracts.ports.files import UploadedFileLike
 
 from .contracts.exceptions import FileNotFoundError
 from .dtos import FileRepoDTO
-from .ports import FileRepositoryPort, UploadedFileLike
+from .ports import FileRepositoryPort
 
 logger = logging.getLogger(__name__)
 
