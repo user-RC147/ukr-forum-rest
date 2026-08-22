@@ -1,21 +1,12 @@
-# apps/users/services/__init__.py
-from .auth_service import auth_service
-from .profile_service import update_profile, update_location
-from .consent_service import give_consent, revoke_consent
-from .user_service  import UserService, user_service
-from .profile_service import  update_profile,update_location
+from .user_service import UserService
+from .login_in_service import LoginInService
+from .refresh_service import RefreshService,RefreshToken
 
 __all__ = [
-    # auth
-    "auth_service",
+    "UserService",
+    'LoginInService',
 
-    # profile
-    "update_profile",
-    "update_location",
-    'UserService',
-    'user_service',
+    'RefreshService',
+    'RefreshToken',
 
-    # consent
-    "give_consent",
-    "revoke_consent",
-]
+    ]

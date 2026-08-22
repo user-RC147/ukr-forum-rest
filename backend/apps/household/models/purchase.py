@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 from django.db import models
 
 from django.conf import settings
@@ -24,7 +25,7 @@ class Purchase(models.Model):
         verbose_name="Магазин",
     )
 
-    created_by=models.ForeignKey(
+    created_by: models.ForeignKey[Any | None]=models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,

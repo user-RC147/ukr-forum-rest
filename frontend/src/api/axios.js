@@ -126,7 +126,7 @@ api.interceptors.response.use(
         // Браузер сам відправить refresh cookie, CSRF-заголовок теж
         // підставиться інтерцептором rawApi нижче
         await rawApi.post(
-          '/users/token/refresh/',
+          '/auth/refresh/',
           {},
           { headers: { 'X-CSRFToken': getCookie('csrftoken') } }
         )

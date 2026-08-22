@@ -14,9 +14,11 @@ const togglePassword = () => {
 
 const form = ref({
     username:  '',
+    display_name:'',
     email:     '',
     password:  '',
-    password2: '',
+    password_confirm: '',
+    consent_given: false,
 })
 
 const errors    = ref({})
@@ -37,7 +39,7 @@ const handleSubmit = async () => {
         })
 
         // redirect на профіль
-        router.push({ name: 'profile' })
+        router.push({ name: 'home' })
     } catch (error) {
         if (error.response?.data) {
             errors.value = error.response.data
@@ -52,8 +54,8 @@ const handleSubmit = async () => {
     <div class="flex items-center justify-center min-h-[calc(100vh-56px)] px-4 py-8">
         <div class="bg-white rounded-lg shadow-md w-full max-w-sm p-6 lg:p-8">
 
-            <fieldset class="border-y pb-4 mb-4">
-                <legend class="px-2 text-gray-700 text-sm lg:text-base">
+            <fieldset class="border-t px-4 pb-2 mb-4">
+                <legend class=" px-2 text-gray-700 text-sm lg:text-base">
                     Реєстрація нового користувача
                 </legend>
             </fieldset>
@@ -74,10 +76,24 @@ const handleSubmit = async () => {
                     </p>
                 </div>
 
+                 <!-- display_name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Публічне ім'я</label>
+                    <input
+                        v-model="form.display_name"
+                        type="text"
+                        placeholder="Публічне ім'я"
+                        class="bg-amber-100 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <p v-if="errors.display_name" class="text-red-500 text-xs mt-1">
+                        {{ errors.display_name[0] }}
+                    </p>
+                </div>
+
                 <!-- email -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Email (необов'язково)
+                        Email
                     </label>
                     <input
                         v-model="form.email"
@@ -115,14 +131,14 @@ const handleSubmit = async () => {
                     </p>
                 </div>
 
-                <!-- password2 -->
+                <!-- password_confirm -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Підтвердження паролю
                     </label>
                     <div class="relative">
                         <input
-                            v-model="form.password2"
+                            v-model="form.password_confirm"
                             :type="showPassword ? 'text' : 'password'"
                             placeholder="Повторіть пароль"
                             class="bg-amber-100 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10"
@@ -136,9 +152,26 @@ const handleSubmit = async () => {
                             <span v-else>🙈</span>
                         </button>
                     </div>
-                    <p v-if="errors.password2" class="text-red-500 text-xs mt-1">
-                        {{ errors.password2[0] }}
+                    <p v-if="errors.password_confirm" class="text-red-500 text-xs mt-1">
+                        {{ errors.password_confirm[0] }}
                     </p>
+                </div>
+
+
+                
+                <!-- consent_given -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Погодження з правилами.
+                    </label>
+                    <input
+                        v-model="form.consent_given"       
+                        type="checkbox"
+                        class=""
+                    />
+                    <!-- <p v-if="errors.email" class="text-red-500 text-xs mt-1">
+                        {{ errors.email[0] }}
+                    </p> -->
                 </div>
 
                 <!-- загальні помилки -->

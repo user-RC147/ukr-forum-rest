@@ -1,5 +1,8 @@
 <script setup>
     import { ref, computed, watch, onMounted } from 'vue';
+    import { useRoute } from 'vue-router';
+
+
     import { useGroupStore } from '../stores/useGroupStore.js';
     import { useUserStore } from '@/shared/stores/useUserStore.js';
     import { useAssetStore } from '../stores/useAssetStore.js';
@@ -7,6 +10,17 @@
 
     import PeriodFilter from '../components/filters/PeriodFilter.vue';
     import { useMarketExpensesStore } from '../stores/useMarketExpenses.js';
+
+    import CreateAssetModal from '../components/assets/CreateAssetModel.vue';
+    import CreateGroupModel from '../components/groups/CreateGroupModal.vue';
+
+    //======isAssetModalOpen================
+    const isAssetModalOpen =ref(false)
+    const isGroupModalOpen =ref(false)
+
+
+
+    //======================
 
     //======PeriodFilter================
 
@@ -27,6 +41,7 @@
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
+
 
     //======================
 
@@ -158,6 +173,13 @@
         );
     });
 
+    // Обробник модалки Asset
+    async function handleAssetCreated(formData) {
+        await assetStore.addAsset(formData);
+        isAssetModalOpen.value = false
+        
+    }
+
     watch(selectedGroup, (newGroupId) => {
         // Скидаємо вибраний актив при зміні групи
         selectedAsset.value = null;
@@ -183,6 +205,19 @@
     <div class="max-w-5xl mx-auto px-4 py-6">
         <!-- Фільтри -->
         <div class="flex flex-wrap justify-between gap-4 mb-6">
+
+            <!-- Кнопки створення обєка-asset-->
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <button
+                    type="button"
+                    @click="isAssetModalOpen = true"
+                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition"
+            >
+                    + Створити об'єкт
+                </button>
+              
+            </div>
+
             <!-- Об'єкт -->
             <div class="flex flex-col gap-2">
                 <router-link
@@ -405,5 +440,13 @@
                 </div>
             </div> -->
         </div>
+
+         <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ ОБЄКТУ -->
+        <CreateAssetModal
+            v-if="isAssetModalOpen"
+            :selected-group="selectedGroup"
+            @submit="handleAssetCreated"
+            @cancel="isAssetModalOpen = false"
+        />
     </div>
 </template>

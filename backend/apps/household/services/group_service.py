@@ -63,9 +63,16 @@ class GroupService:
 
     def get_all_group_member_by_user(self, dto:Group_Id_Name_InDTO,user_id:int):
       
+        
+
+
 
         if self._get_user_contract.get(user_id):
             group_members = self._selector.get_all_group_by_user(dto,user_id)
+
+            print('=======================================================')
+            print(group_members)
+            print('=======================================================')
 
             user_ids = set(
                 {group.created_by_id for group in group_members}
@@ -73,6 +80,9 @@ class GroupService:
                 {member.user_id for group in group_members for member in group.members}
             )
             users_map = self._get_user_contract.get_many(user_ids)
+            print('=======================================================')
+            print(users_map)
+            print('=======================================================')
 
             return [
                 self._to_group_out(group_member, users_map=users_map)

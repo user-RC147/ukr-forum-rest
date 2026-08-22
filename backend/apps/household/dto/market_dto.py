@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationIdInDTO, LocationIdOutDTO, LocationOutDTO
-from apps.users.dto import location
 
 
 

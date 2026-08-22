@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from core.serializers.location_serializer import LocationInSerializer,LocationOutSerializer
+
 class CountryOutSerializer(serializers.Serializer):
     id=serializers.IntegerField()
     name=serializers.CharField()
@@ -22,13 +24,3 @@ class CityOutSerializer(serializers.Serializer):
     country_id = serializers.IntegerField() 
     latitude=serializers.DecimalField(max_digits=20, decimal_places=16)
     longitude=serializers.DecimalField(max_digits=20, decimal_places=16)
-
-class LocationOutSerializer(serializers.Serializer):
-    country=CountryOutSerializer()
-    region=RegionOutSerializer()
-    city=CityOutSerializer()
-
-class LocationInSerializer(serializers.Serializer):
-    country_id=serializers.IntegerField()
-    region_id=serializers.IntegerField()
-    city_id=serializers.IntegerField()

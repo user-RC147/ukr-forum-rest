@@ -1,19 +1,22 @@
 import api from '@/api/axios'
 
 export const registerUser = (data) => {
-  return api.post('/users/register/', data)
+  return api.post('/users/', data)
 }
 
 export const loginUser = (data) => {
-  return api.post('/users/login/', data)
+  return api.post('/auth/login/', data)
 }
 
 export const getProfile = () => {
   return api.get('/users/profile/')
 }
 
-export const updateProfile = (data) => {
-  return api.patch('/users/profile/', data)
+// export const updateProfile = (data) => {
+//   return api.patch('/users/profile/', data)
+// }
+export const updateProfile = (userId, data) => {
+  return api.put(`/users/${userId}/`, data)
 }
 
 export const updateLocation = (data) => {
@@ -37,5 +40,5 @@ export const confirmPasswordReset = (data) => {
 }
 
 export const logoutUser = () => {
-  return api.post('/users/logout/');
+  return api.post('/auth/logout/');
 }

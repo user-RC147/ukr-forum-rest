@@ -1,21 +1,11 @@
-from .logout_view import LogoutView
-from .views import (
-    RegisterView,
-    ProfileView,
-    ChangePasswordView,
-    PasswordResetRequestView,
-    PasswordResetConfirmView,
-    DeleteAccountView,
-    LocationUpdateView, 
-    )
+from .user_view import UserViewSet
+from .refresh_view import RefreshViewSet
+from .csrf_view import CsrfViewSet
+from.login_view import LoginViewSet
 
 __all__ = [
-    'LogoutView',
-    'RegisterView',
-    'ProfileView',
-    'ChangePasswordView',
-    'PasswordResetRequestView',
-    'PasswordResetConfirmView',
-    'DeleteAccountView',
-    'LocationUpdateView'
+    'UserViewSet',
+    'RefreshViewSet',
+    'CsrfViewSet',
+    'LoginViewSet',
 ]

@@ -16,7 +16,7 @@ export async function initAuth(pinia) {
     // Отримуємо CSRF-cookie ДО будь-яких state-changing запитів.
     // Django виставить non-httpOnly cookie `csrftoken` у відповіді,
     // яку axios-interceptor далі підставлятиме в заголовок X-CSRFToken.
-    await api.get('/users/csrf/')
+    await api.get('/auth/csrf/')
   } catch (error) {
     // Не блокуємо ініціалізацію через це — якщо бекенд недоступний,
     // наступний запит (fetchProfile) однаково впаде своєю помилкою.

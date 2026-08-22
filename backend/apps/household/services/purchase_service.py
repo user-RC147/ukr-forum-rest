@@ -35,7 +35,7 @@ from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 
 from apps.users.contracts.user_contract import get_user_contract
 
-from apps.users.dto.user import UserDTO
+#from apps.users.dto.user_dto import UserShortOutDTO
 
 
 class PurchaseService:

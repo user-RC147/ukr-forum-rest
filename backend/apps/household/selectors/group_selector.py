@@ -41,6 +41,10 @@ class GroupSelector:
             )
         
         groups_dto = [_to_group_id_user_out(group_obj) for group_obj in groups]
+        # print('=======================================================')
+        # print(groups_dto)
+        # print('=======================================================')
+
 
         return groups_dto
 

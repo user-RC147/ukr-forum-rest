@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
 
     // Оголошуємо які події компонент може кидати назовні
     const emit = defineEmits(['submit', 'cancel']);
