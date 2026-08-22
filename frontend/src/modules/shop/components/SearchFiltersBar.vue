@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', closeIfOutside)
 })
 
-function onReset() {
+function onReset(event) {
   // Используем методы close/reset которые уже есть в composables
   countryAutocomplete.close()
   cityAutocomplete.reset()
@@ -176,6 +176,7 @@ function onReset() {
   countryAutocomplete.countryId = ''
   countryAutocomplete.currency = ''
   resetFilters()
+  event.currentTarget?.blur()
 }
 </script>
 
@@ -196,7 +197,7 @@ function onReset() {
 
         <button
           type="submit"
-          class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-200 shadow-sm"
+          class="inline-flex cursor-pointer items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-200 shadow-sm"
         >
           <MagnifyingGlassIcon class="w-5 h-5" />
           Пошук
@@ -205,7 +206,7 @@ function onReset() {
         <button
           type="button"
           @click="filtersOpen = !filtersOpen"
-          class="inline-flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium px-5 py-3 rounded-xl transition-colors duration-200"
+          class="inline-flex cursor-pointer items-center justify-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium px-5 py-3 rounded-xl transition-colors duration-200"
         >
           <AdjustmentsHorizontalIcon class="w-5 h-5" />
           Фільтри
@@ -391,9 +392,9 @@ function onReset() {
                 type="button"
                 @click="onReset"
                 :class="hasActiveFilters()
-                  ? 'border-transparent bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200/70 hover:from-emerald-600 hover:to-green-700 hover:shadow-emerald-300/80 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2'
-                  : 'border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400'"
-                class="inline-flex items-center gap-1.5 rounded-xl border px-5 py-2.5 text-sm font-semibold transition-all duration-200"
+                  ? 'border-blue-600 bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2'
+                  : 'border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2'"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-5 py-2.5 text-sm font-semibold transition-colors duration-200"
               >
                 <XMarkIcon class="w-4 h-4" />
                 Скинути фільтри

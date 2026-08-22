@@ -2,10 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { PlusIcon, Bars3Icon } from '@heroicons/vue/24/outline'
 import { useUserStore } from '@/shared/stores/useUserStore'
-import { getProductThumbnailUrl } from '@/shared/utils/media'
 import { getLatestProducts } from '../api/shop.js'
 import SearchFiltersBar from '../components/SearchFiltersBar.vue'
 import CategoriesSection from '../components/CategoriesSection.vue'
+import ProductCardSmall from '../components/ProductCardSmall.vue'
 
 const userStore = useUserStore()
 
@@ -49,36 +49,11 @@ onMounted(loadLatestProducts)
         v-else-if="products.length"
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
       >
-        <RouterLink
+        <ProductCardSmall
           v-for="p in products"
           :key="p.id"
-          :to="{ name: 'shop-product', params: { pk: p.id } }"
-          class="block group"
-        >
-          <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full transition-shadow duration-200 group-hover:shadow-md">
-            <div class="w-full h-40 bg-gray-100 overflow-hidden">
-              <img
-                v-if="getProductThumbnailUrl(p)"
-                :src="getProductThumbnailUrl(p)"
-                :alt="p.title"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div class="p-3 flex flex-col flex-1">
-              <h3 class="text-sm font-medium text-gray-900 mb-2 line-clamp-2 leading-tight">
-                {{ p.title }}
-              </h3>
-              <p class="mt-auto mb-1 font-semibold text-gray-900">
-                {{ p.price }} {{ p.country?.currency }}
-              </p>
-              <p class="text-xs text-gray-500">
-                {{ p.city ? `${p.city.name_ua ?? p.city.name}` : 'Адреса не вказана' }}
-                • {{ p.created_at }}
-              </p>
-            </div>
-          </div>
-        </RouterLink>
+          :product="p"
+        />
       </div>
 
       <p v-else class="text-center font-semibold text-lg italic py-12 text-gray-700">
@@ -110,7 +85,7 @@ onMounted(loadLatestProducts)
       <button
         type="button"
         @click="actionsOpen = !actionsOpen"
-        class="inline-flex items-center gap-2 bg-orange-500/70 hover:bg-orange-600/80 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition-colors duration-200"
+        class="inline-flex cursor-pointer items-center gap-2 bg-orange-500/70 hover:bg-orange-600/80 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition-colors duration-200"
       >
         <Bars3Icon class="w-5 h-5" />
         Інші дії

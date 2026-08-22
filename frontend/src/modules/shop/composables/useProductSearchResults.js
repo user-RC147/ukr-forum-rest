@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { searchProducts } from '../api/shop'
+import { localizedName } from '../utils/location'
 
 export function useProductSearchResults() {
   const route = useRoute()
@@ -25,9 +26,9 @@ export function useProductSearchResults() {
         price: item.meta?.price,
         image: firstVisible?.thumbnail ?? firstVisible?.file ?? null,
         createdAt: item.meta?.created_at,
-        city: item.meta?.city?.name_ua ?? item.meta?.city?.name,
-        region: item.meta?.region?.name_ua ?? item.meta?.region?.name,
-        country: item.meta?.country?.name_ua ?? item.meta?.country?.name,
+        city: localizedName(item.meta?.city),
+        region: localizedName(item.meta?.region),
+        country: localizedName(item.meta?.country),
         currency: item.meta?.country?.currency,
       }
     })

@@ -168,7 +168,7 @@ const handleComplaint = async () => {
                 type="button"
                 @click="gallery.prev()"
                 aria-label="Попереднє фото"
-                class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow-md transition-colors duration-200"
+                class="absolute left-3 top-1/2 -translate-y-1/2 cursor-pointer bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow-md transition-colors duration-200"
               >
                 <ChevronLeftIcon class="w-5 h-5" />
               </button>
@@ -176,7 +176,7 @@ const handleComplaint = async () => {
                 type="button"
                 @click="gallery.next()"
                 aria-label="Наступне фото"
-                class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow-md transition-colors duration-200"
+                class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow-md transition-colors duration-200"
               >
                 <ChevronRightIcon class="w-5 h-5" />
               </button>
@@ -191,7 +191,7 @@ const handleComplaint = async () => {
               type="button"
               @click="gallery.show(idx)"
               :class="[
-                'h-20 w-20 rounded-lg border-2 overflow-hidden transition-colors duration-200',
+                'h-20 w-20 cursor-pointer rounded-lg border-2 overflow-hidden transition-colors duration-200',
                 gallery.isActive(idx)
                   ? 'border-blue-500'
                   : 'border-transparent hover:border-gray-300',
@@ -243,7 +243,7 @@ const handleComplaint = async () => {
               <button
                 type="button"
                 @click="handleComplaint"
-                class="w-full bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-xl py-2.5 px-4 text-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                class="w-full cursor-pointer bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-xl py-2.5 px-4 text-sm transition-colors duration-200 flex items-center justify-center gap-2"
               >
                 <FlagIcon class="w-4 h-4" />
                 Подати скаргу
