@@ -41,7 +41,7 @@ export const useUserStore = defineStore('user', {
         async fetchProfile() {
             try {
                 const response = await getProfile()
-                this.user = response.data
+                this.user = response.data.results
             } catch (error) {
                 // Якщо сесія застаріла (401) — гарантовано зачищаємо локальний стан.
                 // Викликаємо саме "тихий" варіант — без повторного запиту на /logout/,
