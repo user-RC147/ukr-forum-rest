@@ -30,7 +30,7 @@ async function onFileInputChange(event) {
     >
       <CloudArrowUpIcon class="mx-auto mb-2 h-8 w-8 text-gray-400" />
       Перенесіть фото сюди або
-      <button type="button" class="text-blue-600 underline disabled:cursor-not-allowed disabled:opacity-50" :disabled="upload.isValidating" @click="fileInput.click()">завантажте</button>
+      <button type="button" class="cursor-pointer text-blue-600 underline disabled:cursor-not-allowed disabled:opacity-50" :disabled="upload.isValidating" @click="fileInput.click()">завантажте</button>
       <input
         ref="fileInput"
         type="file"
@@ -59,7 +59,7 @@ async function onFileInputChange(event) {
           <button
             type="button"
             aria-label="Видалити існуюче фото"
-            class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100"
+            class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100"
             @click="upload.removeExistingImage(image.id)"
           >
             <XMarkIcon class="h-5 w-5" />
@@ -79,7 +79,7 @@ async function onFileInputChange(event) {
         <button
           type="button"
           aria-label="Видалити нове фото"
-          class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100 hover:bg-red-700"
+          class="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100 hover:bg-red-700"
           @click="upload.removeNewFile(index)"
         >
           <XMarkIcon class="h-5 w-5" />

@@ -2,6 +2,7 @@
 import { TagIcon } from '@heroicons/vue/24/outline'
 import { useCategories } from '../composables/useCategories'
 import { useSearchFilters } from '../composables/useSearchFilters'
+import { localizedName } from '../utils/location'
 
 const { filters, applyFilters } = useSearchFilters()
 const { categories, isLoading, load } = useCategories()
@@ -30,7 +31,7 @@ function openCategory(category) {
     <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Розділи на сервісі</h2>
 
     <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-      <div v-for="n in 8" :key="n" class="h-24 rounded-2xl bg-gray-100 animate-pulse"></div>
+      <div v-for="n in 8" :key="n" class="h-28 rounded-2xl bg-gray-100 animate-pulse"></div>
     </div>
 
     <div
@@ -42,7 +43,7 @@ function openCategory(category) {
         :key="category.id"
         type="button"
         @click="openCategory(category)"
-        class="group flex flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-gray-100 shadow-sm px-3 py-4 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-200"
+        class="group flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-white border border-gray-100 shadow-sm px-3 py-5 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-200"
       >
         <span
           :class="`bg-gradient-to-br ${gradientFor(category.id)}`"
@@ -50,8 +51,8 @@ function openCategory(category) {
         >
           <TagIcon class="w-5 h-5" />
         </span>
-        <span class="text-xs sm:text-sm font-medium text-gray-800 line-clamp-2 leading-tight">
-          {{ category.name }}
+        <span class="block min-w-0 w-full h-8 overflow-hidden text-xs sm:text-sm font-medium text-gray-800 leading-tight break-words [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+          {{ localizedName(category) }}
         </span>
       </button>
     </div>

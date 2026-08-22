@@ -153,7 +153,7 @@ function fieldClass(hasError) {
       <button
         type="submit"
         :disabled="form.isSubmitting || form.imageUpload.isValidating"
-        class="rounded px-6 py-2.5 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        class="cursor-pointer rounded px-6 py-2.5 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
         :class="isUpdate ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"
       >
         {{ isUpdate ? 'Зберегти зміни' : 'Додати товар' }}
