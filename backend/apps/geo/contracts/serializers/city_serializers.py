@@ -11,3 +11,4 @@ class CitySerializer(serializers.Serializer):
     country_id = serializers.IntegerField()
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+

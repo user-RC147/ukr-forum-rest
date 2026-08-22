@@ -35,11 +35,14 @@ class User_Id_PublicOutDTO:
     username: str
     display_name: str
 
+    first_name:str
     first_name_public: bool
+
+    last_name:str
     last_name_public: bool
 
-    email_public: str
-    is_email_verified: bool
+    email:str
+    email_public: bool
 
     date_of_birth: datetime
     date_of_birth_public: bool
@@ -50,13 +53,20 @@ class User_Id_PublicOutDTO:
     social_network: str
     social_public: bool
 
+    country_public:bool
+    region_public:bool
+    city_public:bool
+
 @dataclass(frozen=True)
 class User_Id_PrivateOutDTO:
     id:int
     username: str
     display_name: str
 
+    first_name:str
     first_name_public: bool
+
+    last_name:str
     last_name_public: bool
 
     email:str
@@ -79,6 +89,11 @@ class User_Id_PrivateOutDTO:
     consent_given: bool
     consent_date: datetime
     consent_version: Optional[ConsentOutDTO]
+
+    country_public:bool
+    region_public:bool
+    city_public:bool
+
     location:Optional[Location_Id_OutDTO]
 
 
@@ -103,9 +118,9 @@ class UserPublicOutDTO:
 
     social_network: str
     social_public: bool
+
+    country_public:bool
+    region_public:bool
+    city_public:bool
+
     location:Optional[LocationOutDTO]
-
-
-
-
-

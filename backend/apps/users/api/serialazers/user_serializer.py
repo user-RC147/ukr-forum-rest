@@ -1,43 +1,14 @@
 from rest_framework import serializers
 
+from core.serializers.location_serializer import CountrySerializer,RegionSerializer,CitySerializer,LocationInSerializer,Location_id_region_OutSerializer
+
+
 
 class ConsentOutSerializer(serializers.Serializer):
     id=serializers.IntegerField()
     version=serializers.CharField()
     text=serializers.CharField()
     created_at=serializers.DateTimeField()
-
-
-class CountryOutSerialize(serializers.Serializer):
-    id=serializers.IntegerField()
-    name=serializers.CharField()
-    name_ua=serializers.CharField()
-    code=serializers.CharField()
-    flag_emoji=serializers.CharField()
-    currency=serializers.CharField()
-
-class RegionOutSerializer(serializers.Serializer):
-    id=serializers.IntegerField()
-    name=serializers.CharField()
-    name_ua=serializers.CharField()
-    country_id=serializers.IntegerField()
-
-class CityOutSerializer(serializers.Serializer):
-    id=serializers.IntegerField()
-    name=serializers.CharField()
-    name_ua=serializers.CharField()
-    country_id=serializers.IntegerField()
-    region_id=serializers.IntegerField()
-    latitude=serializers.DecimalField(max_digits=20, decimal_places=16,allow_null=True)
-    longitude=serializers.DecimalField(max_digits=20, decimal_places=16,allow_null=True)
-
-
-
-class LocatioOutSerializer(serializers.Serializer):
-    country=CountryOutSerialize()
-    region=RegionOutSerializer()
-    city=CityOutSerializer()
-
 
 
 class UserShortOutSerializer(serializers.Serializer):
@@ -70,10 +41,13 @@ class UserPrivatOutSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)
     display_name = serializers.CharField(max_length=100)
 
+    first_name=serializers.CharField()
     first_name_public=serializers.BooleanField()
+
+    last_name=serializers.CharField()
     last_name_public=serializers.BooleanField()
 
-    email=serializers.CharField()
+    email=serializers.EmailField()
     email_public=serializers.BooleanField()
     is_email_verified=serializers.BooleanField()
 
@@ -94,4 +68,8 @@ class UserPrivatOutSerializer(serializers.Serializer):
     consent_date=serializers.DateTimeField()
     consent_version=ConsentOutSerializer(allow_null=True)
 
-    location=LocatioOutSerializer(allow_null=True)
+    country_public=serializers.BooleanField()
+    region_public=serializers.BooleanField()
+    city_public=serializers.BooleanField()
+
+    location=Location_id_region_OutSerializer(allow_null=True)

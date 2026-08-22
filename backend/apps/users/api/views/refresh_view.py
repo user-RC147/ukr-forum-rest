@@ -22,7 +22,7 @@ class RefreshViewSet(ViewSet):
         # 1. Дістати refresh_token із cookie (не з тіла запиту!)
         
         x_csrf_token = request.COOKIES.get('X-CSRFToken')
-        enforce_csrf(request)
+        #enforce_csrf(request)
         refresh_token_str = request.COOKIES.get("refresh_token")
 
         if refresh_token_str is None:

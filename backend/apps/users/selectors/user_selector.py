@@ -42,13 +42,8 @@ class UserSelector:
 
     def get_user_by_id(self, user_id: int) -> UserShortOutDTO:
 
-        prt(user_id)
-        
-
         user = CustomUser.objects.get(id=user_id)
-        prt(user)
         
-
         dto = _to_dto_short_user_out(user)
 
         return dto

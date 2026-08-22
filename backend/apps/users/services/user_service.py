@@ -19,6 +19,8 @@ from apps.geo.contracts import (
 
 from core.dto.users.user_dto import UserShortOutDTO
 
+from core.func_print import prt
+
 class UserService:
 
     def __init__(self):
@@ -47,6 +49,8 @@ class UserService:
         locations = _get_locations(
             ids, get_country_contract(), get_region_contract(), get_city_contract()
         )
+
+        
    
 
         dto = _to_dto_out_profile(my_profile, locations)

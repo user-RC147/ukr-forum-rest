@@ -3,6 +3,7 @@
 import datetime
 from typing import Optional
 from uuid import UUID
+from datetime import date
 
 
 
@@ -27,24 +28,31 @@ class CreateUserInDTO:
 
 @dataclass(frozen=True)
 class ProfilUserUpdateInDTO:
-    display_name: Optional[str] = None
+    display_name: str
 
-    first_name_public: Optional[bool] = None
-    last_name_public: Optional[bool] = None
+    first_name:str
+    first_name_public: bool
 
-    email:Optional[str] = None
-    email_public: Optional[str] = None
+    last_name:str
+    last_name_public: bool
 
-    date_of_birth: Optional[datetime] = None
-    date_of_birth_public: Optional[bool] = None
+    email:str
+    email_public: bool
 
-    phone_number: Optional[str] = None
-    phone_public: Optional[bool] = None
+    date_of_birth:  Optional[date]
+    date_of_birth_public: bool
 
-    social_network: Optional[str] = None
-    social_public: Optional[bool] = None
+    phone_number: str
+    phone_public: bool
+
+    social_network: str
+    social_public: bool
+
+    country_public:bool
+    region_public:bool
+    city_public:bool
     
-    location:Optional[Location_Id_InDTO] = None
+    location:Location_Id_InDTO
 
 
 
@@ -54,7 +62,10 @@ class UserPrivateOutDTO:
     username: str
     display_name: str
 
+    first_name:str
     first_name_public: bool
+
+    last_name:str
     last_name_public: bool
 
     email:str
@@ -77,5 +88,10 @@ class UserPrivateOutDTO:
     consent_given: bool
     consent_date: datetime
     consent_version: Optional[ConsentOutDTO]
+
+    country_public:bool
+    region_public:bool
+    city_public:bool
+
     location:Optional[LocationOutDTO]
 

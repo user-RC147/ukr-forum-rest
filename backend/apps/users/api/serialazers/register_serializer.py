@@ -25,22 +25,30 @@ class RegisterInSerializer(serializers.Serializer):
 
 
 class ProfileUpdateInSerializer(serializers.Serializer):
-    display_name = serializers.CharField(max_length=100, required=False)
 
-    first_name_public = serializers.BooleanField(required=False)
-    last_name_public = serializers.BooleanField(required=False)
+    display_name = serializers.CharField(max_length=100)
 
-    email = serializers.BooleanField(required=False)
-    email_public = serializers.BooleanField(required=False)
+    first_name=serializers.CharField(allow_blank=True)
+    first_name_public = serializers.BooleanField()
 
-    date_of_birth = serializers.DateField(required=False)
-    date_of_birth_public = serializers.BooleanField(required=False)
+    last_name=serializers.CharField(allow_blank=True)
+    last_name_public = serializers.BooleanField()
 
-    phone_number = serializers.CharField(max_length=50, required=False)
-    phone_public = serializers.BooleanField(required=False)
+    email = serializers.EmailField()
+    email_public = serializers.BooleanField()
 
-    social_network = serializers.CharField(max_length=50, required=False)
-    social_public = serializers.BooleanField(required=False)
+    date_of_birth = serializers.DateField(allow_null=True)
+    date_of_birth_public = serializers.BooleanField()
+
+    phone_number = serializers.CharField(max_length=50, allow_blank=True)
+    phone_public = serializers.BooleanField()
+
+    social_network = serializers.CharField(max_length=50, allow_blank=True)
+    social_public = serializers.BooleanField()
+
+    country_public=serializers.BooleanField()
+    region_public=serializers.BooleanField()
+    city_public=serializers.BooleanField()
 
     location=LocationInSerializer()
     

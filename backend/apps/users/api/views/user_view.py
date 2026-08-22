@@ -112,6 +112,8 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+
+    @extend_schema(request=ProfileUpdateInSerializer(), responses=RegisterInSerializer())
     def update(self, request, pk=None):
         user_id = request.user.id
         if int(user_id) != int(pk):
@@ -120,7 +122,7 @@ class UserViewSet(ViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serialiser = ProfileUpdateInSerializer(data=request.data, partial=True)
+        serialiser = ProfileUpdateInSerializer(data=request.data)
         serialiser.is_valid(raise_exception=True)
 
         dto = _to_dto_user_in(serialiser.validated_data)

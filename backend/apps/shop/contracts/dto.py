@@ -8,13 +8,13 @@ from apps.geo.contracts.dto.country_dto import CountryDTO
 from apps.geo.contracts.dto.region_dto import RegionDTO
 from apps.search.contracts.dto import CategoryDTO
 from apps.shop.enums import ProductStatus
-from apps.users.dto.user import UserDTO
+from apps.users.dto.user_dto import UserShortOutDTO
 
 
 @dataclass(frozen=True)
 class ProductDTO:
     id: int
-    owner: UserDTO
+    owner: UserShortOutDTO
     title: str
     description: str
     created_at: datetime

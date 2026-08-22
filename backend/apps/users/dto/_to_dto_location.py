@@ -2,9 +2,10 @@ from core.dto.geo.location_dto import (
     Location_Id_OutDTO,
     LocationOutDTO,
 )
-from apps.geo.dto.country import CountryDTO
-from apps.geo.dto.region import RegionDTO
-from apps.geo.dto.city import CityDTO,City_id_region_DTO
+
+from apps.geo.contracts.dto.city_dto import CityDTO,City_id_region_DTO
+from apps.geo.contracts.dto.country_dto import CountryDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 
 def _to_dto_out_contry(data, map_location) -> CountryDTO:
     return CountryDTO(

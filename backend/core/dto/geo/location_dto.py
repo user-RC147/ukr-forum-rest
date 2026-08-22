@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from core.dto.geo.geo_dto import (
     CountryShortDTO,
@@ -6,9 +7,9 @@ from core.dto.geo.geo_dto import (
     CityShortDTO,
 )
 
-from apps.geo.dto.country import CountryDTO
-from apps.geo.dto.region import RegionDTO
-from apps.geo.dto.city import CityDTO
+from apps.geo.contracts.dto.city_dto import CityDTO
+from apps.geo.contracts.dto.country_dto import CountryDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 
 
 @dataclass(frozen=True)
@@ -26,10 +27,9 @@ class Location_Id_InDTO:
 
 @dataclass(frozen=True)
 class Location_Id_OutDTO:
-    country_id: int
-    region_id: int
-    city_id: int
-
+    country_id: Optional[int]
+    region_id: Optional[int]
+    city_id: Optional[int]
 
 @dataclass(frozen=True)
 class LocationOutDTO:
