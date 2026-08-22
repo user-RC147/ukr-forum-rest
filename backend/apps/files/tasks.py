@@ -3,7 +3,7 @@ from celery.utils.log import get_task_logger
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from PIL import Image
-
+from .contracts.exceptions import FileNotFoundError
 from .enums import EXT_TO_TYPE, FileExtentions
 from .file_storage import get_storage
 from .models import FileModel
@@ -53,7 +53,7 @@ PROCESSORS = {
 }
 
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=10, autoretry_for=(IOError,))
+@shared_task(bind=True, max_retries=3, default_retry_delay=10, retry_backoff=True, retry_backoff_max=60, retry_jitter=True, autoretry_for=(IOError, FileNotFoundError))
 def process_file_task(self, product_file_id: int):
 
     pf = FileRepository()._get_model(product_file_id, "get_file_resize")

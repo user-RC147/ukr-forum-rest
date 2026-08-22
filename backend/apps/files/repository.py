@@ -85,20 +85,26 @@ class FileRepository:
 
     def update_files_content(
         self, updates: Mapping[int, UploadedFileLike]
-    ) -> tuple[list[FileRepoDTO], list[str]]:
+    ) -> tuple[list[FileRepoDTO], list[str], list[str]]:
         ids = list(updates.keys())
         files_by_id = self.model.objects.filter(id__in=ids).in_bulk()
-        old_paths = [files_by_id[i].file.name for i in ids]
+        old_files = []
+        old_thumbnails = []
+        for i in ids:
+            old_files.append(files_by_id[i].file.name)
+            old_thumbnails.append(files_by_id[i].thumbnail.name)
+
 
         updated = []
         for file_id, upload in updates.items():
             file = files_by_id[file_id]
             file.name = upload.name
             file.file.save(upload.name, ContentFile(upload.file.read()), save=False)
+            file.thumbnail.delete(save=False)
             updated.append(file)
 
-        self.model.objects.bulk_update(updated, ["name", "file"])
-        return [_to_dto(u) for u in updated], old_paths
+        self.model.objects.bulk_update(updated, ["name", "file", "thumbnail"])
+        return [_to_dto(u) for u in updated], old_files, old_thumbnails
 
 
 def _to_dto(data: FileModel) -> FileRepoDTO:
