@@ -51,7 +51,8 @@ class ProductViewSet(viewsets.ViewSet):
     @product_create_schema
     def create(self, request):
         data = request.data.dict()
-        data["files"] = request.FILES.getlist("files")
+        files: UploadedFile = request.FILES.getlist("files")  # for typechecker
+        data["files"] = files
         serializer = ProductSerializer(data=data)
         serializer.is_valid(raise_exception=True)  # 400 if not valid
 

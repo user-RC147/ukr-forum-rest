@@ -14,11 +14,9 @@ const startApp = async () => {
 
   app.use(router)
 
+  app.mount('#app')
 
   await initAuth(pinia)
-
-
-  app.mount('#app')
 }
 
 startApp()

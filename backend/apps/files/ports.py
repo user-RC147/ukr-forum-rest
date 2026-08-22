@@ -1,21 +1,9 @@
-from collections.abc import Iterable, Iterator, Mapping
-from typing import Protocol, runtime_checkable
+from collections.abc import Iterable, Mapping
+from typing import Protocol
+
+from core.contracts.ports.files import UploadedFileLike
 
 from .dtos import FileRepoDTO
-
-
-@runtime_checkable
-class UploadedFileLike(Protocol):
-    @property
-    def name(self) -> str: ...
-    @property
-    def content_type(self) -> str | None: ...
-    @property
-    def size(self) -> int: ...
-
-    def read(self, size: int = -1) -> bytes: ...
-    def seek(self, offset: int, whence: int = 0) -> int: ...
-    def chunks(self, chunk_size: int | None = None) -> Iterator[bytes]: ...
 
 
 class FileRepositoryPort(Protocol):
@@ -37,4 +25,4 @@ class FileRepositoryPort(Protocol):
 
     def update_files_content(
         self, updates: Mapping[int, UploadedFileLike]
-    ) -> tuple[list[FileRepoDTO], list[str]]: ...
+    ) -> tuple[list[FileRepoDTO], list[str], list[str]]: ...

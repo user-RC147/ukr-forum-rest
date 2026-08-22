@@ -1,36 +1,52 @@
+from collections.abc import Iterable
 import dataclasses
 import logging
 
 from apps.files.contracts.contracts import get_file_contract
 from apps.files.contracts.dtos import FileUpdatePlan
+from apps.files.contracts.protocols import FileProtocol
 from apps.geo.contracts.city_contract import get_city_contract
 from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.protocols.city_protocol import CityContractProtocol
+from apps.geo.contracts.protocols.country_protocol import CountryContractProtocol
+from apps.geo.contracts.protocols.region_protocol import RegionContractProtocol
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
 from apps.users.contracts.user_contract import get_user_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
+from core.unit_of_work.uow import get_unit_of_work
 from core.unit_of_work.uow_protocol import UnitOfWork
-from core.unit_of_work.uow import DjangoUnitOfWork
 
 from .contracts.dto import ProductCreateDTO, ProductDTO, ProductUpdateDTO
-from .contracts.exceptions import ProductPermissionError
+from .contracts.exceptions import ProductPermissionError, ProductValidationError
 from .dto import RequestUserDTO
-from .repository import ProductRepository, get_repo
+from .ports import ProductRepositoryPort
+from .repository import get_repo
 
 logger = logging.getLogger(__name__)
 
 
 class ProductService:
-    def __init__(self, repo: ProductRepository | None = None) -> None:
-        self.repo = repo if repo is not None else get_repo()
-        self.country_contract = get_country_contract()
-        self.region_contract = get_region_contract()
-        self.city_contract = get_city_contract()
-        self.file_contract = get_file_contract()
-        self.category_contract = get_category_contract()
-        self.user_contract = get_user_contract()
-        self.uow: UnitOfWork = DjangoUnitOfWork()
+    def __init__(
+        self,
+        repo: ProductRepositoryPort,
+        country_contract: CountryContractProtocol,
+        region_contract: RegionContractProtocol,
+        city_contract: CityContractProtocol,
+        file_contract: FileProtocol,
+        category_contract,
+        user_contract,
+        uow: UnitOfWork,
+    ) -> None:
+        self.repo = repo
+        self.country_contract = country_contract
+        self.region_contract = region_contract
+        self.city_contract = city_contract
+        self.file_contract = file_contract
+        self.category_contract = category_contract
+        self.user_contract = user_contract
+        self.uow: UnitOfWork = uow
 
     def _fetch_map(self, ids: list[int | None], contract) -> dict:
         """Deduplicate ids and 1 batch-request via get_many"""
@@ -86,7 +102,7 @@ class ProductService:
 
     def get_many(
         self,
-        product_ids: list[int],
+        product_ids: Iterable[int],
         page: int = 1,
         page_size: int = 20,
     ) -> PaginatorDTO[ProductDTO]:
@@ -112,7 +128,11 @@ class ProductService:
         page_size: int = 20,
     ) -> PaginatorDTO[ProductDTO]:
 
-        if user_id:
+        if user_id is not None:
+            if user is None:
+                raise ProductValidationError(
+                    extra={"user_dto": user, "event": "access_check"}
+                )
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
@@ -196,7 +216,16 @@ class ProductService:
                     create_files=create_files,
                 )
 
-                fields["file_ids"] = [f.id for f in updated_file_dtos]
+                product_ids = [f["id"] for f in product.files]
+
+                updated_file_ids = [file.id for file in updated_file_dtos]
+                updated_file_id_set = set(updated_file_ids)
+
+                fields["file_ids"] = [
+                    file_id for file_id in product_ids if file_id in updated_file_id_set
+                ] + [
+                    file_id for file_id in updated_file_ids if file_id not in product_ids
+                ]
 
             product_id = data.id
             result = dataclasses.asdict(self.repo.update(product_id, fields))
@@ -255,7 +284,16 @@ def _to_dto_product(data) -> ProductDTO:
 
 
 def get_service() -> ProductService:
-    return ProductService()
+    return ProductService(
+        repo=get_repo(),
+        country_contract=get_country_contract(),
+        region_contract=get_region_contract(),
+        city_contract=get_city_contract(),
+        file_contract=get_file_contract(),
+        category_contract=get_category_contract(),
+        user_contract=get_user_contract(),
+        uow=get_unit_of_work(),
+    )
 
 
 class ProductAccessPolicy:

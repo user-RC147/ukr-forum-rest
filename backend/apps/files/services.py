@@ -12,10 +12,11 @@ from apps.files.contracts.exceptions import (
 )
 from apps.files.dtos import FileRepoDTO
 from apps.files.file_storage import Storage, get_storage
+from core.contracts.ports.files import UploadedFileLike
 from core.unit_of_work.uow import get_unit_of_work
 from core.unit_of_work.uow_protocol import UnitOfWork
 
-from .ports import FileRepositoryPort, UploadedFileLike
+from .ports import FileRepositoryPort
 from .repository import get_file_repo
 from .tasks import delete_files_task, process_file_task
 
@@ -107,9 +108,8 @@ class FileService:
 
         with self.uow:
             result = self.repo.create_many(data, user_id)
+            self.uow.on_commit(lambda: [process_file_task.delay(r.id) for r in result])
 
-        for r in result:
-            process_file_task.delay(r.id)
         dto = [_to_dto(r) for r in result]
 
         logger.info(
@@ -141,13 +141,14 @@ class FileService:
             with self.uow:
                 result: list[FileDTO] = []
 
-                updated, old_paths = self._apply_updates(plan, update_files)
+                updated, old_paths_file, old_paths_thumbnails = self._apply_updates(plan, update_files)
                 new_file_paths.extend(f.file for f in updated)
                 result.extend(_to_dto(f) for f in updated)
-                if old_paths:
-                    self.uow.on_commit(
-                        lambda paths=old_paths: self.storage.delete(paths)
-                    )
+                if old_paths_file:
+                    self.uow.on_commit(lambda: delete_files_task.delay(old_paths_file))
+                    if old_paths_thumbnails:
+                        self.uow.on_commit(lambda: delete_files_task.delay(old_paths_thumbnails))
+
 
                 created = self._apply_creates(user_id, create_files)
                 result.extend(created)
@@ -201,17 +202,19 @@ class FileService:
 
     def _apply_updates(
         self, plan: FileUpdatePlan, update_files: Mapping[int, UploadedFileLike]
-    ) -> tuple[list[FileRepoDTO], list[str]]:
+    ) -> tuple[list[FileRepoDTO], list[str], list[str]]:
         if not plan.update_ids:
-            return [], []
+            return [], [], []
 
-        updated, old_paths = self.repo.update_files_content(update_files)
+        updated, old_paths_files, old_paths_thumbmnails  = self.repo.update_files_content(update_files)
+
+        self.uow.on_commit(lambda: [process_file_task.delay(u.id) for u in updated])
 
         logger.info(
             "Updated files",
             extra={"update_ids": plan.update_ids, "event": "update_files"},
         )
-        return updated, old_paths
+        return updated, old_paths_files, old_paths_thumbmnails
 
     def _apply_creates(
         self, user_id: int, create_files: Sequence[UploadedFileLike]
