@@ -130,7 +130,9 @@ class ProductService:
 
         if user_id is not None:
             if user is None:
-                raise ProductValidationError(extra={"user_dto": user, "event": "access_check"})
+                raise ProductValidationError(
+                    extra={"user_dto": user, "event": "access_check"}
+                )
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
@@ -214,7 +216,16 @@ class ProductService:
                     create_files=create_files,
                 )
 
-                fields["file_ids"] = [f.id for f in updated_file_dtos]
+                product_ids = [f["id"] for f in product.files]
+
+                updated_file_ids = [file.id for file in updated_file_dtos]
+                updated_file_id_set = set(updated_file_ids)
+
+                fields["file_ids"] = [
+                    file_id for file_id in product_ids if file_id in updated_file_id_set
+                ] + [
+                    file_id for file_id in updated_file_ids if file_id not in product_ids
+                ]
 
             product_id = data.id
             result = dataclasses.asdict(self.repo.update(product_id, fields))
