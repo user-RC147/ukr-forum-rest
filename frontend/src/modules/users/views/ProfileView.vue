@@ -2,20 +2,19 @@
     import { ref, onMounted, computed, watch } from 'vue';
     import { useRouter } from 'vue-router';
     import { useUserStore } from '@/shared/stores/useUserStore';
-    import { updateProfile } from '../api/users';
-
+    import { updateProfile, deleteAccount} from '../api/users';
     import { useGeoSelector } from '@/shared/composables/geo/useGeoSelector';
+    import DeleteUserModel from '../components/user/DeleteUserModel.vue';
+
 
     const { countries, regions, cities, loadCountries, onCountryChange, onRegionChange } = useGeoSelector();
+
+    const isDeleteUserModalOpen = ref(false);
 
     const router = useRouter();
     const userStore = useUserStore();
 
-    // прапорець "ще триває первинне завантаження форми" —
-    // поки true, watch-и на country_id/region_id нічого не роблять,
-    // щоб не затирати щойно завантажені значення локації
     const isInitializing = ref(true);
-
     const isLoading = ref(false);
     const successMessage = ref('');
     const errorMessage = ref('');
@@ -23,31 +22,22 @@
     // Форма профілю
     const form = ref({
         display_name: '',
-
         first_name: '',
         first_name_public: false,
-
         last_name: '',
         last_name_public: false,
-
         email: '',
         email_public: false,
-
         phone_number: '',
         phone_public: false,
-
         date_of_birth: null,
         date_of_birth_public: false,
-
         social_network: '',
         social_public: false,
-
         country_id: null,
         country_public: false,
-
         region_id: null,
         region_public: false,
-
         city_id: null,
         city_public: false,
     });
@@ -84,7 +74,6 @@
         },
     };
 
-    // Викликається при виході з поля
     const onBlur = (field) => {
         fieldErrors.value[field] = validate[field](form.value[field]);
     };
@@ -111,25 +100,18 @@
 
         if (userStore.user) {
             form.value.display_name = userStore.user.display_name || '';
-
             form.value.first_name = userStore.user.first_name || '';
             form.value.first_name_public = userStore.user.first_name_public || false;
-
             form.value.last_name = userStore.user.last_name || '';
             form.value.last_name_public = userStore.user.last_name_public || false;
-
             form.value.email = userStore.user.email || '';
             form.value.email_public = userStore.user.email_public || false;
-
             form.value.date_of_birth = userStore.user.date_of_birth || null;
             form.value.date_of_birth_public = userStore.user.date_of_birth_public || false;
-
             form.value.social_network = userStore.user.social_network || '';
             form.value.social_public = userStore.user.social_public || false;
-
             form.value.phone_number = userStore.user.phone_number || '';
             form.value.phone_public = userStore.user.phone_public || false;
-
             form.value.country_public = userStore.user.country_public || false;
             form.value.region_public = userStore.user.region_public || false;
             form.value.city_public = userStore.user.city_public || false;
@@ -151,7 +133,6 @@
         isInitializing.value = false;
     });
 
-    // Коли вибрали країну → завантажуємо регіони
     watch(
         () => form.value.country_id,
         (countryId) => {
@@ -176,12 +157,10 @@
         successMessage.value = '';
         errorMessage.value = '';
 
-        // перевіряємо всі поля перед відправкою
         Object.keys(fieldErrors.value).forEach((field) => {
             fieldErrors.value[field] = validate[field](form.value[field]);
         });
 
-        // якщо є помилки — зупиняємо
         if (Object.values(fieldErrors.value).some((e) => e)) {
             isLoading.value = false;
             return;
@@ -220,256 +199,384 @@
             isLoading.value = false;
         }
     };
+
+    const handleDeleteUser = async () => {
+        isDeleteUserModalOpen.value = false;
+
+        try {
+            await deleteAccount(userStore.user.id);
+            await userStore.logout();
+            router.push({ name: 'login' });
+        } catch (error) {
+            errorMessage.value = 'Не вдалося видалити профіль. Спробуйте ще раз.';
+        }
+    };
+
+
 </script>
 
 <template>
-    <div class="flex items-center justify-center mt-8 p">
-        <div class="rounded-lg shadow-md w-full max-w-sm">
-            <fieldset class="border-t border-gray-400 px-6 flex items-center justify-center">
-                <legend class="px-2 text-gray-700 text-sm lg:text-base">Мій профіль</legend>
-            </fieldset>
+    <div class="max-w-4xl mx-auto my-8 px-4">
+        <!-- Заголовок сторінки -->
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Налаштування профілю</h1>
+                <p class="text-sm text-gray-500">Керуйте власними даними та їх видимістю для інших користувачів</p>
+            </div>
+            <button
+                type="button"
+                @click="router.push({ name: 'home' })"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-xs hover:bg-gray-50 transition"
+            >
+                Назад
+            </button>
+        </div>
 
-            <p v-if="!userStore.user" class="text-gray-500 text-center">Завантаження...</p>
+        <div v-if="!userStore.user" class="flex justify-center items-center p-12 bg-white rounded-xl shadow-xs">
+            <p class="text-gray-500 font-medium">Завантаження даних профілю...</p>
+        </div>
 
-            <form v-else @submit.prevent="handleSubmit" class="space-y-4 p-6">
-                <!-- повідомлення -->
-                <p v-if="successMessage" class="text-green-600 text-sm text-center">
-                    {{ successMessage }}
-                </p>
-                <p v-if="errorMessage" class="text-red-500 text-sm text-center">
-                    {{ errorMessage }}
-                </p>
+        <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+            <!-- Повідомлення про статус -->
+            <div
+                v-if="successMessage"
+                class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-medium"
+            >
+                {{ successMessage }}
+            </div>
+            <div
+                v-if="errorMessage"
+                class="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium"
+            >
+                {{ errorMessage }}
+            </div>
 
-                <!-- логін — тільки читання -->
-                <div>
-                    <label class="block text-sm text-gray-500 mb-1">Логін</label>
-                    <p class="font-medium text-gray-800 bg-gray-50 p-4 rounded">
-                        {{ userStore.user.username }}
-                    </p>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Секція: Основні дані -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                        Загальна інформація
+                    </h2>
 
-                <!-- email — тільки читання -->
-                <div class="">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <div class="flex justify-between items-center">
+                    <!-- Логін -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                            Логін
+                        </label>
                         <input
-                            v-model="form.email"
                             type="text"
-                            placeholder="Ваша електронна пошта"
-                            @blur="onBlur('email')"
-                            :class="[
-                                'p-2 w-full rounded focus:outline-none focus:ring-2',
-                                fieldErrors.email
-                                    ? 'bg-red-50 focus:ring-red-400 border border-red-300'
-                                    : 'bg-amber-100 focus:ring-amber-400',
-                            ]"
+                            :value="userStore.user.username"
+                            disabled
+                            class="w-full px-3.5 py-2 bg-gray-100 text-gray-600 rounded-lg border border-gray-200 cursor-not-allowed font-medium text-sm"
                         />
-                        <p v-if="fieldErrors.email" class="text-red-500 text-xs mt-1">
-                            {{ fieldErrors.email }}
-                        </p>
-                        <div class="shrink-0 ml-2 h-5">
-                            <input v-model="form.email_public" type="checkbox" />
-                        </div>
                     </div>
-                </div>
 
-                <!-- публічне ім'я -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Публічне ім'я (нікнейм)</label>
-                    <input
-                        v-model="form.display_name"
-                        type="text"
-                        placeholder="Ваше публічне ім'я"
-                        @blur="onBlur('display_name')"
-                        :class="[
-                            'p-2 w-full rounded focus:outline-none focus:ring-2',
-                            fieldErrors.display_name
-                                ? 'bg-red-50 focus:ring-red-400 border border-red-300'
-                                : 'bg-amber-100 focus:ring-amber-400',
-                        ]"
-                    />
-                    <p v-if="fieldErrors.display_name" class="text-red-500 text-xs mt-1">
-                        {{ fieldErrors.display_name }}
-                    </p>
-                </div>
-
-                <!-- вік -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Дата народження</label>
-                    <div class="flex justify-between items-center gap-2">
+                    <!-- Публічне ім'я -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                            Публічне ім'я (нікнейм)
+                        </label>
                         <input
-                            v-model="form.date_of_birth"
-                            type="date"
-                            min="0"
-                            max="120"
-                            placeholder="Ваш вік"
-                            @blur="onBlur('date_of_birth')"
+                            v-model="form.display_name"
+                            type="text"
+                            placeholder="Ваше публічне ім'я"
+                            @blur="onBlur('display_name')"
                             :class="[
-                                'p-2 w-full rounded focus:outline-none focus:ring-2',
-                                fieldErrors.date_of_birth
-                                    ? 'bg-red-50 focus:ring-red-400 border border-red-300'
-                                    : 'bg-amber-100 focus:ring-amber-400',
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
+                                fieldErrors.display_name
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
                             ]"
                         />
-                        <p v-if="fieldErrors.date_of_birth" class="text-red-500 text-xs mt-1">
+                        <p v-if="fieldErrors.display_name" class="text-rose-500 text-xs mt-1">
+                            {{ fieldErrors.display_name }}
+                        </p>
+                    </div>
+
+                    <!-- Дата народження -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Дата народження
+                            </label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.date_of_birth_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічне</span>
+                            </label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input
+                                v-model="form.date_of_birth"
+                                type="date"
+                                @blur="onBlur('date_of_birth')"
+                                :class="[
+                                    'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
+                                    fieldErrors.date_of_birth
+                                        ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                        : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
+                                ]"
+                            />
+                            <span
+                                v-if="age !== null"
+                                class="shrink-0 text-xs font-semibold bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200"
+                            >
+                                {{ age }} років
+                            </span>
+                        </div>
+                        <p v-if="fieldErrors.date_of_birth" class="text-rose-500 text-xs mt-1">
                             {{ fieldErrors.date_of_birth }}
                         </p>
-                        <div v-if="age !== null" class="text-sm text-gray-500 mt-1 text-center">{{ age }} років</div>
+                    </div>
 
-                        <div class="shrink-0 ml-2 h-5">
-                            <input v-model="form.date_of_birth_public" type="checkbox" />
+                    <!-- Реферальний код -->
+                    <div class="pt-2">
+                        <div
+                            class="flex items-center justify-between p-3 bg-amber-50/50 border border-amber-200/60 rounded-lg text-amber-900"
+                        >
+                            <span class="text-xs font-semibold uppercase tracking-wider">Реферальний код</span>
+                            <button
+                                type="button"
+                                class="text-xs font-medium text-amber-700 hover:text-amber-800 underline cursor-pointer"
+                            >
+                                Показати / Скопіювати
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- телефон -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
-                    <div class="flex justify-between items-center">
+                <!-- Секція: Контакти -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-3">Контактні дані</h2>
+
+                    <!-- Email -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Email</label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.email_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічний</span>
+                            </label>
+                        </div>
+                        <input
+                            v-model="form.email"
+                            type="email"
+                            placeholder="mail@example.com"
+                            @blur="onBlur('email')"
+                            :class="[
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
+                                fieldErrors.email
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
+                            ]"
+                        />
+                        <p v-if="fieldErrors.email" class="text-rose-500 text-xs mt-1">
+                            {{ fieldErrors.email }}
+                        </p>
+                    </div>
+
+                    <!-- Телефон -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Телефон</label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.phone_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічний</span>
+                            </label>
+                        </div>
                         <input
                             v-model="form.phone_number"
                             type="text"
                             placeholder="+380..."
                             @blur="onBlur('phone_number')"
                             :class="[
-                                'p-2 w-full rounded focus:outline-none focus:ring-2',
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
                                 fieldErrors.phone_number
-                                    ? 'bg-red-50 focus:ring-red-400 border border-red-300'
-                                    : 'bg-amber-100 focus:ring-amber-400',
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
                             ]"
                         />
-                        <p v-if="fieldErrors.phone_number" class="text-red-500 text-xs mt-1">
+                        <p v-if="fieldErrors.phone_number" class="text-rose-500 text-xs mt-1">
                             {{ fieldErrors.phone_number }}
                         </p>
-
-                        <div class="shrink-0 ml-2 h-5">
-                            <input v-model="form.phone_public" type="checkbox" class="" />
-                        </div>
                     </div>
-                </div>
 
-                <!-- соц.мережа -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Соц.мережа</label>
-                    <div class="flex justify-between items-center">
+                    <!-- Соц. мережа -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                Соц. мережа
+                            </label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.social_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічна</span>
+                            </label>
+                        </div>
                         <input
                             v-model="form.social_network"
                             type="text"
-                            placeholder="Посилання на профіль"
+                            placeholder="https://..."
                             @blur="onBlur('social_network')"
                             :class="[
-                                'p-2 w-full rounded focus:outline-none focus:ring-2',
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
                                 fieldErrors.social_network
-                                    ? 'bg-red-50 focus:ring-red-400 border border-red-300'
-                                    : 'bg-amber-100 focus:ring-amber-400',
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
                             ]"
                         />
-                        <p v-if="fieldErrors.social_network" class="text-red-500 text-xs mt-1">
+                        <p v-if="fieldErrors.social_network" class="text-rose-500 text-xs mt-1">
                             {{ fieldErrors.social_network }}
                         </p>
-                        <div class="shrink-0 ml-2 h-5">
-                            <input v-model="form.social_public" type="checkbox" class="" />
-                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- referal_code -->
-                <div class="flex justify-around p-1">
-                    <div class="border p-1 cursor-pointer">Реферальний код</div>
+            <!-- Секція: Локація -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Місцезнаходження</h2>
+                    <button
+                        type="button"
+                        @click="router.push({ name: 'location' })"
+                        class="text-xs font-semibold text-amber-600 hover:text-amber-700 transition"
+                    >
+                        + Додати іншу локацію
+                    </button>
                 </div>
 
-                <!-- кнопка додати іншу локацію -->
-                <button
-                    type="button"
-                    @click="router.push({ name: 'location' })"
-                    class="text-sm text-amber-600 hover:underline mt-1"
-                >
-                    + Додати іншу локацію
-                </button>
-
-                <!-- ЛОКАЦІЯ -->
-                <fieldset class="border-t pt-4">
-                    <legend class="text-sm font-medium text-gray-700 mb-3">Ваше місце локації</legend>
-
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Країна -->
-                    <div class="">
-                        <label class="block text-sm text-gray-600 mb-1">Країна</label>
-                        <div class="flex justify-between items-center mb-3">
-                            <select
-                                v-model="form.country_id"
-                                class="bg-amber-100 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-amber-400"
-                            >
-                                <option :value="null">Оберіть країну</option>
-                                <option v-for="c in countries" :key="c.id" :value="c.id">
-                                    {{ c.flag_emoji }} {{ c.name_ua }}
-                                </option>
-                            </select>
-
-                            <div class="shrink-0 ml-2 h-5">
-                                <input v-model="form.country_public" type="checkbox" class="" />
-                            </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Країна</label>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500">
+                                <input
+                                    v-model="form.country_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічна</span>
+                            </label>
                         </div>
+                        <select
+                            v-model="form.country_id"
+                            class="w-full px-3.5 py-2 text-sm bg-white rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none transition"
+                        >
+                            <option :value="null">Оберіть країну</option>
+                            <option v-for="c in countries" :key="c.id" :value="c.id">
+                                {{ c.flag_emoji }} {{ c.name_ua }}
+                            </option>
+                        </select>
                     </div>
 
                     <!-- Регіон -->
-                    <div class="mb-3">
-                        <label class="block text-sm text-gray-600 mb-1">Регіон</label>
-                        <div class="flex justify-between items-center">
-                            <select
-                                v-model="form.region_id"
-                                :disabled="!form.country_id"
-                                class="bg-amber-100 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
-                            >
-                                <option :value="null">Оберіть регіон</option>
-                                <option v-for="r in regions" :key="r.id" :value="r.id">
-                                    {{ r.name }}
-                                </option>
-                            </select>
-                            <div class="shrink-0 ml-2 h-5">
-                                <input v-model="form.region_public" type="checkbox" class="" />
-                            </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Регіон</label>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500">
+                                <input
+                                    v-model="form.region_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічний</span>
+                            </label>
                         </div>
+                        <select
+                            v-model="form.region_id"
+                            :disabled="!form.country_id"
+                            class="w-full px-3.5 py-2 text-sm bg-white rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none disabled:bg-gray-100 disabled:opacity-60 transition"
+                        >
+                            <option :value="null">Оберіть регіон</option>
+                            <option v-for="r in regions" :key="r.id" :value="r.id">
+                                {{ r.name }}
+                            </option>
+                        </select>
                     </div>
 
                     <!-- Місто -->
-                    <div class="mb-3">
-                        <label class="block text-sm text-gray-600 mb-1">Місто</label>
-                        <div class="flex justify-between items-center">
-                            <select
-                                v-model="form.city_id"
-                                :disabled="!form.region_id"
-                                class="bg-amber-100 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
-                            >
-                                <option :value="null">Оберіть місто</option>
-                                <option v-for="c in cities" :key="c.id" :value="c.id">
-                                    {{ c.name }}
-                                </option>
-                            </select>
-                            <div class="shrink-0 ml-2 h-5">
-                                <input v-model="form.city_public" type="checkbox" class="" />
-                            </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Місто</label>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500">
+                                <input
+                                    v-model="form.city_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічне</span>
+                            </label>
                         </div>
+                        <select
+                            v-model="form.city_id"
+                            :disabled="!form.region_id"
+                            class="w-full px-3.5 py-2 text-sm bg-white rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none disabled:bg-gray-100 disabled:opacity-60 transition"
+                        >
+                            <option :value="null">Оберіть місто</option>
+                            <option v-for="c in cities" :key="c.id" :value="c.id">
+                                {{ c.name }}
+                            </option>
+                        </select>
                     </div>
-                </fieldset>
+                </div>
+            </div>
 
-                <!-- кнопки -->
-                <div class="flex justify-between gap-4 pt-2">
+            <!-- Дії та знищення акаунту -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <button
+                    type="button"
+                    @click="isDeleteUserModalOpen = true"
+                    class="px-4 py-2 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition cursor-pointer"
+                >
+                    Видалити профіль
+                </button>
+
+                <div class="flex gap-3">
                     <button
                         type="button"
                         @click="router.push({ name: 'home' })"
-                        class="bg-[#CEC526] rounded px-6 py-2 text-gray-800 hover:bg-[#F2E70A] transition text-sm lg:text-base"
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition cursor-pointer"
                     >
-                        Повернутися
+                        Скасувати
                     </button>
                     <button
                         type="submit"
                         :disabled="isLoading"
-                        class="bg-[#CEC526] rounded px-6 py-2 text-gray-800 hover:bg-[#F2E70A] disabled:opacity-50 transition text-sm lg:text-base"
+                        class="px-6 py-2.5 text-sm font-semibold text-gray-900 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 rounded-lg shadow-xs transition cursor-pointer"
                     >
                         {{ isLoading ? 'Збереження...' : 'Зберегти зміни' }}
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
+
+        <DeleteUserModel
+            v-if="isDeleteUserModalOpen"
+            @submit="handleDeleteUser"
+            @cancel="isDeleteUserModalOpen = false"
+        />
     </div>
 </template>

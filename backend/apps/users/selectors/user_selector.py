@@ -1,5 +1,6 @@
 from apps.users.models import CustomUser,ReferralUsage
 
+from apps.users.models.password_reset_token import PasswordResetToken
 from apps.users.models.referral_code import ReferralCode
 from apps.users.dto.user_dto import User_Id_PrivateOutDTO, UserShortOutDTO
 
@@ -47,4 +48,15 @@ class UserSelector:
         dto = _to_dto_short_user_out(user)
 
         return dto
+
+
+    def get_password_reset_token(self, token) -> PasswordResetToken | None:
+        return PasswordResetToken.objects.filter(token=token).first()
+
+
+
+    def find_by_email(self, email: str) -> int | None:
+        user = CustomUser.objects.filter(email=email).first()
+        return user.id if user else None
+
 

@@ -14,20 +14,14 @@ from apps.users.api.serialazers.user_serializer import (
     UserPrivatOutSerializer,
 )
 
-from core.users.csrf_permission import CsrfPermission
-
 from apps.users.api.serialazers.register_serializer import (
     RegisterInSerializer,
     ProfileUpdateInSerializer,
 )
-
 from apps.users.services import UserService
 
-
+from core.users.csrf_permission import CsrfPermission
 from drf_spectacular.utils import extend_schema
-
-
-from core.func_print import prt
 
 
 class UserViewSet(ViewSet):
@@ -112,10 +106,23 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-
-    @extend_schema(request=ProfileUpdateInSerializer(), responses=RegisterInSerializer())
+    @extend_schema(
+        request=ProfileUpdateInSerializer(), responses=RegisterInSerializer()
+    )
     def update(self, request, pk=None):
-        user_id = request.user.id
+        user_id = getattr(request.user, "id", None)
+        try:
+            if int(pk) != user_id:
+                return Response(
+                    {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         if int(user_id) != int(pk):
             return Response(
                 {"detail": "Ви можете редагувати тільки власний профіль"},
@@ -134,5 +141,17 @@ class UserViewSet(ViewSet):
     # def partial_update(self, request, pk=None):
     #     pass
 
-    # def destroy(self, request, pk=None):
-    #     pass
+    def destroy(self, request, pk=None):
+        user_id = getattr(request.user, "id", None)
+        try:
+            if int(pk) != user_id:
+                return Response({"detail": "Ви не можете видаляти профіль"},status=status.HTTP_403_FORBIDDEN,)
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "Ви не доступу, якщо ви не залогінені!!"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        self._service.delete_user(user_id)
+
+        return Response({"detail": "Профіль видалено"}, status=status.HTTP_200_OK)

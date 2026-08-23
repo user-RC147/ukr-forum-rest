@@ -154,6 +154,12 @@ const routes = [
                 component: () => import('@/modules/users/views/RegisterView.vue'),
                 meta: { requiresAuth: false },
             },
+            {
+                path: 'reset-password',
+                name: 'reset-password',
+                component: () => import('@/modules/users/views/ResetPasswordView.vue'),
+                meta: {requiresAuth: false},
+            }
         ],
     },
 ]
