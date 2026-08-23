@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
+from apps.geo.cache_keys import region_by_country_cache_key
 from apps.geo.contracts.dto.region_dto import RegionDTO
 from apps.geo.contracts.exceptions.region_exception import RegionNotFoundError
 from apps.geo.models.region_model import RegionModel
@@ -39,7 +40,7 @@ class RegionRepository:
         qs = self.model.objects.filter(country__id=country_id).select_related("country")
 
         return cache.get_or_set(
-            f"region:country:{country_id}",
+            region_by_country_cache_key(country_id),
             lambda: [_to_dto_region(r) for r in qs],
             1200 * 24 * 7,
         )

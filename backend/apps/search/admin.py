@@ -1,10 +1,14 @@
 from django.contrib import admin
 
+from core.cache.cache_invalidation import CacheInvalidationAdminMixin
+
 from .models import CategoryModel, TagModel
+from .repository import CATEGORY_CACHE_KEY, TAG_CACHE_KEY
 
 
 @admin.register(CategoryModel)
-class CategoryModelAdmin(admin.ModelAdmin):
+class CategoryModelAdmin(CacheInvalidationAdminMixin, admin.ModelAdmin):
+    cache_key = CATEGORY_CACHE_KEY
     search_fields = ["name"]
     list_per_page = 20
     ordering = ["name"]
@@ -13,7 +17,8 @@ class CategoryModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(TagModel)
-class TagModelAdmin(admin.ModelAdmin):
+class TagModelAdmin(CacheInvalidationAdminMixin, admin.ModelAdmin):
+    tag_key = TAG_CACHE_KEY
     search_fields = ["name"]
     list_per_page = 20
     ordering = ["name"]

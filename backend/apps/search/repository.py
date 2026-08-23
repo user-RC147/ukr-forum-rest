@@ -7,6 +7,9 @@ from .models import CategoryModel, TagModel
 from .ports import CategoryRepositoryPort, TagRepositoryPort
 
 
+CATEGORY_CACHE_KEY = "category:all"
+TAG_CACHE_KEY = "tag:all"
+
 class CategoryRepository:
     def __init__(self) -> None:
         self.model = CategoryModel
@@ -24,7 +27,7 @@ class CategoryRepository:
         result = self.model.objects.prefetch_related("tags")
         if ids is None:
             return cache.get_or_set(
-                "category:all", lambda: [_to_dto_category(r) for r in result], 60 * 5
+                CATEGORY_CACHE_KEY, lambda: [_to_dto_category(r) for r in result], 60 * 5
             )
 
         result = result.filter(id__in=ids)
@@ -48,7 +51,7 @@ class TagRepository:
         result = self.model.objects.all()
         if ids is None:
             return cache.get_or_set(
-                "tag:all", lambda: [_to_dto_tag(r) for r in result], 60 * 5
+                TAG_CACHE_KEY, lambda: [_to_dto_tag(r) for r in result], 60 * 5
             )
 
         result = result.filter(id__in=ids)
