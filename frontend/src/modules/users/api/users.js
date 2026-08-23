@@ -19,24 +19,24 @@ export const updateProfile = (userId, data) => {
   return api.put(`/users/${userId}/`, data)
 }
 
-export const updateLocation = (data) => {
-  return api.post('/users/location/', data)
-}
+// export const updateLocation = (data) => {
+//   return api.post('/users/location/', data)
+// }
 
-export const changePassword = (data) => {
-  return api.post('/users/change-password/', data)
-}
+// export const changePassword = (data) => {
+//   return api.post('/users/change-password/', data)
+// }
 
-export const deleteAccount = () => {
-  return api.delete('/users/delete/')
+export const deleteAccount = (userId) => {
+  return api.delete(`/users/${userId}/`)
 }
 
 export const requestPasswordReset = (data) => {
-  return api.post('/users/password-reset/', data)
+  return api.post('/auth/password-reset/request/', data)
 }
 
 export const confirmPasswordReset = (data) => {
-  return api.post('/users/password-reset/confirm/', data)
+  return api.post('/auth/password-reset/confirm/', data)
 }
 
 export const logoutUser = () => {

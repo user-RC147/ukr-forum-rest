@@ -133,6 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+
 # --- Мова і час ---
 LANGUAGE_CODE = "uk"  # українська
 TIME_ZONE = "Europe/Kyiv"
@@ -158,6 +159,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,
 MEDIA_URL = '/files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'files')  # или где у тебя файлы
 
+PASSWORD_RESET_TOKEN_TTL_MINUTES = 5
 
 SIMPLE_JWT = {
     # Змінюємо час дії основного токена на 24 години (1 день)

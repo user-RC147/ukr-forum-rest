@@ -77,3 +77,8 @@ class UserService:
 
         dto = _to_dto_out_profile(my_profile, locations)
         return dto
+
+
+    def delete_user(self, user_id:int)->None:
+        self._repository.delete_user(user_id)
+        

@@ -220,12 +220,12 @@
 
             <!-- Об'єкт -->
             <div class="flex flex-col gap-2">
-                <router-link
+                <!-- <router-link
                     :to="{ name: 'household-asset-create', query: selectedGroup ? { group_id: selectedGroup } : {} }"
                     class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
                 >
                     + Створити об'єкт
-                </router-link>
+                </router-link> -->
 
                 <div class="bg-amber-100 px-4 py-2 rounded-2xl">
                     <select v-model="selectedAsset" class="bg-transparent focus:outline-none text-sm">
