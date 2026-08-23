@@ -3,11 +3,12 @@ from collections.abc import Iterable
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
+from apps.geo.cache_keys import region_by_country_cache_key
 from apps.geo.contracts.dto.region_dto import RegionDTO
 from apps.geo.contracts.exceptions.region_exception import RegionNotFoundError
 from apps.geo.models.region_model import RegionModel
 from apps.geo.ports.repo_ports import RegionRepositoryPort
-from apps.geo.cache_keys import region_by_country_cache_key
+
 
 class RegionRepository:
     def __init__(self, model=RegionModel) -> None:

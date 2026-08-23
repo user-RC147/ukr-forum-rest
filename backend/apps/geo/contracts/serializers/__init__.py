@@ -1,11 +1,9 @@
+from .city_serializers import CitySerializer
 from .country_serializers import CountrySerializer
 from .region_serializers import RegionSerializer
-from .city_serializers import CitySerializer
-
-
 
 __all__=[
+    'CitySerializer',
     'CountrySerializer',
     'RegionSerializer',
-    'CitySerializer',
 ]
