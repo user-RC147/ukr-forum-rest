@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Greatest
 
+from apps.geo.cache_keys import city_by_region_cache_key
 from apps.geo.contracts.dto.city_dto import CityDTO
 from apps.geo.contracts.exceptions.city_exception import CityNotFoundError
 from apps.geo.models.city_model import CityModel
@@ -48,7 +49,7 @@ class CityRepository:
         )
 
         return cache.get_or_set(
-            f"city:region:{region_id}",
+            city_by_region_cache_key(region_id),
             lambda: [_to_dto_city(r) for r in qs],
             1200 * 24 * 7,
         )

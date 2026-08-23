@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Greatest
 
+from apps.geo.cache_keys import country_cache_key
 from apps.geo.contracts.dto.country_dto import CountryDTO
 from apps.geo.contracts.exceptions.country_exception import CountryNotFoundError
 from apps.geo.models.country_model import CountryModel
@@ -35,7 +36,7 @@ class CountryRepository:
     ) -> list[CountryDTO]:
 
         all_countries = cache.get_or_set(
-            "country:all",
+            country_cache_key(),
             lambda: [_to_dto_country(r) for r in self.model.objects.all()],
             1200 * 24 * 7,
         )
