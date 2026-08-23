@@ -2,6 +2,7 @@
 import { useProductSearchResults } from '../composables/useProductSearchResults'
 import SearchFiltersBar from '../components/SearchFiltersBar.vue'
 import { useRoute, useRouter } from 'vue-router'
+import { formatAddress } from '../utils/location'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,7 +37,7 @@ function goToPage(p) {
         <div class="flex flex-col flex-grow p-4 sm:py-3 min-w-0 justify-between">
           <h3 class="font-semibold text-base sm:text-lg mb-1.5 line-clamp-2">{{ p.title }}</h3>
           <p class="text-xs sm:text-sm text-gray-600 line-clamp-1">
-            {{ p.city ? `${p.city}, ${p.region}, ${p.country}` : 'Адреса не вказана' }} • {{ p.createdAt }}
+            {{ formatAddress(p, true) }}<span v-if="p.createdAt"> • {{ p.createdAt }}</span>
           </p>
         </div>
         <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center p-4 sm:py-3 gap-2 sm:min-w-[120px] border-t sm:border-t-0 sm:border-l border-gray-100">
@@ -51,12 +52,12 @@ function goToPage(p) {
 
     <nav v-if="totalPages > 1" class="flex items-center justify-center gap-3 my-8">
       <button :disabled="!hasPrevious" @click="goToPage(page - 1)"
-              class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              class="cursor-pointer px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         &laquo; Попередня
       </button>
       <span class="px-2 text-gray-700 font-medium">Сторінка {{ page }} з {{ totalPages }}</span>
       <button :disabled="!hasNext" @click="goToPage(page + 1)"
-              class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              class="cursor-pointer px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
         Наступна &raquo;
       </button>
     </nav>

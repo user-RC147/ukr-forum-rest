@@ -123,7 +123,7 @@ async function confirmDelete() {
           type="button"
           :disabled="deleting"
           @click="confirmDelete"
-          class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-2.5 px-4 transition-colors duration-200 flex items-center justify-center gap-2"
+          class="flex-1 cursor-pointer bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-2.5 px-4 transition-colors duration-200 flex items-center justify-center gap-2"
         >
           <TrashIcon class="w-4 h-4" />
           {{ deleting ? "Видалення..." : "Так, видалити" }}
@@ -133,7 +133,7 @@ async function confirmDelete() {
           type="button"
           :disabled="deleting"
           @click="goBack"
-          class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:opacity-60 text-gray-800 font-semibold rounded-xl py-2.5 px-4 transition-colors duration-200 flex items-center justify-center gap-2"
+          class="flex-1 cursor-pointer bg-gray-100 hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed text-gray-800 font-semibold rounded-xl py-2.5 px-4 transition-colors duration-200 flex items-center justify-center gap-2"
         >
           <ArrowUturnLeftIcon class="w-4 h-4" />
           Ні, назад

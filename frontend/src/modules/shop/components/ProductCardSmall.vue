@@ -1,17 +1,13 @@
 <script setup>
 import { computed } from 'vue'
+import { getProductThumbnailUrl } from '@/shared/utils/media'
+import { formatAddress } from '../utils/location'
 
 const props = defineProps({
   product: { type: Object, required: true },
 })
 
-const imageUrl = computed(() => {
-  const files = props.product.files
-  if (!files || !Array.isArray(files) || !files.length) {
-    return null
-  }
-  return files[0].file
-})
+const imageUrl = computed(() => getProductThumbnailUrl(props.product))
 
 const currency = computed(() => {
   const c = props.product.country
@@ -19,11 +15,7 @@ const currency = computed(() => {
 })
 
 const location = computed(() => {
-  const { city, region, country } = props.product
-  if (city?.name && region?.name) return `${city.name}, ${region.name}`
-  if (region?.name) return region.name
-  if (country?.name) return country.name
-  return 'Адреса не вказана'
+  return formatAddress(props.product)
 })
 
 const displayDate = computed(() => {
@@ -43,7 +35,6 @@ const displayDate = computed(() => {
   >
     <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
 
-      <!-- Фото -->
       <div class="overflow-hidden bg-gray-50">
         <img
           v-if="imageUrl"
@@ -60,16 +51,18 @@ const displayDate = computed(() => {
         </div>
       </div>
 
-      <!-- Текст -->
       <div class="p-3 flex flex-col flex-1">
-        <h3 class="text-sm font-medium text-gray-800 line-clamp-2 leading-snug mb-2 group-hover:text-blue-600 transition-colors duration-200">
+        <h3 class="text-sm font-medium text-gray-800 line-clamp-2 leading-snug mb-2 text-center group-hover:text-blue-600 transition-colors duration-200">
           {{ product.title }}
         </h3>
-        <p class="font-bold text-gray-900 mt-auto text-sm">
+        <p class="font-bold text-gray-900 mt-auto text-sm text-center">
           {{ product.price }} {{ currency }}
         </p>
-        <p class="text-xs text-gray-400 mt-1 truncate">
-          {{ location }} · {{ displayDate }}
+        <p class="text-xs text-gray-400 mt-1 truncate text-center" :title="location">
+          {{ location }}
+        </p>
+        <p v-if="displayDate" class="text-xs text-gray-400 truncate text-center" :title="displayDate">
+          {{ displayDate }}
         </p>
       </div>
 
