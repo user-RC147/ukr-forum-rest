@@ -5,9 +5,15 @@ import os
 
 from django.core.management.base import BaseCommand, CommandError
 
+from apps.geo.cache_keys import (
+    city_by_region_cache_key,
+    country_cache_key,
+    region_by_country_cache_key,
+)
 from apps.geo.models.city_model import CityModel
 from apps.geo.models.country_model import CountryModel
 from apps.geo.models.region_model import RegionModel
+from core.cache.cache_invalidation import invalidate_cache
 
 # Файли за замовчуванням лежать поруч зі скриптом
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -131,6 +137,7 @@ class Command(BaseCommand):
         self.stdout.write(
             f"  Країн створено: {len(to_create)}, оновлено name_ua: {len(to_update)}"
         )
+        invalidate_cache(country_cache_key())
 
         country_by_code = {c.code: c for c in CountryModel.objects.all()}
         return country_by_code, id_country_to_code
@@ -184,6 +191,11 @@ class Command(BaseCommand):
             RegionModel.objects.bulk_update(
                 list(to_update.values()), ["name_ua"], batch_size=batch_size
             )
+        to_create.update(to_update)
+
+        all_country_ids = {i.country.id for i in to_create.values()}
+
+        [invalidate_cache(region_by_country_cache_key(i)) for i in all_country_ids]
 
         self.stdout.write(
             f"  Регіонів створено: {len(to_create)}, оновлено name_ua: {len(to_update)}"
@@ -207,6 +219,7 @@ class Command(BaseCommand):
         }
         create_buffer = []
         update_buffer = []
+        all_region_ids = set()
         created = 0
         updated = 0
         skipped = 0
@@ -216,6 +229,7 @@ class Command(BaseCommand):
             if create_buffer:
                 CityModel.objects.bulk_create(create_buffer, batch_size=batch_size)
                 created += len(create_buffer)
+                all_region_ids.update({c.region.id for c in create_buffer})
                 create_buffer = []
 
         def flush_update():
@@ -225,6 +239,7 @@ class Command(BaseCommand):
                     update_buffer, ["name_ua"], batch_size=batch_size
                 )
                 updated += len(update_buffer)
+                all_region_ids.update({u.region.id for u in update_buffer})
                 update_buffer = []
 
         for row in self._read_rows(path):
@@ -268,6 +283,8 @@ class Command(BaseCommand):
 
         flush_create()
         flush_update()
+
+        [invalidate_cache(city_by_region_cache_key(i)) for i in all_region_ids]
 
         self.stdout.write(
             f"  Міст створено: {created}, оновлено name_ua: {updated}"
