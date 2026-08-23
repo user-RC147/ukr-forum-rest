@@ -293,6 +293,74 @@
                         </p>
                     </div>
 
+                    <!-- last_name-->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Прізвище</label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.last_name_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічний</span>
+                            </label>
+                        </div>
+
+                        <!-- @blur="onBlur('last_name')" -->
+                        <input
+                            v-model="form.last_name"
+                            type="text"
+                            placeholder="Ваше прізвище"
+                            
+                            :class="[
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
+                                fieldErrors.last_name
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
+                            ]"
+                        />
+                        <p v-if="fieldErrors.last_name" class="text-rose-500 text-xs mt-1">
+                            {{ fieldErrors.last_name }}
+                        </p>
+                    </div>
+
+                    <!-- first_name-->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-500">Ім'я</label>
+                            <label
+                                class="inline-flex items-center gap-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+                            >
+                                <input
+                                    v-model="form.first_name_public"
+                                    type="checkbox"
+                                    class="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>Публічний</span>
+                            </label>
+                        </div>
+                        <!-- @blur="onBlur('first_name')" -->
+                        <input
+                            v-model="form.first_name"
+                            type="text"
+                            placeholder="Ваше ім'я" 
+                            
+                            :class="[
+                                'w-full px-3.5 py-2 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
+                                fieldErrors.first_name
+                                    ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
+                                    : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
+                            ]"
+                        />
+                        <p v-if="fieldErrors.first_name" class="text-rose-500 text-xs mt-1">
+                            {{ fieldErrors.first_name }}
+                        </p>
+                    </div>
+                    
+
                     <!-- Дата народження -->
                     <div>
                         <div class="flex items-center justify-between mb-1">
