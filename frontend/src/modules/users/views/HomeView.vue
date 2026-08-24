@@ -6,7 +6,12 @@ const userStore = useUserStore()
 
 onMounted(async () => {
   if (!userStore.user) {
-    await userStore.fetchProfile()
+    try{
+      await userStore.fetchProfile()
+    } catch {
+      // юзер не авторизований — це нормальний стан для головної сторінки,
+      // нічого страшного не сталось, просто показуємо сторінку для гостя
+    }    
   }
 })
 </script>

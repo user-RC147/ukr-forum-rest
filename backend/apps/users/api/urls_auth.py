@@ -4,13 +4,14 @@ from apps.users.api.views import (
     RefreshViewSet,
     CsrfViewSet,
     LoginViewSet,
-    PasswordResetViewSet,
+    PasswordResetViewSet,LogoutViewSet
 )
 
 router = DefaultRouter()
 
 
 router.register("login", LoginViewSet, basename="login")
+router.register("logout", LogoutViewSet, basename="logout")
 router.register("refresh", RefreshViewSet, basename="refresh")
 router.register("csrf", CsrfViewSet, basename="csrf")
 
