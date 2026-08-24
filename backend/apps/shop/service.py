@@ -160,8 +160,8 @@ class ProductService:
         with self.uow:
             file_list = self.file_contract.create_many(files, data["owner_id"])
             file_ids = [i.id for i in file_list]
-            data["file_ids"] = file_ids
             data.pop("files")
+            data["file_ids"] = file_ids
 
             product = self.repo.create(data)
 

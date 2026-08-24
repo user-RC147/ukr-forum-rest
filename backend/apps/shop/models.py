@@ -1,4 +1,3 @@
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.contrib.postgres.search import SearchVector
 from django.db import models
@@ -22,7 +21,6 @@ class ProductModel(models.Model):
 
     owner_id = models.PositiveIntegerField(blank=False)
     category_id = models.IntegerField()
-    file_ids = ArrayField(base_field=models.PositiveIntegerField())
 
     country_id = models.PositiveIntegerField(blank=False, null=True)
     region_id = models.PositiveIntegerField(null=True)
@@ -53,3 +51,31 @@ class ProductModel(models.Model):
         if self.updated_at != self.created_at:
             return f"(upd: {self.updated_at:%d.%m.%Y}){self.title} - {self.price} грн."
         return f"(created: {self.created_at:%d.%m.%Y}){self.title} - {self.price} грн."
+
+
+class ProductFileModel(models.Model):
+    file_id = models.PositiveIntegerField()
+
+    product = models.ForeignKey(
+        to=ProductModel,
+        on_delete=models.CASCADE,
+        related_name="files",
+        verbose_name="Файли товара",
+    )
+
+    class Meta:
+        db_table = "file_product"
+        ordering = ["-id"]
+        verbose_name = "Файл товару"
+        verbose_name_plural = "Файли товарів"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "file_id"], name="uniq_product_file"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["file_id"]),
+        ]
+
+    def __str__(self):
+        return f"[{self.file_id}] for product with id: {self.product.pk}"

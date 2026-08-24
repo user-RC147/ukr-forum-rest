@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ProductModel
+from .models import ProductFileModel, ProductModel
 
 
 @admin.register(ProductModel)
@@ -11,3 +11,11 @@ class ProductAdmin(admin.ModelAdmin):
     ordering = ["-created_at"]
     show_full_result_count = False
     readonly_fields = ["id", "created_at"]
+
+
+@admin.register(ProductFileModel)
+class ProductFileAdmin(admin.ModelAdmin):
+    search_fields = ["file_id"]
+    list_per_page = 25
+    ordering = ["-id"]
+    show_full_result_count = False
