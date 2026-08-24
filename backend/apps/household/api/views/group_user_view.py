@@ -1,6 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
+
+from core.users.csrf_permission import CsrfPermission
+from drf_spectacular.utils import extend_schema
 
 from apps.household.api.serializers import (
     GroupMemberOutSerializer,
@@ -12,7 +16,6 @@ from apps.household.dto.group_dto import CreateGroupInDTO, Group_Id_Name_InDTO
 from apps.household.models.group import GroupMember
 from apps.household.services.group_service import GroupService
 from apps.household.dto import GroupOutDTO
-from drf_spectacular.utils import extend_schema
 from apps.household.api.serializers.group_serializer import Group_Id_InSerializer,CreateGroupInSerializer
 
 from apps.shop import serializers
@@ -24,7 +27,10 @@ class GroupViewSet(viewsets.ViewSet):
     Працює виключно через сервісний шар Чистої Архітектури.
     """
 
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -34,12 +40,6 @@ class GroupViewSet(viewsets.ViewSet):
     # Викликаємо метод екземпляра сервісу, передаючи ID авторизованого юзера
     def auth_user_in_group(self, request): ...
 
-    # def list(self, request): 
-    #     grups = self._service.get_all_list()
-    #     serializer = GroupOutSerializer(grups,many=True)
-      
-    #     return Response(data=serializer.data, status=status.HTTP_200_OK)
-    
     
     def list(self,request):
         user_id = request.user.id
@@ -73,8 +73,10 @@ class GroupViewSet(viewsets.ViewSet):
         dto = CreateGroupInDTO(
             name=data['name']
         )
-        results = self._service.create_group(dto=dto,creator_id=creator_id)
-         
+        seril = self._service.create_group(dto=dto,creator_id=creator_id)
+
+        results = GroupOutSerializer(seril).data
+        
         return Response({'results':results}, status=status.HTTP_201_CREATED)
      
 

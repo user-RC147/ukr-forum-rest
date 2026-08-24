@@ -14,7 +14,7 @@ urlpatterns = [
     # Users
     path("api/users/", include("apps.users.api.urls")),
     path("api/auth/",include("apps.users.api.urls_auth")),
-    path("api/auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
+    #path("api/auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
     # Geo
     path("api/geo/", include("apps.geo.api.urls")),
     path("api/household/", include("apps.household.api.urls")),
