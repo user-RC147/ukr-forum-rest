@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema
 
 from apps.household.api.serializers.market_serializer import MarketSerializer, MarketCreateSerializer,MarketFullSerializer
 from apps.household.apps import HouseholdConfig
-from apps.household.dto.location_dto import LocationIdInDTO
+from apps.household.dto.location_dto import Location_Id_InDTO
 from apps.household.permissions.group_permissions import IsGroupCreator,IsOwner
 from apps.household.dto.market_dto import CreateMarketInDTO, ListMarketDTO, MarketFullOutDTO
 from apps.household.repositories.maket_repo import MarketRepo
@@ -64,7 +64,7 @@ class MarketViewSet(ViewSet):
         dto = CreateMarketInDTO(
             name=vd['name'],
             address_line=vd['address_line'],
-            location =LocationIdInDTO(
+            location =Location_Id_InDTO(
                 country_id=vd['country_id'],
                 region_id=vd['region_id'],
                 city_id=vd['city_id'],

@@ -11,9 +11,12 @@ from apps.household.dto.location_dto import (
     CityNameOutDTO,
     CountryNameOutDTO,
     LocationId_Name_OutDTO,
-    LocationIdOutDTO,
     RegionNameOutDTO,
 )
+
+from core.dto.geo.location_dto import LocationOutDTO,Location_Id_InDTO,Location_Id_OutDTO,LocationShortOutDTO
+
+
 
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.dto.market_dto import Market_Id_Name_OutDTO

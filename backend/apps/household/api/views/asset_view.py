@@ -6,11 +6,11 @@ from rest_framework import status
  
 from drf_spectacular.utils import extend_schema
 
-from apps.household.api.serializers.asset_serializer import AssetListFilterSerializer, AssetOutSerializer, CreateAssetSerializer
+from apps.household.api.serializers.asset_serializer import AssetIdRegionOutSerializer, AssetListFilterSerializer, AssetOutSerializer, CreateAssetSerializer
 from apps.household.dto.asset_dto import CreateAssetDTO, ListAssetDTO
 from apps.household.services.asset_service import AssetService
 
-from apps.household.dto.location_dto import LocationIdInDTO
+from apps.household.dto.location_dto import Location_Id_InDTO
 
 
 class AssetViewSet(ViewSet):
@@ -37,7 +37,7 @@ class AssetViewSet(ViewSet):
             
         asset_list = self._service.get_list_asset(dto,request.user.id)
         
-        output_serializer = AssetOutSerializer(asset_list, many=True)
+        output_serializer = AssetIdRegionOutSerializer(asset_list, many=True)
         
         return Response({'results': output_serializer.data}, status=status.HTTP_200_OK)
             
@@ -54,10 +54,10 @@ class AssetViewSet(ViewSet):
             name=serializer.validated_data['name'],
             group_id=serializer.validated_data['group_id'],
             #location=LocationInDTO(**location_data),  # Автоматично розпакує country_id, region_id, city_id
-            location=LocationIdInDTO(
-                country_id=serializer.validated_data['location']['country_id'],
-                region_id=serializer.validated_data['location']['region_id'],
-                city_id=serializer.validated_data['location']['city_id']
+            location=Location_Id_InDTO(
+                country_id=serializer.validated_data['country_id'], #=serializer.validated_data['location']['country_id'],
+                region_id=serializer.validated_data['region_id'],
+                city_id=serializer.validated_data['city_id']
             ),
             address_line=serializer.validated_data.get('address_line')
         )

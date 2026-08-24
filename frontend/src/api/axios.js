@@ -99,7 +99,13 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    const isAuthEndpoint = originalRequest.url?.includes('/token/refresh/')
+    if (!originalRequest) {
+      return Promise.reject(error)
+    }
+
+    const isAuthEndpoint =
+      originalRequest.url?.includes('/auth/refresh/') ||
+      originalRequest.url?.includes('/token/refresh/')
 
     if (
       error.response.status === 401 &&

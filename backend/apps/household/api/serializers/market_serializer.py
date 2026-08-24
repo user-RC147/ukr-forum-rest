@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from apps.household.api.serializers.location_serializer import LocationInSerializer, LocationOutSerializer
+from core.serializers.location_serializer import Location_id_region_OutSerializer
 
 
 
@@ -47,7 +48,7 @@ class MarketExpenseInSerializer(serializers.Serializer):
 class MarketExpense_Id_OutSerializer(serializers.Serializer):
     id =serializers.IntegerField()
     name=serializers.CharField()
-    location=LocationInSerializer()
+    location=Location_id_region_OutSerializer()
     address_line=serializers.CharField()
     total = serializers.DecimalField(max_digits=12,decimal_places=3)
 
@@ -96,7 +97,7 @@ class MarketFullSerializer(serializers.Serializer):
 
     created_by = serializers.StringRelatedField(read_only=True)
 
-    location = MarketLocationSerializer(read_only=True)
+    location = Location_id_region_OutSerializer(read_only=True)
 
 
 class MarketCreateSerializer(serializers.Serializer):

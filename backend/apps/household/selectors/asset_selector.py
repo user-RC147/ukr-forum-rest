@@ -2,7 +2,7 @@ from apps.household.dto import ListAssetDTO
 from apps.household.dto.asset_dto import Asset_Id_Group_location_OutDTO, AssetOutDTO,Asset_Id_Group_OutDTO
 from apps.household.dto.group_dto import Group_id_user_OutDTO
 from apps.household.models.asset import Asset
-from apps.household.dto.location_dto import LocationIdOutDTO,CountryNameOutDTO
+from apps.household.dto.location_dto import LocationOutDTO,Location_Id_InDTO,Location_Id_OutDTO,LocationShortOutDTO,CountryNameOutDTO
 
 from django.db.models import Q
 
@@ -63,8 +63,8 @@ class AssetSelector:
 
 
 
-def _to_location_id_asset(data)->LocationIdOutDTO:
-    return LocationIdOutDTO(
+def _to_location_id_asset(data)->Location_Id_OutDTO:
+    return Location_Id_OutDTO(
         country_id=data.country_id,
         region_id=data.region_id,
         city_id=data.city_id

@@ -69,7 +69,7 @@ const handleLogout = () => {
           <!-- username -->
           <RouterLink to="/profile"
             class="bg-[#1e7bec] hover:bg-blue-700 text-white text-xs px-5 py-2 rounded">
-            {{ userStore.user?.username || '...' }}
+            {{ userStore.user?.display_name || '...' }}
           </RouterLink>
 
           <!-- кнопка вийти -->

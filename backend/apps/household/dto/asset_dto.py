@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from apps.household.dto.group_dto import GroupOutDTO,Group_id_user_OutDTO
-from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationOutDTO,LocationIdInDTO
+from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationOutDTO,Location_Id_InDTO
+
 
 
 
@@ -11,7 +12,7 @@ class Asset_Id_Group_location_OutDTO:
     id:int
     name:str
     group_id:int
-    location:LocationIdInDTO
+    location:Location_Id_InDTO
     address_line:str
     created_by_id:int
     created_at:datetime
@@ -52,7 +53,7 @@ class AssetId_Name_OutDTO:
 class CreateAssetDTO:
     name:str
     group_id:int
-    location:LocationIdInDTO
+    location:Location_Id_InDTO
     address_line: str | None = None  # Може бути рядком або None, за замовчуванням None
 
 
