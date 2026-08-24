@@ -7,14 +7,16 @@ from apps.household.dto.market_dto import (
     MarketExpense_Id_OutDTO,
 )
 
-from apps.household.dto.location_dto import LocationIdInDTO
+from apps.household.dto.location_dto import LocationOutDTO,Location_Id_InDTO,Location_Id_OutDTO,LocationShortOutDTO
+
 from apps.household.models import purchase, purchase_item
 from apps.household.models.market import Market
-from apps.household.dto.location_dto import LocationIdOutDTO
+
 from apps.household.models.purchase_item import PurchaseItem
 
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
+
 
 
 class MarketSelector:
@@ -61,9 +63,7 @@ class MarketSelector:
 
         paginator_pages = paginate(dto, count, page, page_size)
 
-        # print('===========================================================')
-        # print(paginator_pages)
-        # print('===========================================================')
+     
 
         return paginator_pages
 
@@ -75,7 +75,7 @@ class MarketSelector:
                 id=market.id,
                 name=market.name,
                 address_line=market.address_line,
-                location=LocationIdInDTO(
+                location=Location_Id_InDTO(
                     country_id=market.country_id,
                     region_id=market.region_id,
                     city_id=market.city_id,
@@ -89,8 +89,8 @@ class MarketSelector:
 
 # [{'purchase__market': 2, 'purchase__market__name': 'Edeka', 'total': Decimal('264.00000')}]>
 
-def _to_dto_location_id(data) -> LocationIdOutDTO:
-    return LocationIdOutDTO(
+def _to_dto_location_id(data) -> Location_Id_OutDTO:
+    return Location_Id_OutDTO(
         country_id=data['country_id'],
         region_id=data['region_id'],
         city_id=data['city_id']

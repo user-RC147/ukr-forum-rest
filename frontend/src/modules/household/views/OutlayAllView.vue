@@ -207,7 +207,7 @@
         <div class="flex flex-wrap justify-between gap-4 mb-6">
 
             <!-- Кнопки створення обєка-asset-->
-            <div class="grid grid-cols-2 gap-4 mb-10">
+            <div class="grid grid-cols-1 gap-4 mb-10">
                 <button
                     type="button"
                     @click="isAssetModalOpen = true"
@@ -215,27 +215,22 @@
             >
                     + Створити об'єкт
                 </button>
+
+                <!-- Об'єкт -->
+                <div class="flex flex-col gap-2">
+                    <div class="bg-amber-100 px-4 py-2 rounded-2xl">
+                        <select v-model="selectedAsset" class="bg-transparent focus:outline-none text-sm">
+                            <option :value="null">Всі об'єкти</option>
+                            <option v-for="asset in assetStore.assets" :key="asset.id" :value="asset.id">
+                                {{ asset.name }}: {{ asset.location.country.name }}-{{ asset.location.city.name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
               
             </div>
 
-            <!-- Об'єкт -->
-            <div class="flex flex-col gap-2">
-                <!-- <router-link
-                    :to="{ name: 'household-asset-create', query: selectedGroup ? { group_id: selectedGroup } : {} }"
-                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
-                >
-                    + Створити об'єкт
-                </router-link> -->
-
-                <div class="bg-amber-100 px-4 py-2 rounded-2xl">
-                    <select v-model="selectedAsset" class="bg-transparent focus:outline-none text-sm">
-                        <option :value="null">Всі об'єкти</option>
-                        <option v-for="asset in assetStore.assets" :key="asset.id" :value="asset.id">
-                            {{ asset.name }}
-                        </option>
-                    </select>
-                </div>
-            </div>
+            
 
             <!-- Група -->
             <div class="flex flex-col gap-2">
@@ -444,7 +439,7 @@
          <!-- МОДАЛЬНЕ ВІКНО ДЛЯ СТВОРЕННЯ ОБЄКТУ -->
         <CreateAssetModal
             v-if="isAssetModalOpen"
-            :selected-group="selectedGroup"
+            :selected-group="groupStore.groups.find(g=>g.id === selectedGroup)"
             @submit="handleAssetCreated"
             @cancel="isAssetModalOpen = false"
         />

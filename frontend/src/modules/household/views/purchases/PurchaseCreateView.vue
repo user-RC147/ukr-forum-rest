@@ -184,7 +184,7 @@
                 <select v-model="selectedAsset" class="w-full bg-transparent focus:outline-none">
                     <option :value="null">Всі об'єкти</option>
                     <option v-for="asset in assetStore.assets" :key="asset.id" :value="asset.id">
-                        {{ asset.name }}
+                        {{ asset.name }}: {{ asset.location.country.name }}-{{ asset.location.city.name }}
                     </option>
                 </select>
             </div>
@@ -352,7 +352,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="font-semibold bg-amber-50">
-                            <td colspan="5" class="text-right py-4 pr-6 border-t">Разом</td>
+                            <td colspan="6" class="text-right py-4 pr-6 border-t">Разом</td>
                             <td class="py-4 text-center border-t">{{ totalSum }}</td>
                         </tr>
                     </tfoot>

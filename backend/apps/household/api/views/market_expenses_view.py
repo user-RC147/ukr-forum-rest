@@ -4,7 +4,7 @@ from rest_framework.viewsets import ViewSet
 
 from apps.household.api.serializers.paginator_purchase_item_serializer import PaginatorSerializerOut
 from apps.household.services.market_service import MarketService
-from apps.household.api.serializers.market_serializer import MarketExpenseOutSerializer
+from apps.household.api.serializers.market_serializer import MarketExpenseOutSerializer,MarketExpense_Id_OutSerializer
 
 
 
@@ -27,7 +27,7 @@ class MarketExpenseViewSet(ViewSet):
 
         get_market_expenses = self._service.get_market_expenses(user_id, page, page_size,date_from,date_to)
 
-        results = MarketExpenseOutSerializer(get_market_expenses.items, many=True)
+        results = MarketExpense_Id_OutSerializer(get_market_expenses.items, many=True)  #MarketExpenseOutSerializer
 
         paginator = PaginatorSerializerOut(get_market_expenses)
 

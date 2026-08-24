@@ -9,7 +9,7 @@ from apps.household.dto.purchase_dto import PurchaseItemOutDTO, Purchase_Id_Name
 from apps.household.dto.asset_dto import AssetId_Name_OutDTO
 from apps.household.dto.market_dto import Market_Id_Name_OutDTO
 from apps.household.dto.product_dto import ProductOutDTO
-from apps.household.dto.location_dto import LocationIdInDTO
+from apps.household.dto.location_dto import Location_Id_InDTO
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.dto.category_dto import CategoryOutDTO
 from apps.household.dto.user_dto import User_Id_OutDTO
@@ -54,8 +54,8 @@ class PurchaseSelector:
         return dto_purchase_list
 
 
-def _dto_location(data) -> LocationIdInDTO:
-    return LocationIdInDTO(
+def _dto_location(data) -> Location_Id_InDTO:
+    return Location_Id_InDTO(
         country_id=data.country_id, region_id=data.region_id, city_id=data.city_id
     )
 

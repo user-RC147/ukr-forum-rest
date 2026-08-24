@@ -24,7 +24,7 @@
     });
 
     const form = ref({
-        group_id:'',
+        group_id: props.selectedGroup?.id || null, // Автоматично беремо ID переданої групи
         name: '',
         address_line: '',
         country_id: null,

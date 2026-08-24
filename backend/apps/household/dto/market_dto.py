@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationIdInDTO, LocationIdOutDTO, LocationOutDTO
+from apps.household.dto.location_dto import LocationId_Name_OutDTO, LocationOutDTO
+from core.dto.geo.location_dto import LocationOutDTO,Location_Id_InDTO,Location_Id_OutDTO,LocationShortOutDTO
 
 
 
@@ -14,7 +15,7 @@ class MarketExpenseInDTO:
 class MarketExpense_Id_OutDTO:
    id:int
    name:str
-   location:LocationIdOutDTO
+   location:Location_Id_OutDTO
    address_line:str
    total:Decimal
 
@@ -35,7 +36,7 @@ class ListMarketDTO:
 class CreateMarketInDTO:
     name:str
     address_line: str
-    location:LocationIdInDTO
+    location:Location_Id_OutDTO
 
 
 @dataclass(frozen=True)
@@ -50,7 +51,7 @@ class Market_Id_OutDTO:
     id:int
     name:str
     address_line: str
-    location:LocationIdInDTO
+    location:Location_Id_OutDTO
 
 @dataclass(frozen=True)
 class MarketFullOutDTO:

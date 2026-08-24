@@ -7,10 +7,10 @@ from apps.household.dto.asset_dto import (
     Asset_Id_Group_OutDTO,
 )
 from apps.household.dto.location_dto import (
-    CountryOutDTO,
+    CountryDTO,
     LocationOutDTO,
-    RegionOutDTO,
-    CityOutDTO,
+    RegionDTO,
+    CityDTO,City_id_region_DTO
 )
 from apps.household.repositories.asset_repo import AssetRepo
 
@@ -91,20 +91,20 @@ def _to_location_contract(data):
     return locations
 
 
-def _to_location_city_out(data, cities) -> CityOutDTO:
-    return CityOutDTO(
+def _to_location_city_out(data, cities) -> City_id_region_DTO:
+    return City_id_region_DTO(
         id=cities[data.city_id].id,
         name=cities[data.city_id].name,
         name_ua=cities[data.city_id].name_ua,
         country_id=cities[data.city_id].country_id,
-        region_id=cities[data.city_id].region["id"],
+        region_id=cities[data.city_id].region.id,
         latitude=cities[data.city_id].latitude,
         longitude=cities[data.city_id].longitude,
     )
 
 
-def _to_location_region_out(data, regions) -> RegionOutDTO:
-    return RegionOutDTO(
+def _to_location_region_out(data, regions) -> RegionDTO:
+    return RegionDTO(
         id=regions[data.region_id].id,
         name=regions[data.region_id].name,
         name_ua=regions[data.region_id].name_ua,
@@ -112,8 +112,8 @@ def _to_location_region_out(data, regions) -> RegionOutDTO:
     )
 
 
-def _to_location_country_out(data, countries) -> CountryOutDTO:
-    return CountryOutDTO(
+def _to_location_country_out(data, countries) -> CountryDTO:
+    return CountryDTO(
         id=countries[data.country_id].id,
         name=countries[data.country_id].name,
         name_ua=countries[data.country_id].name_ua,

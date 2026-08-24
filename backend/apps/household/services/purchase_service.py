@@ -5,10 +5,11 @@ from apps.household.dto.group_dto import (
     GroupMember_id_user_OutDTO,
 )
 from apps.household.dto.location_dto import (
-    CityOutDTO,
-    CountryOutDTO,
+    CityDTO,
+    City_id_region_DTO,
+    CountryDTO,
     LocationOutDTO,
-    RegionOutDTO,
+    RegionDTO,
 )
 from apps.household.dto.market_dto import MarketFullOutDTO
 from apps.household.dto.purchase_dto import (
@@ -58,7 +59,7 @@ class PurchaseService:
 
     def get_location_full(self, item):
         location = LocationOutDTO(
-            country=CountryOutDTO(
+            country=CountryDTO(
                 id=item.country.id,
                 name=item.country.name,
                 name_ua=item.country.name_ua,
@@ -66,13 +67,13 @@ class PurchaseService:
                 flag_emoji=item.country.flag_emoji,
                 currency=item.country.currency,
             ),
-            region=RegionOutDTO(
+            region=RegionDTO(
                 id=item.region.id,
                 name=item.region.name,
                 name_ua=item.region.name_ua,
                 country_id=item.region.country_id,
             ),
-            city=CityOutDTO(
+            city=City_id_region_DTO(
                 id=item.city.id,
                 name=item.city.name,
                 name_ua=item.city.name_ua,
@@ -211,8 +212,8 @@ def _dto_group_out(data, user_map) -> GroupOutDTO:
     )
 
 
-def _dto_location_country(data, countrys_map) -> CountryOutDTO:
-    return CountryOutDTO(
+def _dto_location_country(data, countrys_map) -> CountryDTO:
+    return CountryDTO(
         id=countrys_map[data.country_id].id,
         name=countrys_map[data.country_id].name,
         name_ua=countrys_map[data.country_id].name_ua,
@@ -222,8 +223,8 @@ def _dto_location_country(data, countrys_map) -> CountryOutDTO:
     )
 
 
-def _dto_location_region(data, regions_map) -> RegionOutDTO:
-    return RegionOutDTO(
+def _dto_location_region(data, regions_map) -> RegionDTO:
+    return RegionDTO(
         id=regions_map[data.region_id].id,
         name=regions_map[data.region_id].name,
         name_ua=regions_map[data.region_id].name_ua,
@@ -231,13 +232,13 @@ def _dto_location_region(data, regions_map) -> RegionOutDTO:
     )
 
 
-def _dto_location_city(data, cities_map) -> CityOutDTO:
-    return CityOutDTO(
+def _dto_location_city(data, cities_map) -> City_id_region_DTO:
+    return City_id_region_DTO(
         id=cities_map[data.city_id].id,
         name=cities_map[data.city_id].name,
         name_ua=cities_map[data.city_id].name_ua,
         country_id=cities_map[data.city_id].country_id,
-        region_id=cities_map[data.city_id].region["id"],
+        region_id=cities_map[data.city_id].region.id,
         latitude=cities_map[data.city_id].latitude,
         longitude=cities_map[data.city_id].longitude,
     )

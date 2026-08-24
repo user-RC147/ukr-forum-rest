@@ -9,9 +9,9 @@ from apps.geo.contracts.city_contract import get_city_contract
 
 from apps.household.dto.location_dto import (
     LocationOutDTO,
-    CountryOutDTO,
-    RegionOutDTO,
-    CityOutDTO,
+    CountryDTO,
+    RegionDTO,
+    CityDTO,City_id_region_DTO
 )
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
@@ -83,25 +83,15 @@ class MarketService:
         cities=self._city_contract.get_many(city_ids)
 
         location_ids={'countries':countries,'regions':regions,'cities':cities}
-        # print('===========================================================')
-        # print(location_ids)
-        # print('===========================================================')
-
+       
         dto = [_to_dto_market_expenses_out(item,location_ids)for item in market_expenses.items]
-        print('===========================================================')
-        print(dto)
-        print('===========================================================')
-
+     
         paginator_page= paginate(
             dto,
             market_expenses.count,
             market_expenses.page,
             market_expenses.page_size)
-        
-        print('===========================================================')
-        print(paginator_page)
-        print('===========================================================')
-
+      
         return paginator_page
 
 
@@ -116,8 +106,8 @@ class MarketService:
 
 
 # ==================================================================
-def _to_location_country(data, countrys_map) -> CountryOutDTO:
-    return CountryOutDTO(
+def _to_location_country(data, countrys_map) -> CountryDTO:
+    return CountryDTO(
         id=countrys_map[data.country_id].id,
         name=countrys_map[data.country_id].name,
         name_ua=countrys_map[data.country_id].name_ua,
@@ -127,8 +117,8 @@ def _to_location_country(data, countrys_map) -> CountryOutDTO:
     )
 
 
-def _to_location_region(data, regions_map) -> RegionOutDTO:
-    return RegionOutDTO(
+def _to_location_region(data, regions_map) -> RegionDTO:
+    return RegionDTO(
         id=regions_map[data.region_id].id,
         name=regions_map[data.region_id].name,
         name_ua=regions_map[data.region_id].name_ua,
@@ -136,13 +126,13 @@ def _to_location_region(data, regions_map) -> RegionOutDTO:
     )
 
 
-def _to_location_city(data, cities_map) -> CityOutDTO:
-    return CityOutDTO(
+def _to_location_city(data, cities_map) -> City_id_region_DTO:
+    return City_id_region_DTO(
         id=cities_map[data.city_id].id,
         name=cities_map[data.city_id].name,
         name_ua=cities_map[data.city_id].name_ua,
         country_id=cities_map[data.city_id].country_id,
-        region_id=cities_map[data.city_id].region['id'],
+        region_id=cities_map[data.city_id].region.id,
         latitude=cities_map[data.city_id].latitude,
         longitude=cities_map[data.city_id].longitude,
     )
