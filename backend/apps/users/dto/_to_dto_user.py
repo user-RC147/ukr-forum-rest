@@ -71,3 +71,5 @@ def _to_dto_user_out(data)->UserPublicOutDTO:
 
         location=data.location,
     )
+
+ 

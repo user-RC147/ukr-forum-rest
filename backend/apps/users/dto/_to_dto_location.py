@@ -38,11 +38,6 @@ def _to_dto_out_city(data, map_location) -> City_id_region_DTO:
         longitude=map_location['cities'][data.city_id].longitude,
     )
 
-
-# country_id: int,
-#     region_id: int,
-#     city_id: int,
-
 def _to_dto_out_id_location(data) -> Location_Id_OutDTO:
     return Location_Id_OutDTO(
         country_id=data.country_id,
@@ -87,3 +82,5 @@ def _get_locations(ids: list[dict], countries, regions, cities):
     locations = {"countries": countries, "regions": regions, "cities": cities}
 
     return locations
+
+

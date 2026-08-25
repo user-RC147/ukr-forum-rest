@@ -124,3 +124,4 @@ class UserPublicOutDTO:
     city_public:bool
 
     location:Optional[LocationOutDTO]
+

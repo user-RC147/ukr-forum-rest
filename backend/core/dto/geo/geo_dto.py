@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Optional
 
 
+
 @dataclass(frozen=True)
 class CountryShortDTO:
     """
@@ -38,5 +39,15 @@ class CityShortDTO:
     name_ua:str
     region_id:int
 
-
+@dataclass(frozen=True)
+class CityStarShortDTO:
+    """
+    DTO для передачі даних про місто між модулями.
+    frozen=True робить об'єкт незмінним (read-only), що гарантує безпеку даних.
+    """
+    id:int
+    name:str
+    name_ua:str
+    region_id:int
+    user_count:int
 

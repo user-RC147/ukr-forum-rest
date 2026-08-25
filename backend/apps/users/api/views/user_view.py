@@ -26,15 +26,15 @@ from drf_spectacular.utils import extend_schema
 
 class UserViewSet(ViewSet):
 
+    def get_permissions(self):
+        if self.action in [ "create"]: #"list", "retrieve",
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._service = UserService()
-
-    def get_permissions(self):
-        if self.action in ["list", "retrieve", "create"]:
-            return [AllowAny(), CsrfPermission()]
-        return [IsAuthenticated(), CsrfPermission()]
 
     @action(detail=False, methods=["get"], url_path="profile")
     def profile(self, request):
@@ -145,7 +145,10 @@ class UserViewSet(ViewSet):
         user_id = getattr(request.user, "id", None)
         try:
             if int(pk) != user_id:
-                return Response({"detail": "Ви не можете видаляти профіль"},status=status.HTTP_403_FORBIDDEN,)
+                return Response(
+                    {"detail": "Ви не можете видаляти профіль"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
         except (ValueError, TypeError):
             return Response(
                 {"detail": "Ви не доступу, якщо ви не залогінені!!"},
