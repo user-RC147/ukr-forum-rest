@@ -36,3 +36,9 @@ class LocationOutDTO:
     country: CountryDTO
     region: RegionDTO
     city: CityDTO
+
+@dataclass(frozen=True)
+class LocationStarOutDTO:
+    country: CountryDTO
+    region: RegionDTO
+    city: CityDTO

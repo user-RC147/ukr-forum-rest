@@ -6,10 +6,12 @@ from uuid import UUID
 from datetime import date
 
 
+from apps.geo.contracts.dto.country_dto import CountryDTO
 
 from core.dto.users.user_dto import ConsentOutDTO,UserShortOutDTO,User_Id_PrivateOutDTO
-from core.dto.geo.geo_dto import CountryShortDTO,RegionShortDTO, CityShortDTO
+from core.dto.geo.geo_dto import CountryShortDTO,RegionShortDTO, CityShortDTO,CityStarShortDTO
 from core.dto.geo.location_dto import Location_Id_OutDTO, LocationOutDTO,Location_Id_InDTO
+
 
 
 from dataclasses import dataclass
@@ -95,3 +97,19 @@ class UserPrivateOutDTO:
 
     location:Optional[LocationOutDTO]
 
+
+@dataclass(frozen=True)
+class UserStarIdOutDTO:
+    id:int
+    location:Optional[Location_Id_OutDTO]
+
+@dataclass(frozen=True)
+class UserStarOutDTO:
+    id:int
+    location:Optional[LocationOutDTO]
+
+
+@dataclass(frozen=True)
+class StarShoyOutDTO:
+    country:CountryDTO
+    cities:list[CityStarShortDTO]
