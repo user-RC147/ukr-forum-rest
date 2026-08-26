@@ -5,7 +5,7 @@ from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
 
-from apps.users.contracts.user_contract import get_user_contract
+from apps.users.contracts.user_contract import get_user_short_contract
 
 
 class GroupService:
@@ -17,7 +17,7 @@ class GroupService:
         super().__init__(**kwargs)
         self._group_repo = GroupRepo()
         self._group_selector = GroupSelector()
-        self._get_user_contract = get_user_contract()
+        self._get_user_contract = get_user_short_contract()
         self._selector = GroupSelector()
         self._repository = GroupRepo()
 

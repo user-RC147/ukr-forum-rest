@@ -1,16 +1,14 @@
-from tokenize import group
 from apps.household.repositories.product_repo import ProductRepo
 from apps.household.selectors.product_selector import ProductSelector
 from apps.household.dto.product_dto import CreateProductInDTO
 from apps.household.models.product import Product
 from apps.household.dto.product_dto import CreateProductInDTO,ProductOutDTO
 from apps.household.exceptions import ProductNotFoundException, ProductAlreadyExistsException
-from apps.shop import serializers
-from apps.shop.contracts.dto import ProductDTO
+
 from apps.users.exceptions import UserNotFoundException
 
 
-from apps.users.contracts.user_contract import get_user_contract
+from apps.users.contracts.user_contract import get_user_short_contract
 
 
 class ProductService:
@@ -18,7 +16,7 @@ class ProductService:
     def __init__(self)->None:
         self._repository=ProductRepo()
         self._selector=ProductSelector()
-        self._user_contract=get_user_contract()
+        self._user_contract=get_user_short_contract()
 
 
 

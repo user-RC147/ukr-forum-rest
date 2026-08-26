@@ -1,6 +1,8 @@
 from typing import Protocol
 
-from core.dto.users.user_dto import UserShortOutDTO,UserPublicOutDTO
+from core.dto.users.user_dto import UserShortOutDTO
+
+from apps.users.dto.user_dto import UserPublicOutDTO
 
 
 class UserProtocol(Protocol):

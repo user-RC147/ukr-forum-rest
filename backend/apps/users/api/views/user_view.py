@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from apps.users.api import serializers
-from apps.users.dto.user_dto import CreateUserInDTO, ProfilUserUpdateInDTO
+from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateUpdateInDTO
 from apps.users.dto._to_dto_user import _to_dto_user_in
 from apps.users.services.user_service import UserService
 from apps.users.api.serializers.user_serializer import (

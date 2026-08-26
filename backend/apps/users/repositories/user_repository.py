@@ -5,12 +5,12 @@ from django.conf import settings
 
 
 
-from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateOutDTO,UserShortOutDTO,ProfilUserUpdateInDTO
+from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateOutDTO,UserShortOutDTO,UserPrivateUpdateInDTO,User_Id_PrivateOutDTO
 from apps.users.dto import _to_dto_short_user_out,_to_dto_id_location_profile
 from apps.users.models import CustomUser,ReferralCode,ReferralUsage
 from apps.users.models.password_reset_token import PasswordResetToken
 
-from core.dto.users.user_dto import User_Id_PrivateOutDTO
+
 
 class UserRepo:
 
@@ -33,7 +33,7 @@ class UserRepo:
         return _to_dto_short_user_out(user)
    
 
-    def update_my_profile(self,dto:ProfilUserUpdateInDTO,user_id:int)->User_Id_PrivateOutDTO:
+    def update_my_profile(self,dto:UserPrivateUpdateInDTO,user_id:int)->User_Id_PrivateOutDTO:
 
         user = CustomUser.objects.get(id=user_id)
 
