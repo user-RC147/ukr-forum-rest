@@ -25,7 +25,7 @@ BASE_LOGGING = {
     "formatters": {
         "simple": {"format": "{levelname} {name} {message}", "style": "{"},
         "json": {
-            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "()": "pythonjsonlogger.json.JsonFormatter",
             "format": "%(asctime)s %(name)s %(levelname)s %(module)s %(message)s %(request_id)s %(user_id)s",
             "rename_fields": {"asctime": "timestamp", "levelname": "level"},
             "json_ensure_ascii": False,
