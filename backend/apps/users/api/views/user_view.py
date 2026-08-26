@@ -4,17 +4,17 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from apps.users.api import serialazers
+from apps.users.api import serializers
 from apps.users.dto.user_dto import CreateUserInDTO, ProfilUserUpdateInDTO
 from apps.users.dto._to_dto_user import _to_dto_user_in
 from apps.users.services.user_service import UserService
-from apps.users.api.serialazers.user_serializer import (
+from apps.users.api.serializers.user_serializer import (
     UserShortOutSerializer,
     UserPublicOutSerializer,
     UserPrivatOutSerializer,
 )
 
-from apps.users.api.serialazers.register_serializer import (
+from apps.users.api.serializers.register_serializer import (
     RegisterInSerializer,
     ProfileUpdateInSerializer,
 )
@@ -26,15 +26,19 @@ from drf_spectacular.utils import extend_schema
 
 class UserViewSet(ViewSet):
 
+
     def get_permissions(self):
-        if self.action in [ "create"]: #"list", "retrieve",
+        if self.action in ["list", "retrieve", "create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._service = UserService()
+
+
 
     @action(detail=False, methods=["get"], url_path="profile")
     def profile(self, request):
@@ -44,6 +48,8 @@ class UserViewSet(ViewSet):
         results = serializer.data
 
         return Response({"results": results}, status=status.HTTP_200_OK)
+
+
 
     def list(self, request):
 
@@ -55,27 +61,37 @@ class UserViewSet(ViewSet):
 
         return Response({"results": results}, status=status.HTTP_200_OK)
 
-    def retrieve(self, request, pk=None):
-        user_id = getattr(request.user, "id", None)
-        try:
-            if int(pk) != user_id:
-                return Response(
-                    {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-        except (ValueError, TypeError):
-            return Response(
-                {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
-        user = self._service.get_user_by_id(user_id)
+
+    def retrieve(self, request, pk=None):
+        # user_id = getattr(request.user, "id", None)
+        # try:
+        #     if int(pk) != user_id:
+        #         return Response(
+        #             {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
+        #             status=status.HTTP_403_FORBIDDEN,
+        #         )
+        # except (ValueError, TypeError):
+        #     return Response(
+        #         {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
+
+        try:
+            user = self._service.get_user_by_id(pk)
+        except Exception:
+            return Response(
+                {"detail": "Користувача не знайдено"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         serialazer = UserPublicOutSerializer(user)
 
         results = serialazer.data
 
         return Response({"results": results}, status=status.HTTP_200_OK)
+
+
 
     @extend_schema(request=RegisterInSerializer(), responses=RegisterInSerializer())
     def create(self, request):
@@ -106,40 +122,28 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @extend_schema(
-        request=ProfileUpdateInSerializer(), responses=RegisterInSerializer()
-    )
-    def update(self, request, pk=None):
-        user_id = getattr(request.user, "id", None)
-        try:
-            if int(pk) != user_id:
-                return Response(
-                    {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-        except (ValueError, TypeError):
-            return Response(
-                {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
-        if int(user_id) != int(pk):
-            return Response(
-                {"detail": "Ви можете редагувати тільки власний профіль"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+
+    @extend_schema(request=ProfileUpdateInSerializer(), responses=RegisterInSerializer())
+    def update(self, request, pk=None):
 
         serialiser = ProfileUpdateInSerializer(data=request.data)
         serialiser.is_valid(raise_exception=True)
 
         dto = _to_dto_user_in(serialiser.validated_data)
 
-        results = self._service.update_my_profile(dto, user_id)
-
-        return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
+        try:
+            self._service.update_my_profile(dto, pk)
+            return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(
+                {"detail": "Ви не можете редагувати профіль"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
     # def partial_update(self, request, pk=None):
     #     pass
+
 
     def destroy(self, request, pk=None):
         user_id = getattr(request.user, "id", None)

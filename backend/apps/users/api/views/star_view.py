@@ -5,11 +5,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
-from apps.users.api import serialazers
+from apps.users.api import serializers
 from core.users.csrf_permission import CsrfPermission
 
 from apps.users.services.star_service import StarService
-from apps.users.api.serialazers.star_serializer import StarOutCerializer
+from apps.users.api.serializers.star_serializer import StarOutCerializer
 
 from core.func_print import prt
 

@@ -8,7 +8,7 @@ from django.conf import settings
 
 from drf_spectacular.utils import extend_schema
 
-from apps.users.api.serialazers.login_in_serializer import LoginInSerializer
+from apps.users.api.serializers.login_in_serializer import LoginInSerializer
 from apps.users.services.login_in_service import LoginInService
 from core.users.csrf_permission import CsrfPermission
 

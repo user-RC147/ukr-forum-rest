@@ -21,7 +21,7 @@ class RefreshViewSet(ViewSet):
     def create(self, request):
         # 1. Дістати refresh_token із cookie (не з тіла запиту!)
         
-        x_csrf_token = request.COOKIES.get('X-CSRFToken')
+        #x_csrf_token = request.COOKIES.get('X-CSRFToken')
         #enforce_csrf(request)
         refresh_token_str = request.COOKIES.get("refresh_token")
 

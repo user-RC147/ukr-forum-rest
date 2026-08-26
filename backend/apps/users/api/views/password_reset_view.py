@@ -7,7 +7,7 @@ from drf_spectacular.utils import extend_schema
 
 from core.users.csrf_permission import CsrfPermission
 
-from apps.users.api.serialazers.password_reset_serializer import PasswordResetConfirmInSerializer,PasswordResetRequestInSerializer
+from apps.users.api.serializers.password_reset_serializer import PasswordResetConfirmInSerializer,PasswordResetRequestInSerializer
 from apps.users.services.password_reset_service import PasswordResetService 
 
 
