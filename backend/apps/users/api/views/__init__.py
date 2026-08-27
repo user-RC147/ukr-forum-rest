@@ -4,7 +4,6 @@ from .csrf_view import CsrfViewSet
 from.login_view import LoginViewSet
 from .password_reset_view import PasswordResetViewSet
 from .logout_view import LogoutViewSet
-from .star_view import StarPageViewSet
 
 __all__ = [
     'UserViewSet',
@@ -13,5 +12,4 @@ __all__ = [
     'LoginViewSet',
     'PasswordResetViewSet',
     'LogoutViewSet',
-    'StarPageViewSet'
     ]
