@@ -104,14 +104,10 @@ class UserViewSet(ViewSet):
 
         dto = _to_dto_user_in(serialiser.validated_data)
 
-        try:
-            self._service.update_my_profile(dto, pk)
-            return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
-        except Exception:
-            return Response(
-                {"detail": "Ви не можете редагувати профіль"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        self._service.update_my_profile(dto, pk)
+        
+        return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
+      
 
     # def partial_update(self, request, pk=None):
     #     pass

@@ -7,6 +7,8 @@ from django.conf import settings
 
 from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateOutDTO,UserShortOutDTO,UserPrivateUpdateInDTO,User_Id_PrivateOutDTO
 from apps.users.dto._to_dto_user import _to_dto_user_in,_to_dto_public_id_user_out,_to_dto_public_user_out
+from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
+
 from apps.users.models import CustomUser,ReferralCode,ReferralUsage
 from apps.users.models.password_reset_token import PasswordResetToken
 
