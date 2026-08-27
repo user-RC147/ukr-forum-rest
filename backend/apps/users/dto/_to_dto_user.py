@@ -1,10 +1,10 @@
 from core.dto.geo.location_dto import Location_Id_InDTO
-from .user_dto import ProfilUserUpdateInDTO
+from .user_dto import UserPublicOutDTO,UserPrivateUpdateInDTO
 
-from core.dto.users.user_dto import UserShortOutDTO,UserFullOutDTO,UserPublicOutDTO
+from core.dto.users.user_dto import UserShortOutDTO
 
-def _to_dto_user_in(data)->ProfilUserUpdateInDTO:
-    return ProfilUserUpdateInDTO(
+def _to_dto_user_in(data)->UserPrivateUpdateInDTO:
+    return UserPrivateUpdateInDTO(
         display_name=data.get("display_name"),
 
         first_name=data.get("first_name"),

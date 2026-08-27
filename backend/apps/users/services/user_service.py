@@ -1,4 +1,4 @@
-from apps.users.dto.user_dto import ProfilUserUpdateInDTO
+from apps.users.dto.user_dto import UserPrivateUpdateInDTO, UserPublicOutDTO
 from apps.users.selectors.user_selector import UserSelector
 from apps.users.repositories.user_repository import UserRepo
 
@@ -27,15 +27,15 @@ class UserService:
         self._selector = UserSelector()
         self._repository = UserRepo()
 
-    def get_many(self, ids: list[int]) -> dict[int, UserShortOutDTO]:
+    def get_many(self, ids: list[int]) -> dict[int, UserPublicOutDTO]:
         return self._selector.get_many(ids)
 
-    def get_all_user(self) -> list[UserShortOutDTO]:
+    def get_all_user(self) -> list[UserPublicOutDTO]:
         users = self._selector.get_all_users()
         dto = [_to_dto_short_user_out(user) for user in users]
         return dto
 
-    def get_user_by_id(self, user_id) -> UserShortOutDTO:
+    def get_user_by_id(self, user_id) -> UserPublicOutDTO:
         user = self._selector.get_user_by_id(user_id)
         dto = _to_dto_short_user_out(user)
         return dto
@@ -44,28 +44,24 @@ class UserService:
         my_profile = self._selector.get_my_profile(user_id)
       
         ids = _get_ids_location(my_profile)
-
       
         locations = _get_locations(
             ids, get_country_contract(), get_region_contract(), get_city_contract()
         )
 
-        
-   
-
         dto = _to_dto_out_profile(my_profile, locations)
     
         return dto
 
-    def create(self, dto: CreateUserInDTO) -> UserShortOutDTO:
+    def create(self, dto: CreateUserInDTO) -> bool:
         referral_code = None
 
         #if dto.referral_code:
             #referral_code = self._selector.get_by_code(dto.referral_code)
+        self._repository.create(dto=dto,referral_code=dto.referral_code)
 
-        return self._repository.create(dto=dto,referral_code=dto.referral_code)
 
-    def update_my_profile(self, dto:ProfilUserUpdateInDTO, user_id: int) -> UserPrivateOutDTO:
+    def update_my_profile(self, dto:UserPrivateUpdateInDTO, user_id: int) -> UserPrivateOutDTO:
 
         my_profile = self._repository.update_my_profile(dto, user_id)
 

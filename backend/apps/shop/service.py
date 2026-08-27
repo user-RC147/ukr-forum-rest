@@ -12,7 +12,7 @@ from apps.geo.contracts.protocols.country_protocol import CountryContractProtoco
 from apps.geo.contracts.protocols.region_protocol import RegionContractProtocol
 from apps.geo.contracts.region_contract import get_region_contract
 from apps.search.contracts.category_contract import get_category_contract
-from apps.users.contracts.user_contract import get_user_contract
+from apps.users.contracts.user_contract import get_user_short_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 from core.unit_of_work.uow import get_unit_of_work
@@ -291,7 +291,7 @@ def get_service() -> ProductService:
         city_contract=get_city_contract(),
         file_contract=get_file_contract(),
         category_contract=get_category_contract(),
-        user_contract=get_user_contract(),
+        user_contract=get_user_short_contract(),  #get_user_contract(),
         uow=get_unit_of_work(),
     )
 

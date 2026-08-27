@@ -34,7 +34,7 @@ from apps.household.dto.role_dto import RoleOutDTO
 from apps.household.dto.product_dto import ProductOutDTO, CategoryProductOutDTO
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 
-from apps.users.contracts.user_contract import get_user_contract
+from apps.users.contracts.user_contract import get_user_short_contract
 
 #from apps.users.dto.user_dto import UserShortOutDTO
 
@@ -51,7 +51,7 @@ class PurchaseService:
         self._group_selector = GroupSelector()
         self._selector = PurchaseSelector()
 
-        self._get_user_contract = get_user_contract()
+        self._get_user_contract = get_user_short_contract()
 
         self._get_country_contract = get_country_contract()
         self._get_region_contract = get_region_contract()

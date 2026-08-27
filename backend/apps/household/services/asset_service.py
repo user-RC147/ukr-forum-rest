@@ -14,7 +14,7 @@ from apps.household.dto.location_dto import (
 )
 from apps.household.repositories.asset_repo import AssetRepo
 
-from apps.users.contracts import get_user_contract
+from apps.users.contracts import get_user_short_contract
 from apps.geo.contracts import (
     get_country_contract,
     get_region_contract,
@@ -28,7 +28,7 @@ class AssetService:
         self._selector = AssetSelector()
         self._repository = AssetRepo()
 
-        self._get_user_contract = get_user_contract()
+        self._get_user_contract = get_user_short_contract()
 
         self._get_country = get_country_contract()
         self._get_region = get_region_contract()
