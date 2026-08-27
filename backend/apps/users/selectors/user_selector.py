@@ -26,11 +26,11 @@ class UserSelector:
         return _to_dto_id_location_profile(my_profile)
     
 
-    def get_many(self,ids: set[int] | list[int],) -> dict[int,UserShortOutDTO]:
+    def get_many(self,ids: set[int] | list[int],) -> dict[int,User_Id_PublicOutDTO]:
 
         users = CustomUser.objects.filter(id__in=ids)
 
-        return {user.id:_to_dto_short_user_out(user)for user in users}
+        return {user.id:_to_dto_public_id_user_out(user)for user in users}
 
 
     def get_all_users(self) -> list[User_Id_PublicOutDTO]:
@@ -41,13 +41,15 @@ class UserSelector:
 
         return dto
 
-    def get_user_by_id(self, user_id: int) -> User_Id_PublicOutDTO:
+    def get_user_by_id(self, user_id: int) -> User_Id_PublicOutDTO | None:
 
-        user = CustomUser.objects.get(id=user_id)
+        user = CustomUser.objects.filter(id=user_id).first()
+       
+        if user is None:
+            return None            
+        return _to_dto_public_id_user_out(user)
+
         
-        dto = _to_dto_public_id_user_out(user)
-
-        return dto
 
 
     def get_password_reset_token(self, token) -> PasswordResetToken | None:

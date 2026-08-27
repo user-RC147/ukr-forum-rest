@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 
+from core.func_print import prt
 from core.users.csrf_permission import CsrfPermission
 from drf_spectacular.utils import extend_schema
 
@@ -53,12 +54,8 @@ class GroupViewSet(viewsets.ViewSet):
         )
 
         group_members = self._service.get_all_group_member_by_user(dto_group,user_id=user_id)
-
         
-        
-
         results = GroupOutSerializer(group_members,many=True).data
-
 
         return Response({'results':results},status=status.HTTP_200_OK)
   
