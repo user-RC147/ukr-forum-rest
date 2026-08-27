@@ -26,19 +26,15 @@ from drf_spectacular.utils import extend_schema
 
 class UserViewSet(ViewSet):
 
-
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._service = UserService()
-
-
 
     @action(detail=False, methods=["get"], url_path="profile")
     def profile(self, request):
@@ -48,8 +44,6 @@ class UserViewSet(ViewSet):
         results = serializer.data
 
         return Response({"results": results}, status=status.HTTP_200_OK)
-
-
 
     def list(self, request):
 
@@ -61,37 +55,16 @@ class UserViewSet(ViewSet):
 
         return Response({"results": results}, status=status.HTTP_200_OK)
 
-
-
     def retrieve(self, request, pk=None):
-        # user_id = getattr(request.user, "id", None)
-        # try:
-        #     if int(pk) != user_id:
-        #         return Response(
-        #             {"detail": "Ви не можете отримувати дані, якщо ви не залогінені!!"},
-        #             status=status.HTTP_403_FORBIDDEN,
-        #         )
-        # except (ValueError, TypeError):
-        #     return Response(
-        #         {"detail": "Ви не можете отримувати дані, якщщ ви не залогінені"},
-        #         status=status.HTTP_403_FORBIDDEN,
-        #     )
-
-        try:
-            user = self._service.get_user_by_id(pk)
-        except Exception:
-            return Response(
-                {"detail": "Користувача не знайдено"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        user_id = getattr(request.user, "id", None)
+              
+        user = self._service.get_user_by_id(int(pk))
 
         serialazer = UserPublicOutSerializer(user)
 
         results = serialazer.data
 
         return Response({"results": results}, status=status.HTTP_200_OK)
-
-
 
     @extend_schema(request=RegisterInSerializer(), responses=RegisterInSerializer())
     def create(self, request):
@@ -110,7 +83,7 @@ class UserViewSet(ViewSet):
         )
 
         try:
-            dto = self._service.create(_dto)
+            self._service.create(_dto)
         except ValueError:
             return Response(
                 {"detail": "Помилка реєстрації"},
@@ -122,9 +95,9 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-
-
-    @extend_schema(request=ProfileUpdateInSerializer(), responses=RegisterInSerializer())
+    @extend_schema(
+        request=ProfileUpdateInSerializer(), responses=RegisterInSerializer()
+    )
     def update(self, request, pk=None):
 
         serialiser = ProfileUpdateInSerializer(data=request.data)
@@ -143,7 +116,6 @@ class UserViewSet(ViewSet):
 
     # def partial_update(self, request, pk=None):
     #     pass
-
 
     def destroy(self, request, pk=None):
         user_id = getattr(request.user, "id", None)

@@ -1,7 +1,7 @@
-from core.dto.geo.location_dto import Location_Id_InDTO
-from .user_dto import UserPublicOutDTO,UserPrivateUpdateInDTO
+from core.dto.geo.location_dto import Location_Id_InDTO,Location_Id_OutDTO,LocationOutDTO
+from .user_dto import UserPublicOutDTO,UserPrivateUpdateInDTO,User_Id_PublicOutDTO
 
-from core.dto.users.user_dto import UserShortOutDTO
+from apps.users.dto._to_dto_location import (_to_dto_out_location)
 
 def _to_dto_user_in(data)->UserPrivateUpdateInDTO:
     return UserPrivateUpdateInDTO(
@@ -36,40 +36,37 @@ def _to_dto_user_in(data)->UserPrivateUpdateInDTO:
         ),
     )
 
-def _to_dto_short_user_out(data)->UserShortOutDTO:
-    return UserShortOutDTO(
+def _to_dto_public_id_user_out(data)->User_Id_PublicOutDTO:
+    return User_Id_PublicOutDTO(
         id=data.id,
-        username=data.username,
-        display_name=data.display_name
+        display_name=data.display_name,
+        first_name=data.first_name,
+        last_name=data.last_name,
+        email=data.email,
+        date_of_birth=data.date_of_birth,
+        phone_number=data.phone_number,
+        social_network=data.social_network,
+        location=Location_Id_OutDTO(
+            country_id=data.country_id,
+            region_id=data.region_id,
+            city_id=data.city_id,
+
+        )
     )
 
-def _to_dto_user_out(data)->UserPublicOutDTO:
+def _to_dto_public_user_out(data,map_location)->UserPublicOutDTO:
     return UserPublicOutDTO(
-        id=data.id,
-        username=data.username,
+        id=data.id,       
         display_name=data.display_name,
-
-        first_name_public=data.first_name_public,
-        last_name_public=data.last_name_public,
-
+        first_name=data.first_name,
+        last_name=data.last_name,
         email=data.email,
-        email_public=data.email_public,
-        is_email_verified=data.is_email_verified,
-
         date_of_birth=data.date_of_birth,
-        date_of_birth_public=data.date_of_birth_public,
-
         phone_number=data.phone_number,
-        phone_public=data.phone_public,
-
         social_network=data.social_network,
-        social_public=data.social_public,
-
-        country_public=data.country_public,
-        region_public=data.region_public,
-        city_public=data.city_public,
-
-        location=data.location,
+        location=(
+            _to_dto_out_location(data.location, map_location) if data.location else None
+        ),
     )
 
  

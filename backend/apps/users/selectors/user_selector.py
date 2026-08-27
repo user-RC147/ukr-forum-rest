@@ -2,9 +2,9 @@ from apps.users.models import CustomUser,ReferralUsage
 
 from apps.users.models.password_reset_token import PasswordResetToken
 from apps.users.models.referral_code import ReferralCode
-from apps.users.dto.user_dto import User_Id_PrivateOutDTO, UserShortOutDTO
+from apps.users.dto.user_dto import User_Id_PrivateOutDTO, User_Id_PublicOutDTO, UserShortOutDTO
 
-from apps.users.dto._to_dto_user import _to_dto_short_user_out
+from apps.users.dto._to_dto_user import _to_dto_public_id_user_out
 from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
 
 
@@ -41,11 +41,11 @@ class UserSelector:
 
         return dto
 
-    def get_user_by_id(self, user_id: int) -> UserShortOutDTO:
+    def get_user_by_id(self, user_id: int) -> User_Id_PublicOutDTO:
 
         user = CustomUser.objects.get(id=user_id)
         
-        dto = _to_dto_short_user_out(user)
+        dto = _to_dto_public_id_user_out(user)
 
         return dto
 

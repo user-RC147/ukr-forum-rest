@@ -3,7 +3,7 @@ from apps.users.selectors.user_selector import UserSelector
 from apps.users.repositories.user_repository import UserRepo
 
 from apps.users.dto import (
-    _to_dto_short_user_out,
+    _to_dto_public_user_out,_to_dto_user_in,
     UserPrivateOutDTO,
     CreateUserInDTO
 )
@@ -37,7 +37,15 @@ class UserService:
 
     def get_user_by_id(self, user_id) -> UserPublicOutDTO:
         user = self._selector.get_user_by_id(user_id)
-        dto = _to_dto_short_user_out(user)
+
+        ids = _get_ids_location(user)
+      
+        locations = _get_locations(
+            ids, get_country_contract(), get_region_contract(), get_city_contract()
+        )
+
+
+        dto = _to_dto_public_user_out(user,locations)
         return dto
 
     def get_my_profile(self, user_id: int) -> UserPrivateOutDTO:
