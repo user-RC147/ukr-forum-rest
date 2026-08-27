@@ -2,7 +2,7 @@ from core.dto.users.user_dto import UserShortOutDTO
 
 from apps.users.dto.user_dto import UserPublicOutDTO,UserPrivateOutDTO
 
-from apps.users.protocols.user_protocol import UserProtocol,UserShortProtocol
+from apps.users.protocols.user_protocol import UserPublicProtocol,UserShortProtocol,UserPrivateProtocol
 from apps.users.services.user_service import UserService  
 
 
@@ -31,7 +31,7 @@ class UserPublicContract:
     def get_many(self, ids: list[int]) -> dict[int,UserPublicOutDTO]:
         return self._service.get_many(ids)
 
-def get_user_public_contract() -> UserProtocol:
+def get_user_public_contract() -> UserPublicProtocol:
     return UserPublicContract()
 
 
@@ -45,5 +45,5 @@ class UserPrivatContract:
     def get_many(self, ids: list[int]) -> dict[int,UserPrivateOutDTO]:
         return self._service.get_many(ids)
 
-def get_user_privat_contract() -> UserProtocol:
+def get_user_privat_contract() -> UserPrivateProtocol:
     return UserPrivatContract()
