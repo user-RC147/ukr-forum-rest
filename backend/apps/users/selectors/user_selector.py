@@ -33,11 +33,11 @@ class UserSelector:
         return {user.id:_to_dto_short_user_out(user)for user in users}
 
 
-    def get_all_users(self) -> list[UserShortOutDTO]:
+    def get_all_users(self) -> list[User_Id_PublicOutDTO]:
 
         users = CustomUser.objects.all()
 
-        dto = [_to_dto_short_user_out(user) for user in users]
+        dto = [_to_dto_public_id_user_out(user) for user in users]
 
         return dto
 

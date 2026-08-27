@@ -9,7 +9,6 @@ from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateUpdateInDTO
 from apps.users.dto._to_dto_user import _to_dto_user_in
 from apps.users.services.user_service import UserService
 from apps.users.api.serializers.user_serializer import (
-    UserShortOutSerializer,
     UserPublicOutSerializer,
     UserPrivatOutSerializer,
 )
@@ -49,7 +48,7 @@ class UserViewSet(ViewSet):
 
         all_user = self._service.get_all_user()
 
-        serializer = UserShortOutSerializer(all_user, many=True)
+        serializer = UserPublicOutSerializer(all_user, many=True)
 
         results = serializer.data
 
