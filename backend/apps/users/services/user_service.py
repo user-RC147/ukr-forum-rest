@@ -32,7 +32,14 @@ class UserService:
 
     def get_all_user(self) -> list[UserPublicOutDTO]:
         users = self._selector.get_all_users()
-        dto = [_to_dto_short_user_out(user) for user in users]
+
+        ids = _get_ids_location(users)
+      
+        locations = _get_locations(
+            ids, get_country_contract(), get_region_contract(), get_city_contract()
+        )
+
+        dto = [_to_dto_public_user_out(user,locations) for user in users]
         return dto
 
     def get_user_by_id(self, user_id) -> UserPublicOutDTO:
