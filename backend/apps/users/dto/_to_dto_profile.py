@@ -31,7 +31,6 @@ def _to_dto_id_location_profile(data:CustomUser) -> User_Id_PrivateOutDTO:
 
         email=data.email,
         email_public=data.email_public,
-        is_email_verified=data.is_email_verified,
 
         date_of_birth=data.date_of_birth,
         date_of_birth_public=data.date_of_birth_public,
@@ -41,9 +40,6 @@ def _to_dto_id_location_profile(data:CustomUser) -> User_Id_PrivateOutDTO:
 
         social_network=data.social_network,
         social_public=data.social_public,
-
-        is_banned=data.is_banned,
-        deletion_scheduled_at=data.deletion_scheduled_at,
         
         consent_given=data.consent_given,
         consent_date=data.consent_date,
@@ -74,8 +70,7 @@ def _to_dto_out_profile(data, map_location) -> UserPrivateOutDTO:
         last_name_public=data.last_name_public,
 
         email=data.email,
-        email_public=data.email_public,        
-        is_email_verified=data.is_email_verified,
+        email_public=data.email_public,
 
         date_of_birth=data.date_of_birth,
         date_of_birth_public=data.date_of_birth_public,
@@ -85,9 +80,6 @@ def _to_dto_out_profile(data, map_location) -> UserPrivateOutDTO:
 
         social_network=data.social_network,
         social_public=data.social_public,
-
-        is_banned=data.is_banned,        
-        deletion_scheduled_at=data.deletion_scheduled_at,
         
         consent_given=data.consent_given,
         consent_date=data.consent_date,

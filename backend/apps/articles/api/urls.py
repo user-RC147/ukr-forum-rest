@@ -6,7 +6,7 @@ from apps.articles.api.views.article_view import ArticleViewSet
 
 router = DefaultRouter()
 
-router.register('articles',ArticleViewSet, basename='article')
+router.register('',ArticleViewSet, basename='article')
 
 
 urlpatterns = router.urls

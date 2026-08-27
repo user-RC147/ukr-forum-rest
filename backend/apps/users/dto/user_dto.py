@@ -85,7 +85,6 @@ class UserPrivateOutDTO:
 
     email: str
     email_public: str
-    is_email_verified: bool
 
     date_of_birth: datetime
     date_of_birth_public: bool
@@ -95,10 +94,6 @@ class UserPrivateOutDTO:
 
     social_network: str
     social_public: bool
-
-    is_banned: bool
-
-    deletion_scheduled_at: datetime
 
     consent_given: bool
     consent_date: datetime
@@ -118,31 +113,15 @@ class User_Id_PublicOutDTO:
     Використовується іншими модулями — household, тощо.
     Містить тільки те що безпечно показувати.
     """
-    
-    username: str
+    id:int
     display_name: str
-
     first_name: str
-    first_name_public: bool
-
     last_name: str
-    last_name_public: bool
-
     email: str
-    email_public: bool
-
-    date_of_birth: datetime
-    date_of_birth_public: bool
-
+    date_of_birth: date
     phone_number: str
-    phone_public: bool
-
     social_network: str
-    social_public: bool
-
-    country_public: bool
-    region_public: bool
-    city_public: bool
+    location:Location_Id_OutDTO
 
 
 @dataclass(frozen=True)
@@ -191,29 +170,12 @@ class UserPublicOutDTO:
 
     id: int
     display_name: str
-
     first_name: str
-    first_name_public: bool
-
     last_name: str
-    last_name_public: bool
-
     email: str
-    email_public: str
-
-    date_of_birth: datetime
-    date_of_birth_public: bool
-
+    date_of_birth: date
     phone_number: str
-    phone_public: bool
-
     social_network: str
-    social_public: bool
-
-    country_public: bool
-    region_public: bool
-    city_public: bool
-
     location: LocationOutDTO | None
 
 
