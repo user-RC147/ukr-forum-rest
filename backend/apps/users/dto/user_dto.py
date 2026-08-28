@@ -179,24 +179,3 @@ class UserPublicOutDTO:
     location: LocationOutDTO | None
 
 
-
-#===star==================================
-
-@dataclass(frozen=True)
-class UserStarIdOutDTO:
-    id: int
-    location: Optional[Location_Id_OutDTO]
-
-
-@dataclass(frozen=True)
-class UserStarOutDTO:
-    id: int
-    location: Optional[LocationOutDTO]
-
-
-@dataclass(frozen=True)
-class StarShoyOutDTO:
-    country: CountryDTO
-    cities: list[CityStarShortDTO]
-
-#========================================

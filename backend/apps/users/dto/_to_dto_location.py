@@ -7,7 +7,9 @@ from apps.geo.contracts.dto.city_dto import CityDTO,City_id_region_DTO
 from apps.geo.contracts.dto.country_dto import CountryDTO
 from apps.geo.contracts.dto.region_dto import RegionDTO
 
-def _to_dto_out_contry(data, map_location) -> CountryDTO:
+def _to_dto_out_country(data, map_location) -> CountryDTO | None:
+    if not data or not data.country_id or data.country_id not in map_location['countries']:
+        return None
     return CountryDTO(
         id=map_location['countries'][data.country_id].id,
         name=map_location['countries'][data.country_id].name,
@@ -47,8 +49,13 @@ def _to_dto_out_id_location(data) -> Location_Id_OutDTO:
 
 
 def _to_dto_out_location(data, map_location) -> LocationOutDTO:
+    country = _to_dto_out_country(data, map_location)
+    
+    if country is None:
+        return None
+
     return LocationOutDTO(
-        country=_to_dto_out_contry(data, map_location),
+        country=_to_dto_out_country(data, map_location),
         region=_to_dto_out_region(data, map_location),
         city=_to_dto_out_city(data, map_location),
     )
