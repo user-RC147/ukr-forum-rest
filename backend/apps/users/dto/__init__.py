@@ -6,7 +6,6 @@ from .user_dto import (
     ConsentOutDTO,
     User_Id_PublicOutDTO,
     User_Id_PrivateOutDTO,
-    UserStarIdOutDTO,UserStarOutDTO,StarShoyOutDTO
 )
 from .referral_out_dto import ReferralCodeOutDTO
 from .login_in_dto import LoginOutDTO
@@ -16,10 +15,6 @@ from ._to_dto_profile import _to_dto_out_profile, _to_dto_id_location_profile
 from ._to_dto_location import _to_dto_out_id_location
 
 __all__ = [
-
-    'UserStarIdOutDTO',
-    'UserStarOutDTO',
-    'StarShoyOutDTO',
 
     'User_Id_PublicOutDTO',
     'User_Id_PrivateOutDTO',
