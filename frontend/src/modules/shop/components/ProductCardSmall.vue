@@ -2,12 +2,14 @@
 import { computed } from 'vue'
 import { getProductThumbnailUrl } from '@/shared/utils/media'
 import { formatAddress } from '../utils/location'
+import { getProductTitle } from '../utils/text'
 
 const props = defineProps({
   product: { type: Object, required: true },
 })
 
 const imageUrl = computed(() => getProductThumbnailUrl(props.product))
+const productTitle = computed(() => getProductTitle(props.product?.title))
 
 const currency = computed(() => {
   const c = props.product.country
@@ -39,7 +41,7 @@ const displayDate = computed(() => {
         <img
           v-if="imageUrl"
           :src="imageUrl"
-          :alt="product.title"
+          :alt="productTitle"
           class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
@@ -52,13 +54,16 @@ const displayDate = computed(() => {
       </div>
 
       <div class="p-3 flex flex-col flex-1">
-        <h3 class="text-sm font-medium text-gray-800 line-clamp-2 leading-snug mb-2 text-center group-hover:text-blue-600 transition-colors duration-200">
-          {{ product.title }}
+        <h3
+          class="text-sm font-medium text-gray-800 line-clamp-2 leading-snug mb-2 text-center break-words group-hover:text-blue-600 transition-colors duration-200"
+          style="overflow-wrap: anywhere; word-break: break-word;"
+        >
+          {{ productTitle }}
         </h3>
-        <p class="font-bold text-gray-900 mt-auto text-sm text-center">
+        <p class="font-bold text-gray-900 mt-auto text-sm text-center break-words" style="overflow-wrap: anywhere; word-break: break-word;">
           {{ product.price }} {{ currency }}
         </p>
-        <p class="text-xs text-gray-400 mt-1 truncate text-center" :title="location">
+        <p class="text-xs text-gray-400 mt-1 truncate text-center break-words" :title="location" style="overflow-wrap: anywhere; word-break: break-word;">
           {{ location }}
         </p>
         <p v-if="displayDate" class="text-xs text-gray-400 truncate text-center" :title="displayDate">
