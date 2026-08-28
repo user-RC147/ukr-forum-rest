@@ -1,5 +1,11 @@
 from rest_framework import serializers
 
+from apps.geo.contracts.serializers import (
+    CitySerializer,
+    CountrySerializer,
+    RegionSerializer,
+)
+from apps.search.contracts.serializers import CategorySerializer
 from core.paginator.serializers import PageSerializerBase
 
 from .enums import PRODUCT_STATUS_LABELS, ProductStatus
@@ -39,10 +45,14 @@ class ProductUpdateSerializer(ProductSerializer):
         child=serializers.IntegerField(), max_length=10
     )
 
+class UserProductSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    display_name = serializers.CharField()
+
 
 class ProductReadSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    owner = serializers.DictField()
+    owner = UserProductSerializer()
     title = serializers.CharField()
     description = serializers.CharField()
     price = serializers.IntegerField()
@@ -50,10 +60,10 @@ class ProductReadSerializer(serializers.Serializer):
     status = serializers.ChoiceField(
         choices=[(s.value, PRODUCT_STATUS_LABELS[s]) for s in ProductStatus]
     )
-    country = serializers.DictField()
-    region = serializers.DictField()
-    city = serializers.DictField()
-    category = serializers.DictField()
+    country = CountrySerializer()
+    region = RegionSerializer()
+    city = CitySerializer()
+    category = CategorySerializer()
     files = serializers.ListField(child=serializers.DictField(), default=list)
 
 
