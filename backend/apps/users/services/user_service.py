@@ -1,4 +1,4 @@
-from apps.users.dto.user_dto import UserPrivateUpdateInDTO, UserPublicOutDTO
+from apps.users.dto.user_dto import User_Id_PublicOutDTO, UserPrivateUpdateInDTO, UserPublicOutDTO
 from apps.users.selectors.user_selector import UserSelector
 from apps.users.repositories.user_repository import UserRepo
 
@@ -28,7 +28,22 @@ class UserService:
         self._repository = UserRepo()
 
     def get_many(self, ids: list[int]) -> dict[int, UserPublicOutDTO]:
-        return self._selector.get_many(ids)
+
+        user_all: dict[int, User_Id_PublicOutDTO] =self._selector.get_many(ids)
+
+        users_list: list[User_Id_PublicOutDTO] = list(user_all.values())
+
+        _ids = _get_ids_location(users_list)
+        locations = _get_locations(
+            _ids, get_country_contract(), get_region_contract(), get_city_contract()
+        )
+
+        dto=[_to_dto_public_user_out(user,locations)for user in users_list]
+
+        users_dict = {item.id: item for item in dto}
+
+        return users_dict
+
 
     def get_all_user(self) -> list[UserPublicOutDTO]:
         users = self._selector.get_all_users()

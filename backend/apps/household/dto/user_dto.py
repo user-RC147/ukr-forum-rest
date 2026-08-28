@@ -10,5 +10,4 @@ class User_Id_OutDTO:
 @dataclass(frozen=True)
 class UserOutDTO:
     id:int
-    username:Optional[str]
     display_name:str

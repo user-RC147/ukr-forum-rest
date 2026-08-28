@@ -2,6 +2,7 @@ from apps.household.dto.group_dto import Group_Id_Name_InDTO,Group_id_user_OutDT
 from apps.household.models.group import Group, GroupMember, Role
 from django.db.models import Q
 
+from core.func_print import prt
 
 class GroupSelector:
 
@@ -41,11 +42,7 @@ class GroupSelector:
             )
         
         groups_dto = [_to_group_id_user_out(group_obj) for group_obj in groups]
-        # print('=======================================================')
-        # print(groups_dto)
-        # print('=======================================================')
-
-
+        
         return groups_dto
 
 #==========================================

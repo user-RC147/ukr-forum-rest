@@ -5,8 +5,9 @@ from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
 
-from apps.users.contracts.user_contract import get_user_short_contract
+from apps.users.contracts.user_contract import get_user_public_contract
 
+from core.func_print import prt
 
 class GroupService:
     """
@@ -17,7 +18,7 @@ class GroupService:
         super().__init__(**kwargs)
         self._group_repo = GroupRepo()
         self._group_selector = GroupSelector()
-        self._get_user_contract = get_user_short_contract()
+        self._get_user_public_contract = get_user_public_contract()
         self._selector = GroupSelector()
         self._repository = GroupRepo()
 
@@ -26,7 +27,6 @@ class GroupService:
 
         return UserOutDTO(
             id=users_map[data.created_by_id].id,
-            username=users_map[data.created_by_id].username,
             display_name=users_map[data.created_by_id].display_name,
         )
     
@@ -35,7 +35,6 @@ class GroupService:
 
         return UserOutDTO(
             id=users_map[data.user_id].id,
-            username=users_map[data.user_id].username,
             display_name=users_map[data.user_id].display_name,
         )
 
@@ -64,10 +63,7 @@ class GroupService:
     def get_all_group_member_by_user(self, dto:Group_Id_Name_InDTO,user_id:int):
       
         
-
-
-
-        if self._get_user_contract.get(user_id):
+        if self._get_user_public_contract.get(user_id):
             group_members = self._selector.get_all_group_by_user(dto,user_id)
          
             user_ids = set(
@@ -75,12 +71,14 @@ class GroupService:
                 |
                 {member.user_id for group in group_members for member in group.members}
             )
-            users_map = self._get_user_contract.get_many(user_ids)
-     
-            return [
-                self._to_group_out(group_member, users_map=users_map)
-                for group_member in group_members
-            ]
+            
+            users_map = self._get_user_public_contract.get_many(user_ids)
+            
+            dto = [self._to_group_out(group_member, users_map=users_map)for group_member in group_members]
+
+            #prt(dto)
+
+            return dto
 
     def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> bool:
         # перевірка корстувача
