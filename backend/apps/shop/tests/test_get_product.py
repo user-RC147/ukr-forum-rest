@@ -42,3 +42,18 @@ def test_get_many():
 
     response = client.get(route + f"?user_id={other_user.id}")
     assert response.status_code == 403
+
+@pytest.mark.django_db
+def test_get_unauth():
+    client = APIClient()
+    route = "/api/shop/products/"
+
+    product1 = ProductFactory()
+    # product2 = ProductFactory(visible=False)
+
+    response = client.get(route + f"{product1.id}/")
+    assert response.status_code == 200
+    assert response.data["id"] == product1.id
+
+    # response = client.get(route + f"{product2.id}/")
+    # assert response.status_code == 404

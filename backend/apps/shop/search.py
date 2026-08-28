@@ -1,3 +1,5 @@
+from math import atan2, cos, radians, sin, sqrt
+
 from django.contrib.postgres.search import (
     SearchQuery,
     SearchRank,
@@ -15,12 +17,14 @@ from apps.search.contracts.dto import (
 )
 from apps.shop.contracts.exceptions import ProductValidationError
 from apps.shop.repository import get_repo
+from apps.geo.contracts.city_contract import get_city_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
-
+import logging
 from .enums import ProductStatus
 from .service import get_service
 
+logger = logging.getLogger(__name__)
 
 class ProductSearchHandler:
     STATUS_PARAM = "status"
@@ -67,12 +71,15 @@ class ProductSearchHandler:
         if category_id:
             to_sort["category_id"] = category_id
 
-        city_id = params.scope_filters.get("city_id")
-        country_id = params.scope_filters.get("country_id")
-        if city_id:
-            to_sort["city_id"] = city_id
-        elif country_id:
-            to_sort["country_id"] = country_id
+        radius = params.scope_filters.get("radius")
+
+        if radius is None:
+            city_id = params.scope_filters.get("city_id")
+            country_id = params.scope_filters.get("country_id")
+            if city_id:
+                to_sort["city_id"] = city_id
+            elif country_id:
+                to_sort["country_id"] = country_id
 
         status = params.scope_filters.get(self.STATUS_PARAM)
 
@@ -101,22 +108,37 @@ class ProductSearchHandler:
             product_ids=[p.id for p in products],
         )
 
-        # if params.radius:
-        #     products = [i for i in products if self._cities_within_radius(user_lat, user_lon, params.radius, i.city)]
+        products_count, products = products.count, products.items
+
+
+        if radius is not None:
+            city_contract = get_city_contract()
+            user_city = city_contract.get(params.scope_filters.get("city_id"))
+            products = [
+                i
+                for i in products
+                if self._cities_within_radius(
+                    user_city.latitude,
+                    user_city.longitude,
+                    radius,
+                    i.city,
+                )
+            ]
 
         result = paginate(
-            [_to_dto(obj) for obj in products.items],
-            products.count,
+            [_to_dto(obj) for obj in products],
+            products_count,
             params.pagination.page,
             params.pagination.limit,
         )
         return result
 
-    # @staticmethod
-    # def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
-    #     if _haversine(user_lat, user_lon, city.latitude, city.longitude) <= radius_km:
-    #          return True
-    #     return False
+    @staticmethod
+    def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
+        return (
+            _haversine(user_lat, user_lon, city["latitude"], city["longitude"])
+            <= radius_km
+        )
 
 
 def _to_dto(obj) -> SearchResultItem:
@@ -153,9 +175,12 @@ def _parse_int_param(key: str, value: str) -> int | None:
         )
 
 
-# def _haversine(lat1, lon1, lat2, lon2):
-#     R = 6371  # Earth radius
-#     dlat = radians(lat2 - lat1)
-#     dlon = radians(lon2 - lon1)
-#     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
-#     return R * 2 * atan2(sqrt(a), sqrt(1-a))
+def _haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = (
+        sin(dlat / 2) ** 2
+        + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    )
+    return R * 2 * atan2(sqrt(a), sqrt(1 - a))

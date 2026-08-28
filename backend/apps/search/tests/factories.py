@@ -1,11 +1,11 @@
-# import factory
-# from factory.django import DjangoModelFactory
+import factory
+from factory.django import DjangoModelFactory
 
-# from ..models import CategoryModel
+from ..models import CategoryModel
 
 
-# class CategoryFactory(DjangoModelFactory):
-#     class Meta:
-#         model = CategoryModel
+class CategoryFactory(DjangoModelFactory):
+    class Meta:
+        model = CategoryModel
 
-#     name = factory.Faker("sentence")
+    name = factory.Faker("sentence")
