@@ -4,14 +4,29 @@ import { useUserStore } from '@/shared/stores/useUserStore'
 
 export const RADII = [10, 25, 50, 100, 200]
 
+function readUserLocationValue(userStore, key) {
+  if (!userStore?.isAuthenticated || !userStore?.user) return ''
+
+  const nested = userStore.user.location || {}
+  const locationMap = {
+    country_id: nested.country?.id ?? userStore.user.country_id ?? '',
+    country_name: nested.country?.name_ua || nested.country?.name || userStore.user.country_name || '',
+    city_id: nested.city?.id ?? userStore.user.city_id ?? '',
+    city_name: nested.city?.name_ua || nested.city?.name || userStore.user.city_name || '',
+  }
+
+  const value = locationMap[key]
+  return value == null || value === '' ? '' : value
+}
+
 function buildFilters(query, userStore) {
   return {
     q: query.q || '',
     category_id: query.category_id || '',
-    country_id: query.country_id || userStore?.user?.country_id || '',
-    country_name: query.country_name || userStore?.user?.country_name || '',
-    city_id: query.city_id || userStore?.user?.city_id || '',
-    city_name: query.city_name || userStore?.user?.city_name || '',
+    country_id: query.country_id || readUserLocationValue(userStore, 'country_id'),
+    country_name: query.country_name || readUserLocationValue(userStore, 'country_name'),
+    city_id: query.city_id || readUserLocationValue(userStore, 'city_id'),
+    city_name: query.city_name || readUserLocationValue(userStore, 'city_name'),
     radius: query.radius || '',
     status: query.status || '',
     date_sort: query.date_sort || '',

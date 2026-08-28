@@ -5,6 +5,7 @@ import { useToast } from "@/shared/composables/useToast";
 import { useUserStore } from "@/shared/stores/useUserStore";
 import { useProductGallery } from "../composables/useProductGallery";
 import { getProductDetail, createComplaint } from "../api/shop.js";
+import { getProductDescription, getProductTitle } from "../utils/text";
 import {
   PhotoIcon,
   ChevronLeftIcon,
@@ -99,6 +100,9 @@ const location = computed(() => {
   return "Адреса не вказана";
 });
 
+const safeTitle = computed(() => getProductTitle(product.value?.title));
+const safeDescription = computed(() => getProductDescription(product.value?.description));
+
 const formattedDate = computed(() => {
   const raw = product.value?.created_at;
   if (!raw) return "";
@@ -151,7 +155,7 @@ const handleComplaint = async () => {
                 v-if="currentImage"
                 :key="gallery.currentIndex"
                 :src="currentImage.file"
-                :alt="product.title"
+                :alt="safeTitle"
                 class="w-full h-full object-cover"
               />
               <div
@@ -216,16 +220,16 @@ const handleComplaint = async () => {
             <DocumentTextIcon class="w-5 h-5 text-gray-400" />
             ОПИС
           </h3>
-          <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {{ product.description }}
+          <p class="text-gray-700 leading-relaxed whitespace-pre-wrap break-words" style="overflow-wrap: anywhere; word-break: break-word;">
+            {{ safeDescription }}
           </p>
         </div>
       </div>
       <!-- Информация о товаре -->
       <aside class="flex flex-col gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h1 class="text-2xl font-bold text-gray-900 mb-3 leading-tight">
-            {{ product.title }}
+          <h1 class="text-2xl font-bold text-gray-900 mb-3 leading-tight break-words" style="overflow-wrap: anywhere; word-break: break-word;">
+            {{ safeTitle }}
           </h1>
           <p class="text-3xl font-bold text-blue-600 mb-6">
             {{ product.price }} {{ currency }}

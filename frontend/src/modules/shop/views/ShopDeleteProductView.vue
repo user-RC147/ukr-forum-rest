@@ -3,6 +3,7 @@ import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "@/shared/composables/useToast";
 import { getProductDetail, deleteProduct } from "../api/shop.js";
+import { getProductTitle } from "../utils/text";
 import { TrashIcon, ArrowUturnLeftIcon, CalendarDaysIcon } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
@@ -40,6 +41,7 @@ watch(
 );
 
 const previewImage = computed(() => product.value?.files?.[0]?.file ?? null);
+const productTitle = computed(() => getProductTitle(product.value?.title));
 
 const formattedDate = computed(() => {
   const raw = product.value?.created_at;
@@ -96,7 +98,7 @@ async function confirmDelete() {
         <img
           v-if="previewImage"
           :src="previewImage"
-          :alt="product.title"
+          :alt="productTitle"
           class="w-48 h-32 object-cover rounded-lg shadow-sm flex-shrink-0"
         />
         <div
@@ -108,7 +110,7 @@ async function confirmDelete() {
 
         <div class="min-w-0">
           <h3 class="text-lg font-semibold text-gray-900 truncate">
-            {{ product.title }}
+            {{ productTitle }}
           </h3>
           <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
             <CalendarDaysIcon class="w-4 h-4" />
