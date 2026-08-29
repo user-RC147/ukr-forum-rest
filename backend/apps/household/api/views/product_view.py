@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
-
 from drf_spectacular.utils import extend_schema
+
+from core.users.csrf_permission import CsrfPermission
 
 from apps.household.api.serializers.product_serializer import CreateProductSerializer, ProductInSerializer,ProductOutSerializer
 from apps.household.dto.product_dto import CreateProductInDTO,ProductOutDTO
@@ -18,8 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class ProductViewSet(ViewSet):
-    
-    permission_classes=[IsAuthenticated]
+   
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
+
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
