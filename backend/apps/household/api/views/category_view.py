@@ -1,29 +1,31 @@
-
 from rest_framework.viewsets import ViewSet
-
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from drf_spectacular.utils import extend_schema
+
+from core.users.csrf_permission import CsrfPermission
 
 from apps.household.services.category_service import CategoryService
 from apps.household.api.serializers.category_serializer import CategoryInSerializer
 
 
-
-
-
 class CategoryViewSet(ViewSet):
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve", "create"]:  # "list", "retrieve",
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._repository=CategoryService()
+        self._repository = CategoryService()
 
-
-    
     def list(self, request):
         categories = self._repository.get_all_category()
-        serializer = CategoryInSerializer(categories,many=True)
+        serializer = CategoryInSerializer(categories, many=True)
         if serializer.is_valid:
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     # def create(self, request):
     #     pass
