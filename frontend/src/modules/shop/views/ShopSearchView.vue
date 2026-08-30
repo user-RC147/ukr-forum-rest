@@ -3,6 +3,7 @@ import { useProductSearchResults } from '../composables/useProductSearchResults'
 import SearchFiltersBar from '../components/SearchFiltersBar.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatAddress } from '../utils/location'
+import { getProductTitle } from '../utils/text'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +36,7 @@ function goToPage(p) {
           <img v-if="p.image" :src="p.image" :alt="p.title" class="w-full h-full object-cover" loading="lazy" />
         </div>
         <div class="flex flex-col flex-grow p-4 sm:py-3 min-w-0 justify-between">
-          <h3 class="font-semibold text-base sm:text-lg mb-1.5 line-clamp-2">{{ p.title }}</h3>
+          <h3 class="font-semibold text-base sm:text-lg mb-1.5 line-clamp-2 break-words" style="overflow-wrap: anywhere; word-break: break-word;">{{ getProductTitle(p.title) }}</h3>
           <p class="text-xs sm:text-sm text-gray-600 line-clamp-1">
             {{ formatAddress(p, true) }}<span v-if="p.createdAt"> • {{ p.createdAt }}</span>
           </p>

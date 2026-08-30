@@ -23,9 +23,9 @@ export const updateProfile = (userId, data) => {
   return api.put(`/users/${userId}/`, data)
 }
 
-// export const updateLocation = (data) => {
-//   return api.post('/users/location/', data)
-// }
+export const updateLocation = (data) => {
+  return api.post('/users/location/', data)
+}
 
 // export const changePassword = (data) => {
 //   return api.post('/users/change-password/', data)
