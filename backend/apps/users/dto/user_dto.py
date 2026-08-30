@@ -179,3 +179,13 @@ class UserPublicOutDTO:
     location: LocationOutDTO | None
 
 
+@dataclass(frozen=True)
+class UserShortPublicOutDTO:
+    """
+    Публічне представлення користувача.
+    Використовується іншими модулями — household, тощо.
+    Містить тільки те що безпечно показувати.
+    """
+    id: int
+    display_name: str
+

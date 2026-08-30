@@ -4,13 +4,13 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from apps.users.api import serializers
-from apps.users.dto.user_dto import CreateUserInDTO, UserPrivateUpdateInDTO
+from apps.users.dto.user_dto import CreateUserInDTO
 from apps.users.dto._to_dto_user import _to_dto_user_in
 from apps.users.services.user_service import UserService
 from apps.users.api.serializers.user_serializer import (
     UserPublicOutSerializer,
     UserPrivatOutSerializer,
+    UserShortOutSerializer,
 )
 
 from apps.users.api.serializers.register_serializer import (
@@ -26,7 +26,7 @@ from drf_spectacular.utils import extend_schema
 class UserViewSet(ViewSet):
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "create"]:  # "list", "retrieve",
+        if self.action in ["create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
@@ -44,25 +44,23 @@ class UserViewSet(ViewSet):
 
         return Response({"results": results}, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"], url_path="user_short")
+    @extend_schema(request=UserShortOutSerializer(), responses=UserShortOutSerializer())
+    def get_short_user(self, request):
+        user = self._service.get_short_public_user(request.user.id)
+        serializer = UserShortOutSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def list(self, request):
-
-        all_user = self._service.get_all_user()
-
+        all_user = self._service.get_many_public_user(ids=None)
         serializer = UserPublicOutSerializer(all_user, many=True)
-
         results = serializer.data
-
         return Response({"results": results}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
-        user_id = getattr(request.user, "id", None)
-              
         user = self._service.get_user_by_id(int(pk))
-
         serialazer = UserPublicOutSerializer(user)
-
         results = serialazer.data
-
         return Response({"results": results}, status=status.HTTP_200_OK)
 
     @extend_schema(request=RegisterInSerializer(), responses=RegisterInSerializer())
@@ -105,9 +103,8 @@ class UserViewSet(ViewSet):
         dto = _to_dto_user_in(serialiser.validated_data)
 
         self._service.update_my_profile(dto, pk)
-        
+
         return Response({"detail": "Профіль оновлено"}, status=status.HTTP_200_OK)
-      
 
     # def partial_update(self, request, pk=None):
     #     pass

@@ -48,7 +48,7 @@ def _to_dto_out_id_location(data) -> Location_Id_OutDTO:
     )
 
 
-def _to_dto_out_location(data, map_location) -> LocationOutDTO:
+def _to_dto_out_location(data, map_location) -> LocationOutDTO | None:
     country = _to_dto_out_country(data, map_location)
     
     if country is None:
@@ -60,6 +60,15 @@ def _to_dto_out_location(data, map_location) -> LocationOutDTO:
         city=_to_dto_out_city(data, map_location),
     )
 
+def _to_dto_out_public_location(data, map_location) -> LocationOutDTO | None:
+    if not data or not data.location:
+        return None
+  
+    return LocationOutDTO(
+        country=_to_dto_out_country(data.location, map_location) if data.country_public else None,
+        region=_to_dto_out_region(data.location, map_location)if data.region_public else None,
+        city=_to_dto_out_city(data.location, map_location)if data.city_public else None,
+    ) 
 
 def _get_ids_location(data) -> dict:
 

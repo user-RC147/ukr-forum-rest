@@ -12,6 +12,10 @@ export const getProfile = () => {
   return api.get('/users/profile/')
 }
 
+export const getPublicProfile = (userId) => {
+  return api.get(`/users/${userId}/`)
+}
+
 // export const updateProfile = (data) => {
 //   return api.patch('/users/profile/', data)
 // }

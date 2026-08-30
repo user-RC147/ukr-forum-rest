@@ -11,10 +11,10 @@ class UserShortContract:
         self._service = UserService()
 
     def get(self, user_id: int) -> UserShortOutDTO:
-        return self._service.get_user_by_id(user_id)
+        return self._service.get_short_public_user(user_id)
 
     def get_many(self, ids: list[int]) -> dict[int,UserShortOutDTO]:
-        return self._service.get_many(ids)
+        return self._service.get_many_short_public_user(ids)
 
 
 def get_user_short_contract() -> UserShortProtocol:
@@ -29,21 +29,22 @@ class UserPublicContract:
         return self._service.get_user_by_id(user_id)
 
     def get_many(self, ids: list[int]) -> dict[int,UserPublicOutDTO]:
-        return self._service.get_many(ids)
+        return self._service.get_many_public_user(ids)
 
 def get_user_public_contract() -> UserPublicProtocol:
     return UserPublicContract()
 
 
-class UserPrivatContract:
-    def __init__(self) -> None:
-        self._service = UserService()
+class UserPrivateContract:
+    ...
+    # def __init__(self) -> None:
+    #     self._service = UserService()
 
-    def get(self, user_id: int) -> UserPrivateOutDTO:
-        return self._service.get_user_by_id(user_id)
+    # def get(self, user_id: int) -> UserPrivateOutDTO:
+    #     return self._service.get_user_by_id(user_id)
 
-    def get_many(self, ids: list[int]) -> dict[int,UserPrivateOutDTO]:
-        return self._service.get_many(ids)
+    # def get_many(self, ids: list[int]) -> dict[int,UserPrivateOutDTO]:
+    #     return self._service.get_many_private_user(ids)
 
 def get_user_privat_contract() -> UserPrivateProtocol:
-    return UserPrivatContract()
+    return UserPrivateContract()

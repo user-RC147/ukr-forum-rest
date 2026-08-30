@@ -1,64 +1,75 @@
-from apps.users.models import CustomUser,ReferralUsage
+from apps.users.models import CustomUser, ReferralUsage
 
 from apps.users.models.password_reset_token import PasswordResetToken
 from apps.users.models.referral_code import ReferralCode
-from apps.users.dto.user_dto import User_Id_PrivateOutDTO, User_Id_PublicOutDTO, UserShortOutDTO
+from apps.users.dto.user_dto import (
+    User_Id_PrivateOutDTO,
+    User_Id_PublicOutDTO,
+    UserShortOutDTO,
+    UserShortPublicOutDTO,
+)
+from apps.users.dto._to_dto_user import _to_dto_short_public_user_out
 
-from apps.users.dto._to_dto_user import _to_dto_public_id_user_out
+
 from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
 
 
 from core.func_print import prt
 
+
 class UserSelector:
 
-    def get_by_code(self,dto)->bool:
+    def get_by_code(self, dto) -> bool:
 
         ref_code = ReferralCode.objects.get(code=dto)
 
-        return  ref_code
-      
+        return ref_code
 
-    def get_my_profile(self,user_id:int)->User_Id_PrivateOutDTO:        
+    def get_my_profile(self, user_id: int) -> User_Id_PrivateOutDTO:
 
-        my_profile = CustomUser.objects.get(id=user_id)      
-        
+        my_profile = CustomUser.objects.get(id=user_id)
+
         return _to_dto_id_location_profile(my_profile)
-    
 
-    def get_many(self,ids: set[int] | list[int],) -> dict[int,User_Id_PublicOutDTO]:
+    def get_short_public(self, user_id: int) -> UserShortPublicOutDTO:
+        user = CustomUser.objects.filter(id=user_id).only("id", "display_name").first()
+        return _to_dto_short_public_user_out(user)
 
-        users = CustomUser.objects.filter(id__in=ids)
+    def get_many_short_public(self, ids: set[int] | list[int],) -> dict[int, UserShortPublicOutDTO]:
+        users = CustomUser.objects.filter(id__in=ids).only("id", "display_name")
+        return {user.id: _to_dto_short_public_user_out(user) for user in users}
 
-        return {user.id:_to_dto_public_id_user_out(user)for user in users}
 
 
-    def get_all_users(self) -> list[User_Id_PublicOutDTO]:
 
-        users = CustomUser.objects.all()
-
-        dto = [_to_dto_public_id_user_out(user) for user in users]
-
+    def get_many_users(self, ids: set[int] | list[int],) -> list[User_Id_PrivateOutDTO]:
+        if ids is None:
+            users = CustomUser.objects.all()
+            
+            dto = [_to_dto_id_location_profile(user) for user in users]
+            
+        else:
+            users = CustomUser.objects.filter(id__in=ids)
+            dto = {user.id: _to_dto_id_location_profile(user) for user in users}
+        
         return dto
 
-    def get_user_by_id(self, user_id: int) -> User_Id_PublicOutDTO | None:
+    def get_user_by_id(self, user_id: int) -> User_Id_PrivateOutDTO | None:
 
         user = CustomUser.objects.filter(id=user_id).first()
-       
         if user is None:
-            return None            
-        return _to_dto_public_id_user_out(user)
+            return None
 
-        
-
-
+        return _to_dto_id_location_profile(user)
+    
     def get_password_reset_token(self, token) -> PasswordResetToken | None:
         return PasswordResetToken.objects.filter(token=token).first()
-
-
 
     def find_by_email(self, email: str) -> int | None:
         user = CustomUser.objects.filter(email=email).first()
         return user.id if user else None
 
 
+#   def get_many_short_public(self,ids: set[int] | list[int],) -> dict[int,UserShortPublicOutDTO]:
+#         users = CustomUser.objects.filter(id__in=ids).only('id','display_name')
+#         return {user.id:_to_dto_short_public_user_out(user)for user in users}
