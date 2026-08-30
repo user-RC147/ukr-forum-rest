@@ -70,8 +70,10 @@ __all__ = [
     "RegionOutSerializer",
     "CityOutSerializer",
     "LocationInSerializer",
+    
     # User
     "UserOutSerializer",
+
     # Paginator
     "PaginatorSerializerOut",
 ]

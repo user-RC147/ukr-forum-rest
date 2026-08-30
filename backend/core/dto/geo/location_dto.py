@@ -33,9 +33,9 @@ class Location_Id_OutDTO:
 
 @dataclass(frozen=True)
 class LocationOutDTO:
-    country: CountryDTO
-    region: RegionDTO
-    city: CityDTO
+    country: CountryDTO | None
+    region: RegionDTO | None
+    city: CityDTO | None
 
 @dataclass(frozen=True)
 class LocationStarOutDTO:

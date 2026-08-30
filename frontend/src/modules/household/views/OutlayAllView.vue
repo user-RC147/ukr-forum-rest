@@ -14,14 +14,23 @@
     import CreateAssetModal from '../components/assets/CreateAssetModel.vue';
     import CreateGroupModel from '../components/groups/CreateGroupModal.vue';
 
+    // import PublicProfileUserModal from '../../../shared/components/PublicProfileUserModal.vue';
+
+
+
+    
     //======isAssetModalOpen================
     const isAssetModalOpen =ref(false)
     const isGroupModalOpen =ref(false)
 
+    //const isUserPublicModalOpen=ref(false)
 
 
     //======================
-
+    // async function handlePublicProfileUser() {
+    //         isUserPublicModalOpen.value = false
+            
+    //     }
     //======PeriodFilter================
 
     const today = new Date();
@@ -203,9 +212,21 @@
 
 <template>
     <div class="max-w-5xl mx-auto px-4 py-6">
+
+        <!-- PublicProfilUser -->
+        <div class="flex justify-center">
+            <button
+                type="button"
+                @click="isUserPublicModalOpen = true"
+                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition"
+            >
+            user
+            </button>
+        </div>
+
+
         <!-- Фільтри -->
         <div class="flex flex-wrap justify-between gap-4 mb-6">
-
             <!-- Кнопки створення обєка-asset-->
             <div class="grid grid-cols-1 gap-4 mb-10">
                 <button
@@ -442,6 +463,12 @@
             :selected-group="groupStore.groups.find(g=>g.id === selectedGroup)"
             @submit="handleAssetCreated"
             @cancel="isAssetModalOpen = false"
+        />
+
+        <!-- МОДАЛЬНЕ ВІКНО ДЛЯ ВІДОБРАЖЕННЯ ПУБЛІЧНОГО ПРОФІЛЮ ЮЗЕРА -->
+        <PublicProfileUserModal
+            v-if="isUserPublicModalOpen"
+            @cancel="isUserPublicModalOpen=false"
         />
     </div>
 </template>

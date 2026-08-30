@@ -26,11 +26,11 @@ class AssetIdRegionOutSerializer(serializers.Serializer):
 
 class CreateAssetSerializer(serializers.Serializer):
     name=serializers.CharField()
-    group_id=serializers.IntegerField()
+    group_id=serializers.IntegerField(read_only=True)
     #location=LocationInSerializer()
-    country_id=serializers.IntegerField()
-    region_id=serializers.IntegerField()
-    city_id=serializers.IntegerField()
+    country_id=serializers.IntegerField(read_only=True)
+    region_id=serializers.IntegerField(read_only=True)
+    city_id=serializers.IntegerField(read_only=True)
     address_line=serializers.CharField()
 
 
