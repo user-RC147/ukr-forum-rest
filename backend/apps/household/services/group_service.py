@@ -5,8 +5,9 @@ from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
 
-from apps.users.contracts.user_contract import get_user_public_contract
+from apps.users.contracts.user_contract import get_user_short_contract
 
+from apps.users.exceptions import UserNotFoundException
 from core.func_print import prt
 
 class GroupService:
@@ -16,9 +17,7 @@ class GroupService:
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._group_repo = GroupRepo()
-        self._group_selector = GroupSelector()
-        self._get_user_public_contract = get_user_public_contract()
+        self._get_user_public_contract = get_user_short_contract()
         self._selector = GroupSelector()
         self._repository = GroupRepo()
 
@@ -80,10 +79,15 @@ class GroupService:
 
             return dto
 
-    def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> bool:
-        # перевірка корстувача
-        creator_user= self._get_user_contract.get(creator_id)
+    def create_group(self, dto: CreateGroupInDTO, creator_id: int) -> GroupOutDTO:
+        creator_user = self._get_user_public_contract.get(creator_id)
 
-        if not self._selector.get_group_by_name(dto) and creator_user:
-            return self._repository.create_group(dto=dto, creator_user=creator_user)
-      
+        if self._selector.get_group_by_name(dto):
+            #raise GroupAlreadyExistsException(...)
+            return None
+
+        if not creator_user:
+            raise UserNotFoundException(creator_id)
+
+        # Репозиторій створює запис і повертає DTO створеної групи
+        return self._repository.create_group(dto=dto, creator_user=creator_user)

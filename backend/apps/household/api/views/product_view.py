@@ -6,8 +6,12 @@ from drf_spectacular.utils import extend_schema
 
 from core.users.csrf_permission import CsrfPermission
 
-from apps.household.api.serializers.product_serializer import CreateProductSerializer, ProductInSerializer,ProductOutSerializer
-from apps.household.dto.product_dto import CreateProductInDTO,ProductOutDTO
+from apps.household.api.serializers.product_serializer import (
+    CreateProductSerializer,
+    ProductInSerializer,
+    ProductOutSerializer,
+)
+from apps.household.dto.product_dto import CreateProductInDTO, ProductOutDTO
 from apps.household.services.product_service import ProductService
 
 from apps.users.exceptions import UserNotFoundException
@@ -19,56 +23,53 @@ logger = logging.getLogger(__name__)
 
 
 class ProductViewSet(ViewSet):
-   
+
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
-
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._service = ProductService()
-    
 
     def list(self, request):
         user_id = request.user.id
 
-        products=self._service.get_all_products(user_id)
+        products = self._service.get_all_products(user_id)
 
-        serializer=ProductOutSerializer(products,many=True)
+        serializer = ProductOutSerializer(products, many=True)
 
-        return Response(serializer.data,status=status.HTTP_200_OK)
-
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(request=CreateProductSerializer, responses=CreateProductSerializer)
     def create(self, request):
 
-        user_id=request.user.id
-        
-        serializer=CreateProductSerializer(data=request.data)
+        user_id = request.user.id
+
+        serializer = CreateProductSerializer(data=request.data)
 
         if serializer.is_valid():
-            data=serializer.validated_data
+            data = serializer.validated_data
 
             dto = CreateProductInDTO(
-                name=data['name'],
-                unit_of_measure_id=data['unit_of_measure_id'],
+                name=data["name"],
+                unit_of_measure_id=data["unit_of_measure_id"],
                 category_id=data.get("category_id") or None,
-                created_by_id=request.user.id
-                
+                created_by_id=request.user.id,
             )  # Конвертуємо словник у DTO
             try:
-                product=self._service.create(dto=dto,user_id=user_id)
+                product = self._service.create(dto=dto, user_id=user_id)
 
             except UserNotFoundException as e:
                 return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
             except ProductAlreadyExistsException as e:
-                return Response({"error": str(e)}, status=status.HTTP_409_CONFLICT)  
-            return Response(ProductOutSerializer(product).data,status=status.HTTP_201_CREATED)
+                return Response({"error": str(e)}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                ProductOutSerializer(product).data, status=status.HTTP_201_CREATED
+            )
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # def retrieve(self, request, pk=None):
     #     pass

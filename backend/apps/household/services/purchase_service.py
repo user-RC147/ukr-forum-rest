@@ -163,7 +163,7 @@ def _get_user_contract(data):
         for member in purchase.asset.group.members:
             users_ids.add(member.user_id)
 
-    user_map = get_user_contract().get_many(users_ids)
+    user_map = get_user_short_contract().get_many(users_ids)
 
     return user_map
 
@@ -171,17 +171,13 @@ def _get_user_contract(data):
 def _to_dto_user_out(data, user_map) -> UserOutDTO:
     return UserOutDTO(
         id=user_map[data.user_id].id,
-        username=user_map[data.user_id].username if not data.user_id else None,
         display_name=user_map[data.user_id].display_name,
     )
 
 
 def _to_dto_creator_by_out(data, user_map) -> UserOutDTO:
     return UserOutDTO(
-        id=user_map[data.created_by_id].id,
-        username=(
-            user_map[data.created_by_id].username if not data.created_by_id else None
-        ),
+        id=user_map[data.created_by_id].id,        
         display_name=user_map[data.created_by_id].display_name,
     )
 

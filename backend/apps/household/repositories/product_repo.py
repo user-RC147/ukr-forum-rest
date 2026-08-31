@@ -11,6 +11,6 @@ class ProductRepo:
             name=dto.name,
             unit_of_measure_id=dto.unit_of_measure_id,
             category_id=dto.category_id,
-            created_by_id=dto.created_by_id,
+            created_by_id=user_id,
         )
         return product

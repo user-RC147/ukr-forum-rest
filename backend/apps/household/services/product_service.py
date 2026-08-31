@@ -23,12 +23,12 @@ class ProductService:
     # def group_in_user_exsits(self):
     #     group_exsist = self._selector
 
-    def get_all_products(self,user_id:int)->list[ProductOutDTO]:
+    def get_all_products(self,user_id:int)->list[ProductOutDTO]|None:
 
         if self._user_contract.get(user_id):
             products = self._selector.get_all_product()
             return products
-    
+        return None
     
     def create(self,dto:CreateProductInDTO,user_id:int)->Product:
         # Тут за потреби можна додати валідацію (наприклад, перевірку на унікальність імені)

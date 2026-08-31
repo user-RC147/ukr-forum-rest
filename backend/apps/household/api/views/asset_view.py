@@ -59,7 +59,9 @@ class AssetViewSet(ViewSet):
             address_line=serializer.validated_data.get("address_line"),
         )
         self._service.create(dto=dto, creator_user_id=creator_user_id)
-        return Response(status=status.HTTP_201_CREATED)  # {'id':data.id, 'name':data.name},
+        return Response(
+            status=status.HTTP_201_CREATED
+        )  # {'id':data.id, 'name':data.name},
 
     # def retrieve(self, request, pk=None):
     #     pass
