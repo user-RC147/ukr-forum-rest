@@ -13,7 +13,7 @@ services:
       - backend/.env
     volumes:
       - ./backend:/app
-      - django_logs:/app/logs
+      - django_logs-dev:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -48,7 +48,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - db-data:/var/lib/postgresql
+      - db-data-dev:/var/lib/postgresql
 
   redis:
     image: redis:8.10.0-trixie
@@ -56,7 +56,7 @@ services:
     restart: unless-stopped
 
     volumes:
-      - redis-data:/data
+      - redis-data-dev:/data
 
     command: >
       redis-server
@@ -85,7 +85,7 @@ services:
         condition: service_started
     volumes:
       - ./backend:/app
-      - django_logs:/app/logs
+      - django_logs-dev:/app/logs
 
   # celery-beat:
   #   build:
@@ -109,7 +109,7 @@ services:
       - "3100:3100"
     volumes:
       - ./monitoring/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki_data:/loki
+      - loki_data-dev:/loki
     command: -config.file=/etc/loki/loki-config.yaml
 
   promtail:
@@ -131,14 +131,14 @@ services:
     env_file:
       - backend/.env
     volumes:
-      - grafana_data:/var/lib/grafana
+      - grafana_data-dev:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - loki
 
 volumes:
-  db-data:
-  loki_data:
-  grafana_data:
-  django_logs:
-  redis-data:
+  db-data-dev:
+  loki_data-dev:
+  grafana_data-dev:
+  django_logs-dev:
+  redis-data-dev:

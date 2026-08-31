@@ -6,33 +6,28 @@ from drf_spectacular.views import (
     SpectacularAPIView,  # генерує schema.yml
     SpectacularSwaggerView,  # Swagger UI — зручний інтерфейс для тестування API
 )
-from rest_framework_simplejwt.views import TokenBlacklistView
+from rest_framework.permissions import IsAdminUser
+
 from .views import HealthView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     # Всі ендпоінти users під префіксом /api/users/
     # Users
     path("api/users/", include("apps.users.api.urls")),
-    path("api/auth/",include("apps.users.api.urls_auth")),
-    #path("api/auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
+    path("api/auth/", include("apps.users.api.urls_auth")),
+    # path("api/auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
     # Geo
     path("api/geo/", include("apps.geo.api.urls")),
     path("api/household/", include("apps.household.api.urls")),
-    #Article
-    path('api/article', include('apps.articles.api.urls')),
+    # Article
+    path("api/article", include("apps.articles.api.urls")),
     # Shop
     path("api/shop/", include("apps.shop.urls")),
     # Search
     path("api/search/", include("apps.search.urls")),
     # Health endpoints
     path("api/health/", HealthView.as_view(), name="health_check"),
-    # OpenAPI документація — відкрий http://localhost:8000/api/docs/
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
 ]
 
 # rest framework
@@ -43,9 +38,32 @@ urlpatterns += [
 
 # debug toolbar тільки в режимі розробки
 if settings.DEBUG:
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path(
+            "api/docs/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger-ui",
+        ),
+    ]
     import debug_toolbar
 
     urlpatterns += [
         path("__debug__/", include(debug_toolbar.urls)),
     ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    urlpatterns += [
+        path(
+            "api/schema/",
+            SpectacularAPIView.as_view(permission_classes=[IsAdminUser]),
+            name="schema",
+        ),
+        path(
+            "api/docs/",
+            SpectacularSwaggerView.as_view(
+                url_name="schema", permission_classes=[IsAdminUser]
+            ),
+            name="swagger-ui",
+        ),
+    ]
