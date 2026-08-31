@@ -9,10 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY  requirements/requirements.txt requirements/requirements.txt
-COPY  requirements/requirements-dev.txt requirements/requirements-dev.txt
 
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --user -r requirements/requirements-dev.txt
+    pip install --no-cache-dir --user -r requirements/requirements.txt
 
 # ---------- Stage 2: runtime ----------
 FROM python:3.13.14-slim-trixie
@@ -35,8 +34,8 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint.prod.sh /entrypoint.prod.sh
+RUN chmod +x /entrypoint.prod.sh
 
 USER appuser
 
@@ -46,5 +45,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
 EXPOSE 8080
 
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+ENTRYPOINT ["/entrypoint.prod.sh"]
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "config.wsgi:application"]

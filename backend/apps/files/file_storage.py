@@ -8,7 +8,7 @@ from django.core.files.storage import default_storage
 logger = logging.getLogger(__name__)
 
 # core - never del
-_UPLOAD_ROOT = settings.MEDIA_ROOT
+_UPLOAD_ROOT = str(settings.MEDIA_ROOT)
 
 
 class Storage(Protocol):
