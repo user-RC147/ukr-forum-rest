@@ -91,14 +91,6 @@ class PurchaseRepo:
 
         return dto
 
-
-# def _to_dto_asset_out(data)->AssetOutDTO:
-#     return AssetOutDTO()
-
-# def _to_dto_market_out(data)->MarketFullOutDTO:
-#     return MarketFullOutDTO()
-
-
 def _to_dto_unit_out(data) -> UnitOfMeasureOutDTO:
     return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)
 

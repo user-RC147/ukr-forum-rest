@@ -6,11 +6,14 @@ from drf_spectacular.utils import extend_schema
 
 from core.users.csrf_permission import CsrfPermission
 
-from apps.household.api.serializers.paginator_purchase_item_serializer import PaginatorSerializerOut
+from apps.household.api.serializers.paginator_purchase_item_serializer import (
+    PaginatorSerializerOut,
+)
 from apps.household.services.market_service import MarketService
-from apps.household.api.serializers.market_serializer import MarketExpenseOutSerializer,MarketExpense_Id_OutSerializer
-
-
+from apps.household.api.serializers.market_serializer import (
+    MarketExpenseOutSerializer,
+    MarketExpense_Id_OutSerializer,
+)
 
 
 class MarketExpenseViewSet(ViewSet):
@@ -24,20 +27,26 @@ class MarketExpenseViewSet(ViewSet):
         super().__init__(**kwargs)
         self._service = MarketService()
 
-      
     def list(self, request):
         user_id = int(request.user.id)
-        page=int(request.query_params.get('page',1))
-        page_size=int(request.query_params.get('page_size',5))
-        date_from=request.query_params.get('date_from')
-        date_to=request.query_params.get('date_to')
-        get_market_expenses = self._service.get_market_expenses(user_id, page, page_size,date_from,date_to)
+        page = int(request.query_params.get("page", 1))
+        page_size = int(request.query_params.get("page_size", 5))
+        date_from = request.query_params.get("date_from")
+        date_to = request.query_params.get("date_to")
+        get_market_expenses = self._service.get_market_expenses(
+            user_id, page, page_size, date_from, date_to
+        )
 
-        results = MarketExpense_Id_OutSerializer(get_market_expenses.items, many=True)  #MarketExpenseOutSerializer
+        results = MarketExpense_Id_OutSerializer(
+            get_market_expenses.items, many=True
+        )  # MarketExpenseOutSerializer
 
         paginator = PaginatorSerializerOut(get_market_expenses)
 
-        return Response({'results': results.data, 'paginator': paginator.data},status=status.HTTP_200_OK)
+        return Response(
+            {"results": results.data, "paginator": paginator.data},
+            status=status.HTTP_200_OK,
+        )
 
     # def create(self, request):
     #     pass

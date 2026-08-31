@@ -3,7 +3,8 @@ from django.db.models import Q
 from apps.household.dto.group_dto import (
     Group_id_user_OutDTO,
     GroupMemberOutDTO,
-    GroupOutDTO,GroupMember_id_user_OutDTO
+    GroupOutDTO,
+    GroupMember_id_user_OutDTO,
 )
 from apps.household.dto.purchase_dto import PurchaseItemOutDTO, Purchase_Id_Name_OutDTO
 from apps.household.dto.asset_dto import AssetId_Name_OutDTO
@@ -29,27 +30,27 @@ class PurchaseSelector:
         super().__init__(**kwargs)
 
     def get_all_purchase(self, user_id: int) -> list[Purchase_Id_Name_OutDTO]:
-        
-        purchase_list = Purchase.objects.filter(
-            Q(asset__group__members__user_id=user_id) |
-            Q(asset__group__created_by_id=user_id)
-        ).select_related(
-            "asset",
-            "market",
-            "asset__group",
-            "asset__created_by",
-            
-        ).prefetch_related(
-            "items",
-            "asset__group__members",
-            'items__product__unit_of_measure',
-            'items__product__category'
+
+        purchase_list = (
+            Purchase.objects.filter(
+                Q(asset__group__members__user_id=user_id)
+                | Q(asset__group__created_by_id=user_id)
+            )
+            .select_related(
+                "asset",
+                "market",
+                "asset__group",
+                "asset__created_by",
+            )
+            .prefetch_related(
+                "items",
+                "asset__group__members",
+                "items__product__unit_of_measure",
+                "items__product__category",
+            )
         )
 
-        print(purchase_list.count())
-        print(list(purchase_list))
-
-        dto_purchase_list = [_dto_purchase(purchase) for purchase in purchase_list]       
+        dto_purchase_list = [_dto_purchase(purchase) for purchase in purchase_list]
 
         return dto_purchase_list
 
@@ -109,7 +110,7 @@ def _to_unit(data: UnitOfMeasure) -> UnitOfMeasureOutDTO:
     return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)
 
 
-def _to_category(data: Category|None) -> CategoryOutDTO|None:
+def _to_category(data: Category | None) -> CategoryOutDTO | None:
 
     if data:
         return CategoryOutDTO(

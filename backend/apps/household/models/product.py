@@ -24,14 +24,14 @@ class Product(models.Model):
         related_name="cat_products"
     )
 
-    created_by: models.ForeignKey[Any | None] = models.ForeignKey(
+    created_by= models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
 
-    create_date=models.DateField(auto_now_add=True)
+    create_date=models.DateField(auto_now_add=True,verbose_name="Дата створення товару")
 
     class Meta:
         verbose_name = "Товар"

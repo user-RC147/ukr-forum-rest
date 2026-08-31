@@ -35,7 +35,7 @@ class PurchaseItemViewSet(ViewSet):
             user_id, page, page_size, date_from, date_to
         )
 
-        results = PurchaseItemOutSerializer(purchase_items.items, many=True).date
+        results = PurchaseItemOutSerializer(purchase_items.items, many=True).data
         paginator = PaginatorSerializerOut(purchase_items)
 
         return Response(
