@@ -115,7 +115,7 @@ docker-compose.override.yml
 *.bak
 backup.json
 .prettierrc.json   # якщо це персональний файл
-
+*.pem
 
 # ========================================
 # docs
