@@ -32,9 +32,11 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - static_data:/var/www/static:ro
       - media_data:/var/www/media:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
       backend:
         condition: service_healthy
@@ -70,8 +72,9 @@ services:
   celery:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     image: ukr-forum-backend:prod
+    entrypoint: []
     restart: unless-stopped
     command: celery -A config worker --loglevel=info --concurrency=${CELERY_CONCURRENCY:-2} --max-tasks-per-child=100 --prefetch-multiplier=1
     env_file:
