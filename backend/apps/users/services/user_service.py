@@ -35,9 +35,9 @@ class UserService:
 
         return _to_dto_short_public_user_out(user)
 
-    def get_many_short_public_user(self, ids: set) -> list[UserShortPublicOutDTO]:
+    def get_many_short_public_user(self, ids: set[int] | None) -> list[UserShortPublicOutDTO]:
         users = self._selector.get_many_short_public(ids)
-        dto = [_to_dto_short_public_user_out(user) for user in users]
+        dto = [_to_dto_short_public_user_out(user) for user in users.values()]
         return dto
 
     def get_many_public_user(self, ids: set[int] | None) -> list[UserPublicOutDTO]:

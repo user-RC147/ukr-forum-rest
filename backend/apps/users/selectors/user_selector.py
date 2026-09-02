@@ -36,8 +36,11 @@ class UserSelector:
         return _to_dto_short_public_user_out(user)
 
     def get_many_short_public(self, ids: set[int] | list[int],) -> dict[int, UserShortPublicOutDTO]:
-        users = CustomUser.objects.filter(id__in=ids).only("id", "display_name")
-        return {user.id: _to_dto_short_public_user_out(user) for user in users}
+        queryset = CustomUser.objects.only("id", "display_name")
+    
+        if ids is not None:
+            queryset = queryset.filter(id__in=ids)
+        return {user.id: _to_dto_short_public_user_out(user) for user in queryset}
 
 
 
