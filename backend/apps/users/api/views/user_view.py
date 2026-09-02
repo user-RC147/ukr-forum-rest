@@ -51,6 +51,15 @@ class UserViewSet(ViewSet):
         serializer = UserShortOutSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    @action(detail=False, methods=["get"], url_path="user_many_short")
+    @extend_schema(request=UserShortOutSerializer(), responses=UserShortOutSerializer())
+    def get_many_short_user(self, request):
+        users = self._service.get_many_short_public_user(ids=None)
+        serializer = UserShortOutSerializer(users,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
     def list(self, request):
         all_user = self._service.get_many_public_user(ids=None)
         serializer = UserPublicOutSerializer(all_user, many=True)
