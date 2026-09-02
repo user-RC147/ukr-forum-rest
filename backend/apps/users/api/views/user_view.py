@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Value
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -56,7 +57,8 @@ class UserViewSet(ViewSet):
     @extend_schema(request=UserShortOutSerializer(), responses=UserShortOutSerializer())
     def get_many_short_user(self, request):
         users = self._service.get_many_short_public_user(ids=None)
-        serializer = UserShortOutSerializer(users,many=True)
+        user_list = [user for user in users.values()]
+        serializer = UserShortOutSerializer(user_list,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
