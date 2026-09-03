@@ -10,5 +10,4 @@ class UserShortOutDTO:
     """
 
     id: int
-    username: str
     display_name: str
