@@ -28,11 +28,8 @@ class ArticleViewSet(ViewSet):
 
     def list(self, request)->ArticleOutSerializer:
         user_id = request.user.id
-
         get_all_artcle = self._service.get_all_article(user_id=None)
-
         results = ArticleOutSerializer(get_all_artcle,many=True).data
-
 
         return Response({'results':results},status=status.HTTP_200_OK)
 
