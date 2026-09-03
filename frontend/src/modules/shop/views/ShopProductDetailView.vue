@@ -5,17 +5,19 @@ import { useToast } from "@/shared/composables/useToast";
 import { useUserStore } from "@/shared/stores/useUserStore";
 import { useProductGallery } from "../composables/useProductGallery";
 import { getProductDetail, createComplaint } from "../api/shop.js";
+import { getPublicProfile } from "../../users/api/users";
 import { getProductDescription, getProductTitle } from "../utils/text";
 import {
   PhotoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   DocumentTextIcon,
   PencilSquareIcon,
   TrashIcon,
   FlagIcon,
   ChatBubbleLeftRightIcon,
-  LockClosedIcon,
   GlobeAltIcon,
   CalendarDaysIcon,
   UserCircleIcon,
@@ -28,6 +30,10 @@ const { error: showError, success: showSuccess } = useToast();
 const product = ref(null);
 const loading = ref(true);
 const error = ref(null);
+const contactsExpanded = ref(false);
+const contactsLoading = ref(false);
+const contactsError = ref(false);
+const sellerContacts = ref(null);
 
 const galleryImages = computed(() => product.value?.files ?? []);
 const gallery = useProductGallery(galleryImages);
@@ -41,6 +47,9 @@ async function loadProduct(pk) {
   loading.value = true;
   error.value = null;
   product.value = null; // важно: сбрасываем, чтобы старые files не "просвечивали"
+  contactsExpanded.value = false;
+  sellerContacts.value = null;
+  contactsError.value = false;
 
   try {
     const response = await getProductDetail(pk);
@@ -50,6 +59,23 @@ async function loadProduct(pk) {
     showError("Помилка завантаження товару");
   } finally {
     loading.value = false;
+  }
+}
+
+async function toggleContacts() {
+  contactsExpanded.value = !contactsExpanded.value;
+  if (!auth.isAuthenticated) return;
+  if (!contactsExpanded.value || sellerContacts.value || contactsLoading.value) return;
+
+  contactsLoading.value = true;
+  contactsError.value = false;
+  try {
+    const response = await getPublicProfile(product.value.owner.id);
+    sellerContacts.value = response.data?.results ?? response.data;
+  } catch {
+    contactsError.value = true;
+  } finally {
+    contactsLoading.value = false;
   }
 }
 
@@ -237,31 +263,15 @@ const handleComplaint = async () => {
 
           <div class="flex flex-col gap-3">
             <template v-if="auth.isAuthenticated && !isOwner">
-              <div
-                class="w-full bg-blue-50 border border-blue-200 text-blue-600 font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2 text-sm"
-              >
-                <ChatBubbleLeftRightIcon class="w-5 h-5 flex-shrink-0" />
-                Натисніть на продавця для отримання контактів
-              </div>
-
               <button
                 type="button"
                 @click="handleComplaint"
-                class="w-full cursor-pointer bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-xl py-2.5 px-4 text-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                class="w-full cursor-not-allowed bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-xl py-2.5 px-4 text-sm transition-colors duration-200 flex items-center justify-center gap-2"
               >
                 <FlagIcon class="w-4 h-4" />
                 Подати скаргу
               </button>
             </template>
-
-            <router-link
-              v-else-if="!auth.isAuthenticated"
-              :to="{ name: 'login', query: { next: route.fullPath } }"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-3 px-4 text-center transition-colors duration-200 flex items-center justify-center gap-2"
-            >
-              <LockClosedIcon class="w-4 h-4" />
-              Увійдіть, щоб зв'язатися
-            </router-link>
 
             <template v-if="canModerate">
               <router-link
@@ -301,6 +311,9 @@ const handleComplaint = async () => {
               class="w-11 h-11 text-gray-300 flex-shrink-0"
             />
             <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 truncate" :title="sellerName">
+                {{ sellerName }}
+              </p>
               <!-- <router-link
                 :to="{
                   name: 'users-public-detail',
@@ -344,6 +357,83 @@ const handleComplaint = async () => {
               <p class="text-sm text-gray-600">{{ formattedDate }}</p>
             </div>
           </div>
+        </div>
+
+        <div
+          v-if="!isOwner"
+          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        >
+          <button
+            type="button"
+            @click="toggleContacts"
+            class="w-full cursor-pointer p-5 flex items-center justify-between gap-3 text-left hover:bg-gray-50 transition-colors duration-200"
+          >
+            <span class="flex items-center gap-3 font-semibold text-gray-900">
+              <ChatBubbleLeftRightIcon class="w-5 h-5 text-blue-600" />
+              Контакти
+            </span>
+            <ChevronUpIcon v-if="contactsExpanded" class="w-5 h-5 text-gray-500" />
+            <ChevronDownIcon v-else class="w-5 h-5 text-gray-500" />
+          </button>
+
+          <Transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 -translate-y-2"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-2"
+          >
+            <div
+              v-if="contactsExpanded"
+              class="border-t border-gray-100 px-5 pb-5 pt-4 text-sm text-gray-600"
+            >
+              <div v-if="!auth.isAuthenticated" class="flex flex-col items-start gap-3">
+                <p>Зареєструйтесь або увійдіть для перегляду контактів</p>
+                <div class="flex flex-wrap gap-2">
+                  <router-link
+                    :to="{ name: 'register', query: { next: route.fullPath } }"
+                    class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-200 hover:bg-blue-700"
+                  >
+                    Зареєструватися
+                  </router-link>
+                  <router-link
+                    :to="{ name: 'login', query: { next: route.fullPath } }"
+                    class="inline-flex items-center justify-center rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors duration-200 hover:bg-blue-50"
+                  >
+                    Увійти
+                  </router-link>
+                </div>
+              </div>
+              <p v-else-if="contactsLoading">Завантаження контактів...</p>
+              <p v-else-if="contactsError" class="text-red-600">
+                Не вдалося завантажити контакти.
+              </p>
+              <div v-else-if="sellerContacts" class="space-y-2">
+                <p v-if="sellerContacts.email">
+                  <span class="font-medium text-gray-900">Email:</span>
+                  {{ sellerContacts.email }}
+                </p>
+                <p v-if="sellerContacts.phone_number">
+                  <span class="font-medium text-gray-900">Телефон:</span>
+                  {{ sellerContacts.phone_number }}
+                </p>
+                <p v-if="sellerContacts.social_network">
+                  <span class="font-medium text-gray-900">Соцмережі:</span>
+                  {{ sellerContacts.social_network }}
+                </p>
+                <p
+                  v-if="
+                    !sellerContacts.email &&
+                    !sellerContacts.phone_number &&
+                    !sellerContacts.social_network
+                  "
+                >
+                  Контакти не вказані.
+                </p>
+              </div>
+            </div>
+          </Transition>
         </div>
       </aside>
     </div>

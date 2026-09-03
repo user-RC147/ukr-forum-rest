@@ -11,6 +11,6 @@ datasources:
       maxLines: 1000
       derivedFields:
         - datasourceUid: loki
-          matcherRegex: 'request_id=(\S+)'
+          matcherRegex: '"request_id"\s*:\s*"([^"\\]+)"'
           name: request_id
-          url: ""
+          url: "$${__value.raw}"
