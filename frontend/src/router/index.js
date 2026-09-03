@@ -83,9 +83,15 @@ const routes = [
             },
             {
                 path: 'articles',
-                name: 'articles',
-                component: () => import('@/modules/users/views/HomeView.vue'),
+                component: () => import('@/modules/articles/views/ArticleView.vue'),
                 meta: { requiresAuth: true },
+                children:[
+                    {
+                        path:'',
+                        name:'article-index',
+                        component: () => import('@/modules/articles/views/articles/ArticleListView.vue'),
+                    },
+                ]
             },
             {
                 path: 'stories',
