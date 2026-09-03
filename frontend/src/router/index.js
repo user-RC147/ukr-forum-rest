@@ -33,7 +33,7 @@ const routes = [
                 path: 'shop',
                 name: 'shop-index',
                 component: () => import('@/modules/shop/views/ShopIndexView.vue'),
-                meta: { title: 'Оголошення', requiresAuth: true },
+                meta: { title: 'Оголошення', requiresAuth: false },
             },
             {
                 path: 'shop/my-products',
