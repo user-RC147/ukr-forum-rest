@@ -15,6 +15,7 @@
         "refresh": 2,
         "includeAll": true,
         "multi": true,
+        "allValue": ".*",
         "current": { "text": "All", "value": "$__all" }
       },
       {
@@ -25,6 +26,7 @@
         "refresh": 2,
         "includeAll": true,
         "multi": true,
+        "allValue": ".*",
         "current": { "text": "All", "value": "$__all" }
       },
       {
@@ -53,9 +55,33 @@
       "fieldConfig": {
         "defaults": { "unit": "reqps" },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
-          { "matcher": { "id": "byName", "options": "WARNING" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
-          { "matcher": { "id": "byName", "options": "INFO" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+          {
+            "matcher": { "id": "byName", "options": "ERROR" },
+            "properties": [
+              {
+                "id": "color",
+                "value": { "mode": "fixed", "fixedColor": "red" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "WARNING" },
+            "properties": [
+              {
+                "id": "color",
+                "value": { "mode": "fixed", "fixedColor": "orange" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "INFO" },
+            "properties": [
+              {
+                "id": "color",
+                "value": { "mode": "fixed", "fixedColor": "blue" }
+              }
+            ]
+          }
         ]
       }
     },
@@ -81,7 +107,11 @@
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        { "expr": "sum(count_over_time({job=\"backend\", level=\"ERROR\"}[$__range]))", "refId": "A", "instant": true }
+        {
+          "expr": "sum(count_over_time({job=\"backend\", level=\"ERROR\", module=~\"$module\"}[$__range]))",
+          "refId": "A",
+          "instant": true
+        }
       ],
       "fieldConfig": {
         "defaults": {
@@ -104,7 +134,11 @@
       "gridPos": { "h": 4, "w": 4, "x": 4, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        { "expr": "sum(count_over_time({job=\"backend\", level=\"WARNING\"}[$__range]))", "refId": "A", "instant": true }
+        {
+          "expr": "sum(count_over_time({job=\"backend\", level=\"WARNING\", module=~\"$module\"}[$__range]))",
+          "refId": "A",
+          "instant": true
+        }
       ],
       "fieldConfig": {
         "defaults": {
@@ -126,7 +160,11 @@
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        { "expr": "sum(count_over_time({job=\"backend\"}[$__range]))", "refId": "A", "instant": true }
+        {
+          "expr": "sum(count_over_time({job=\"backend\", level=~\"$level\", module=~\"$module\"}[$__range]))",
+          "refId": "A",
+          "instant": true
+        }
       ]
     },
     {
@@ -138,7 +176,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "topk(10, sum by (exception_type) (count_over_time({job=\"backend\", level=\"ERROR\"} | json | exception_type!=\"\" [$__range])))",
+          "expr": "topk(10, sum by (exception_type) (count_over_time({job=\"backend\", level=\"ERROR\", module=~\"$module\"} | json | exception_type!=\"\" [$__range])))",
           "refId": "A",
           "instant": true
         }
@@ -167,7 +205,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "topk(10, sum by (view) (count_over_time({job=\"backend\", level=\"ERROR\"} | json | status_code >= 500 [$__range])))",
+          "expr": "topk(10, sum by (view) (count_over_time({job=\"backend\", level=\"ERROR\", module=~\"$module\"} | json | status_code >= 500 [$__range])))",
           "refId": "A",
           "instant": true
         }
@@ -233,6 +271,34 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "5xx rate",
+      "description": "Скорость серверных ошибок по логам с status_code >= 500",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 52 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(rate({job=\"backend\", module=~\"$module\"} | json | status_code >= 500 [$__auto]))",
+          "legendFormat": "5xx",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          }
+        }
+      }
     }
   ]
 }
