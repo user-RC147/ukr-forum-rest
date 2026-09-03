@@ -30,3 +30,4 @@ tzdata==2026.2
 uritemplate==4.2.0
 urllib3==2.7.0
 gunicorn==26.2.0
+argon2-cffi==25.1.0
