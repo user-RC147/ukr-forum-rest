@@ -24,12 +24,8 @@ class ArticleService:
         user_ids = {user.created_by_id for user in articles}
         users = get_user_short_contract().get_many(user_ids)
 
-        prt(users)
-
-
         dto = _to_dto_article_out(articles,users)
-        prt(dto)
-
+       
         return dto
     
 

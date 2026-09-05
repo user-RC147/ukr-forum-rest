@@ -37,23 +37,37 @@ const handleLogout = () => {
             class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             Барахолка
           </RouterLink>
-          <RouterLink to="/advboard"
-            class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+          <RouterLink
+            v-if="false"
+            to="/advboard"
+            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             Оголошення
           </RouterLink>
-          <RouterLink to="/articles"
-            class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+          <RouterLink
+            v-if="false"
+            to="/articles"
+            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             Поради
           </RouterLink>
-          <RouterLink to="/stories"
-            class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+          <RouterLink 
+            v-if="false"
+            to="/stories"
+            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             Досвід / Розповіді
           </RouterLink>
-          <RouterLink to="/household"
+          <RouterLink
+            v-if="false"
+            to="/household"
             class="bg-[#f3d305] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
             ДомВитрати
           </RouterLink>
+
+          <RouterLink
+            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+            У розробці ...
+          </RouterLink>
         </div>
+        
 
          <!-- БУРГЕР (тільки мобілка) -->
           <button @click="mobileMenuOpen = !mobileMenuOpen"
@@ -85,33 +99,39 @@ const handleLogout = () => {
           class="absolute bg-[#f7f6f1] top-full left-0 w-full shadow-xl lg:hidden">
           <ul class="flex flex-col p-4 gap-3">
             <li>
-              <RouterLink to="/shop" @click="mobileMenuOpen = false"
+              <RouterLink  to="/shop" @click="mobileMenuOpen = false"
                 class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
                 Барахолка
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/advboard" @click="mobileMenuOpen = false"
+              <RouterLink v-if="false" to="/advboard" @click="mobileMenuOpen = false"
                 class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
                 Оголошення
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/articles" @click="mobileMenuOpen = false"
+              <RouterLink v-if="false" to="/articles" @click="mobileMenuOpen = false"
                 class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
                 Поради
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/stories" @click="mobileMenuOpen = false"
+              <RouterLink v-if="false" to="/stories" @click="mobileMenuOpen = false"
                 class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
                 Досвід / Розповіді
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/household" @click="mobileMenuOpen = false"
+              <RouterLink v-if="false" to="/household" @click="mobileMenuOpen = false"
                 class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
                 ДомВитрати
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink 
+                class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
+                У розробці ...
               </RouterLink>
             </li>
           </ul>
