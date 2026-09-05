@@ -126,7 +126,7 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_AUTH_ANONYMOUS_ENABLED=false
     env_file:
-      - ./backend/.env
+      - ./monitoring/.env
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
