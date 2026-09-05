@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+users.acl
+redis.conf
+
+# data Redis
+data/
+*.rdb
+*.aof
+appendonlydir/
+
+# git и метаданные
+.git
+.gitignore
+.gitattributes
+
+# ОС
+.DS_Store
+Thumbs.db
+*.swp
+
+# docs
+README.md
+*.md

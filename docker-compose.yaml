@@ -53,20 +53,17 @@ services:
       - db-data-dev:/var/lib/postgresql
 
   redis:
-    image: redis:8.10.0-trixie
-    container_name: redis
-    restart: unless-stopped
+    build: ./redis
 
     volumes:
       - redis-data-dev:/data
+      - ./redis/redis.conf.template:/usr/local/etc/redis/redis.conf.template
 
-    command: >
-      redis-server
-      --appendonly yes
-      --save 60 1000
+    env_file:
+      - ./redis/.env
 
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli --user app_user -a $$REDIS_USER_PASSWORD ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -131,7 +128,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - backend/.env
+      - ./monitoring/.env
     volumes:
       - grafana_data-dev:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro

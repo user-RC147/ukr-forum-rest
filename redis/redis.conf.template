@@ -1,0 +1,13 @@
+# network settings
+bind 0.0.0.0
+protected-mode yes
+appendonly yes
+appendfsync everysec
+
+user default off
+
+
+user app_user on >${REDIS_USER_PASSWORD} ~* &* +@all -@dangerous -flushall -flushdb -shutdown -debug -config -acl -keys -monitor -save -bgsave -bgrewriteaof -replicaof -slaveof -swapdb -module
+
+# admin user for deep debug
+user admin on >${REDIS_ADMIN_PASSWORD} ~* +@all
