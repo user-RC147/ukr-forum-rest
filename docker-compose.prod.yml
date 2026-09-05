@@ -30,13 +30,21 @@ services:
       dockerfile: nginx/Dockerfile
     image: ukr-forum-nginx:prod
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+  #add_block
+    expose:
+      - "80"
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
     volumes:
       - static_data:/var/www/static:ro
       - media_data:/var/www/media:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
+      #delete_line
+      # - ./nginx/certs:/etc/nginx/certs:ro
+  #add_block
+    networks:
+      - default
+      - web_network
     depends_on:
       backend:
         condition: service_healthy
@@ -125,11 +133,17 @@ services:
     depends_on:
       - loki
 
+#add_block
+networks:
+  web_network:
+    external: true
+
 volumes:
   static_data:
   media_data:
   db-data:
   loki_data:
   grafana_data:
-  backend_media:
+  #delete_line
+  #backend_media:
   redis-data:
