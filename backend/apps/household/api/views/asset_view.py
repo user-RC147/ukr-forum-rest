@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 
 from drf_spectacular.utils import extend_schema
+from core.users.csrf_permission import CsrfPermission
 
 from apps.household.api.serializers.asset_serializer import (
     AssetIdRegionOutSerializer,
@@ -17,7 +18,11 @@ from apps.household.dto.location_dto import Location_Id_InDTO
 
 
 class AssetViewSet(ViewSet):
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["create"]:  # "list", "retrieve",
+            return [AllowAny(), CsrfPermission()]
+        return [IsAuthenticated(), CsrfPermission()]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

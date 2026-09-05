@@ -29,7 +29,7 @@ class GroupViewSet(viewsets.ViewSet):
     """
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in []: #"list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
