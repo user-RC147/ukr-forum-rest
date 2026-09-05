@@ -14,8 +14,8 @@ from apps.articles.services.article_service import ArticleService
 class ArticleViewSet(ViewSet):
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            return [AllowAny()]
+        if self.action in []:  # "create","list", "retrieve",
+            return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
 

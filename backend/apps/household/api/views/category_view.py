@@ -13,7 +13,7 @@ from apps.household.api.serializers.category_serializer import CategoryInSeriali
 class CategoryViewSet(ViewSet):
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "create"]:  # "list", "retrieve",
+        if self.action in []:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 

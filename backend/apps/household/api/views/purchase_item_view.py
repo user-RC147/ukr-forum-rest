@@ -16,7 +16,7 @@ from apps.household.services.purchase_item_service import PurchaseItemService
 class PurchaseItemViewSet(ViewSet):
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
