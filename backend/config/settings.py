@@ -263,17 +263,19 @@ sentry_sdk.init(
 # --- Redis / Cache ---
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_PASSWORD = os.getenv("REDIS_USER_PASSWORD", "redis")
+REDIS_USER = os.getenv("REDIS_USER", "redis")
 
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
+        "LOCATION": f"redis://{REDIS_PASSWORD}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/1",
     }
 }
 
 # --- Celery ---
-CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+CELERY_BROKER_URL = f"redis://{REDIS_PASSWORD}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_PASSWORD}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/1"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = os.getenv("TIMEZONE", "Europe/Berlin")
