@@ -7,7 +7,7 @@ appendfsync everysec
 user default off
 
 
-user app_user on >${REDIS_USER_PASSWORD} ~* &* +@all -@dangerous -flushall -flushdb -shutdown -debug -config -acl -keys -monitor -save -bgsave -bgrewriteaof -replicaof -slaveof -swapdb -module
+user ${REDIS_USER} on >${REDIS_USER_PASSWORD} ~* &* +@all -@dangerous -flushall -flushdb -shutdown -debug -config -acl -keys -monitor -save -bgsave -bgrewriteaof -replicaof -slaveof -swapdb -module
 
 # admin user for deep debug
-user admin on >${REDIS_ADMIN_PASSWORD} ~* +@all
+user ${REDIS_ADMIN} on >${REDIS_ADMIN_PASSWORD} ~* +@all

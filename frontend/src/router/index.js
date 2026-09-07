@@ -168,6 +168,12 @@ const routes = [
             }
         ],
     },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: () => import('@/modules/errors/views/NotFoundView.vue'),
+        meta: { title: 'Сторінка не знайдена', requiresAuth: false },
+    },
 ]
 
 const router = createRouter({

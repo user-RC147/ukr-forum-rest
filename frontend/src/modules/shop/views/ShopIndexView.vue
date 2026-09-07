@@ -83,6 +83,7 @@ onMounted(loadLatestProducts)
       </div>
 
       <button
+        v-if="userStore.isAuthenticated"
         type="button"
         @click="actionsOpen = !actionsOpen"
         class="inline-flex cursor-pointer items-center gap-2 bg-orange-500/70 hover:bg-orange-600/80 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition-colors duration-200"

@@ -62,10 +62,10 @@ const handleLogout = () => {
             ДомВитрати
           </RouterLink>
 
-          <RouterLink
-            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center hover:bg-[#A9A437] transition">
+          <span
+            class="bg-[#A9A437] rounded text-[#33332E] text-xs inline-block min-w-28 py-2 text-center">
             У розробці ...
-          </RouterLink>
+          </span>
         </div>
         
 
@@ -129,10 +129,10 @@ const handleLogout = () => {
               </RouterLink>
             </li>
             <li>
-              <RouterLink 
-                class="block py-2 border-b border-amber-400 hover:bg-[#A9A437] transition">
+              <span
+                class="block py-2 border-b border-amber-400">
                 У розробці ...
-              </RouterLink>
+              </span>
             </li>
           </ul>
         </div>
