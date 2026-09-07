@@ -107,10 +107,13 @@ api.interceptors.response.use(
       originalRequest.url?.includes('/auth/refresh/') ||
       originalRequest.url?.includes('/token/refresh/')
 
+    const isProfileRequest = originalRequest.url?.includes('/users/profile/')
+
     if (
       error.response.status === 401 &&
       !originalRequest._retry &&
-      !isAuthEndpoint
+      !isAuthEndpoint &&
+      !isProfileRequest
     ) {
       originalRequest._retry = true
 
