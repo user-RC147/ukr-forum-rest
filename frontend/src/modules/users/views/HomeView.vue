@@ -1,21 +1,3 @@
-<script setup>
-import { onMounted } from 'vue'
-import { useUserStore } from '@/shared/stores/useUserStore'
-
-const userStore = useUserStore()
-
-onMounted(async () => {
-  if (!userStore.user) {
-    try{
-      await userStore.fetchProfile()
-    } catch {
-      // юзер не авторизований — це нормальний стан для головної сторінки,
-      // нічого страшного не сталось, просто показуємо сторінку для гостя
-    }    
-  }
-})
-</script>
-
 <template>
   <div class="w-full px-6 py-6">
 
