@@ -63,7 +63,7 @@ services:
       - ./redis/.env
 
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli --user app_user -a $$REDIS_USER_PASSWORD ping | grep -q PONG"]
+      test: ["CMD-SHELL", "redis-cli --user $$REDIS_USER -a $$REDIS_USER_PASSWORD ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
