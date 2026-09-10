@@ -30,13 +30,16 @@ const handleSubmit = async () => {
 
     try {
         await registerUser(form.value)
+        
 
-        await userStore.login({
-            username: form.value.username,
-            password: form.value.password,
-        })
+        // await userStore.login({
+        //     username: form.value.username,
+        //     password: form.value.password,
+        // })
 
-        router.push({ name: 'home' })
+        //router.push({ name: 'home' })
+
+        router.push({ name: 'check-email' })
     } catch (error) {
         if (error.response?.data) {
             errors.value = error.response.data
@@ -114,6 +117,8 @@ const handleSubmit = async () => {
                     <input
                         v-model="form.email"
                         type="email"
+                        autocomplete="email"
+                        required
                         placeholder="your@email.com"
                         :class="[
                             'w-full px-3.5 py-2.5 text-sm rounded-lg border transition focus:outline-none focus:ring-2',

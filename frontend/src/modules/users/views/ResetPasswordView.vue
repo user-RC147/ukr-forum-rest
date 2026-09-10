@@ -1,10 +1,11 @@
 <script setup>
     import { ref, onMounted } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
-    import { confirmPasswordReset } from '../api/users';
+    import { usePasswordResetStore } from '../stores/usePasswordResetStore';
 
     const route = useRoute();
     const router = useRouter();
+    const passwordResetStore = usePasswordResetStore();
 
     const token = ref(null);
     const tokenMissing = ref(false);
@@ -14,9 +15,7 @@
         new_password_confirm: '',
     });
 
-    const errors = ref({});
-    const isLoading = ref(false);
-    const successMessage = ref('');
+    const fieldErrors = ref({});
 
     const showNewPassword = ref(false);
     const showNewPasswordConfirm = ref(false);
@@ -36,27 +35,25 @@
     });
 
     const handleSubmit = async () => {
-        errors.value = {};
-        isLoading.value = true;
+        fieldErrors.value = {};
 
-        try {
-            await confirmPasswordReset({
-                token: token.value,
-                new_password: form.value.new_password,
-                new_password_confirm: form.value.new_password_confirm,
-            });
+        if (form.value.new_password.length < 8) {
+            fieldErrors.value.new_password = ['Пароль повинен містити не менше 8 символів'];
+            return;
+        }
 
-            successMessage.value = 'Пароль успішно змінено. Тепер ви можете увійти.';
+        await passwordResetStore.confirm({
+            token: token.value,
+            new_password: form.value.new_password,
+            new_password_confirm: form.value.new_password_confirm,
+        });
 
+        if (passwordResetStore.success) {
             setTimeout(() => {
                 router.push({ name: 'login' });
             }, 2000);
-        } catch (error) {
-            if (error.response?.data) {
-                errors.value = error.response.data;
-            }
-        } finally {
-            isLoading.value = false;
+        } else if (passwordResetStore.error) {
+            fieldErrors.value = passwordResetStore.error;
         }
     };
 </script>
@@ -73,8 +70,8 @@
             <div v-if="tokenMissing" class="text-center text-rose-500">
                 Посилання недійсне. Перевірте, чи скопіювали повне посилання з листа.
             </div>
-            <div v-else-if="successMessage" class="text-center text-green-600">
-                {{ successMessage }}
+            <div v-else-if="passwordResetStore.success" class="text-center text-green-600">
+                Пароль успішно змінено. Тепер ви можете увійти.
             </div>
             <form v-else @submit.prevent="handleSubmit" class="space-y-4">
                 <!-- NEW Password -->
@@ -90,7 +87,7 @@
                             placeholder="Мінімум 8 символів"
                             :class="[
                                 'w-full px-3.5 py-2.5 pr-10 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
-                                errors.new_password
+                                fieldErrors.new_password
                                     ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
                                     : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
                             ]"
@@ -103,8 +100,8 @@
                             {{ showNewPassword ? '🙈' : '👁️' }}
                         </button>
                     </div>
-                    <p v-if="errors.new_password" class="text-rose-500 text-xs mt-1">
-                        {{ errors.new_password[0] }}
+                    <p v-if="fieldErrors.new_password" class="text-rose-500 text-xs mt-1">
+                        {{ fieldErrors.new_password[0] }}
                     </p>
                     <p v-else class="text-xs text-gray-400 mt-1">Повинен містити не менше 8 символів</p>
                 </div>
@@ -122,7 +119,7 @@
                             placeholder="Повторіть пароль"
                             :class="[
                                 'w-full px-3.5 py-2.5 pr-10 text-sm rounded-lg border transition focus:outline-none focus:ring-2',
-                                errors.new_password_confirm
+                                fieldErrors.new_password_confirm
                                     ? 'border-rose-300 bg-rose-50 focus:ring-rose-400'
                                     : 'border-gray-300 focus:border-amber-500 focus:ring-amber-200',
                             ]"
@@ -135,16 +132,16 @@
                             {{ showNewPassword ? '🙈' : '👁️' }}
                         </button>
                     </div>
-                    <p v-if="errors.new_password_confirm" class="text-rose-500 text-xs mt-1">
-                        {{ errors.new_password_confirm[0] }}
+                    <p v-if="fieldErrors.new_password_confirm" class="text-rose-500 text-xs mt-1">
+                        {{ fieldErrors.new_password_confirm[0] }}
                     </p>
                 </div>
                 <button
                     type="submit"
-                    :disabled="isLoading"
+                    :disabled="passwordResetStore.loading"
                     class="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
                 >
-                    {{ isLoading ? 'Збереження...' : 'Змінити пароль' }}
+                    {{ passwordResetStore.loading ? 'Збереження...' : 'Змінити пароль' }}
                 </button>
             </form>
         </div>

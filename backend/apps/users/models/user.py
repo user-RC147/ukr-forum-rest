@@ -19,6 +19,8 @@ class CustomUser(AbstractUser, PrivateLocationMixin):
     first_name_public = models.BooleanField(default=False)
     last_name_public = models.BooleanField(default=False)
 
+    email = models.EmailField(unique=True, verbose_name="Email адреса")
+
     email_public = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
 
@@ -42,7 +44,7 @@ class CustomUser(AbstractUser, PrivateLocationMixin):
     deletion_scheduled_at = models.DateTimeField(null=True, blank=True)
 
     consent_given = models.BooleanField(default=False, verbose_name="Погодження")
-    consent_date = models.DateTimeField(
+    consent_date = models.DateTimeField(auto_now_add=True,
         null=True, blank=True, verbose_name="Дата погодження"
     )
     consent_version = models.ForeignKey(

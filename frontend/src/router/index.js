@@ -165,7 +165,19 @@ const routes = [
                 name: 'reset-password',
                 component: () => import('@/modules/users/views/ResetPasswordView.vue'),
                 meta: {requiresAuth: false},
-            }
+            },
+            {
+                path: 'check-email',
+                name: 'check-email',
+                component: () => import('@/modules/users/views/CheckEmailView.vue'),
+                meta: { requiresAuth: false },
+            },
+            {
+                path: 'confirm-email',
+                name: 'confirm-email',
+                component: () => import('@/modules/users/views/ConfirmEmailView.vue'),
+                meta: { requiresAuth: false },
+            },
         ],
     },
     {

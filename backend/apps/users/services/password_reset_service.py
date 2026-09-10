@@ -24,7 +24,9 @@ class PasswordResetService:
         if token_obj.expires_at < timezone.now():
             raise ValueError("Токен протух")
 
-        self._repository.confirm_password_reset(token_obj, new_password)
+        self._repository.confirm_password_reset(token_obj.user_id, token_obj.id, new_password)
+
+
 
     def request_password_reset(self, email: str) -> None:
         user_id = self._selector.find_by_email(email)
@@ -32,8 +34,9 @@ class PasswordResetService:
         if user_id is None:
             return
 
-        self._repository.create_password_reset_token(user_id)
-        # TODO: EmailService.send_password_reset(email, token) — заглушка, реалізація пізніше
+        from apps.users.tasks import send_password_reset_email_task
 
+        token_dto = self._repository.create_password_reset_token(user_id)
+        send_password_reset_email_task.delay(user_id, token_dto.token)
 
-    
+        
