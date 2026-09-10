@@ -22,6 +22,7 @@ backend/files
 
 # Local settings and environment
 .env
+.env.prod
 .env.*.local
 .env.local
 .env.development.local
