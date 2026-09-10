@@ -1,5 +1,5 @@
 [project]
-name = "ukr-forum-rest"
+name = "ukr-rest"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

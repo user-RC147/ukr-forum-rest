@@ -1006,7 +1006,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ukr-forum-rest"
+name = "ukr-rest"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
