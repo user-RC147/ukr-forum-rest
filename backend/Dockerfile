@@ -1,6 +1,5 @@
 # ---------- Stage 1: builder ----------
 FROM python:3.13.14-slim-trixie AS builder
-
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,15 +7,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY  requirements/requirements.txt requirements/requirements.txt
-COPY  requirements/requirements-dev.txt requirements/requirements-dev.txt
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --user -r requirements/requirements-dev.txt
+COPY pyproject.toml uv.lock ./
+COPY . .
+
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
 
 # ---------- Stage 2: runtime ----------
 FROM python:3.13.14-slim-trixie
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
@@ -25,13 +29,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
+COPY --from=builder --chown=appuser:appgroup /opt/venv /opt/venv
 COPY --chown=appuser:appgroup . .
 
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appgroup /app/staticfiles /app/media
 
-ENV PATH=/home/appuser/.local/bin:$PATH \
+ENV PATH=/opt/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
@@ -44,7 +48,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
     CMD curl -f http://localhost:8080/api/health || exit 1
 
 EXPOSE 8080
-
-
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
