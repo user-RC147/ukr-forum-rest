@@ -43,6 +43,10 @@ export const confirmPasswordReset = (data) => {
   return api.post('/auth/password-reset/confirm/', data)
 }
 
+export const confirmEmail = (token) => {
+  return api.post('/auth/confirm-email/', { token })
+}
+
 export const logoutUser = () => {
   return api.post('/auth/logout/');
 }

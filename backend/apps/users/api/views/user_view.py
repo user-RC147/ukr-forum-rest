@@ -1,4 +1,3 @@
-from multiprocessing.dummy import Value
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -103,9 +102,7 @@ class UserViewSet(ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @extend_schema(
-        request=ProfileUpdateInSerializer(), responses=RegisterInSerializer()
-    )
+    @extend_schema(request=ProfileUpdateInSerializer(), responses=RegisterInSerializer())
     def update(self, request, pk=None):
 
         serialiser = ProfileUpdateInSerializer(data=request.data)

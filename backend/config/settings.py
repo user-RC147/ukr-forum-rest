@@ -172,7 +172,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- Email ---
 # Dev: prints to console. Prod: real SMTP if set in ENV, otherwise
 # falls back to console (better than silently losing emails on a half-set config).
-if not DEBUG and os.getenv("EMAIL_HOST"):
+if os.getenv("EMAIL_HOST"):
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = os.getenv("EMAIL_HOST")
     EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
@@ -184,7 +184,10 @@ else:
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ukrkolo.site")
 
+EMAIL_CONFIRMATION_TOKEN_TTL_MINUTES = 60 * 1  # 24 години
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 CSRF_TRUSTED_ORIGINS = os.getenv(

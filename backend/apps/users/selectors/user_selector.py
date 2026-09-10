@@ -43,8 +43,6 @@ class UserSelector:
         return {user.id: _to_dto_short_public_user_out(user) for user in queryset}
 
 
-
-
     def get_many_users(self, ids: set[int] | list[int],) -> list[User_Id_PrivateOutDTO]:
         if ids is None:
             users = CustomUser.objects.all()

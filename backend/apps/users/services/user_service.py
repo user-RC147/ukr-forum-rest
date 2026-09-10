@@ -7,7 +7,10 @@ from apps.users.dto.user_dto import (
 )
 from apps.users.exceptions import UserNotFoundException
 from apps.users.selectors.user_selector import UserSelector
+from apps.users.services.email_confirm_service import EmailConfirmationTokenService
 from apps.users.repositories.user_repository import UserRepo
+
+from apps.users.tasks.send_confirm_email_task import send_confirmation_email_task
 
 from apps.users.dto._to_dto_profile import _to_dto_out_profile
 from apps.users.dto._to_dto_location import _get_ids_location, _get_locations
@@ -22,11 +25,13 @@ from apps.geo.contracts import (
     get_city_contract,
 )
 
+
 class UserService:
 
     def __init__(self):
         self._selector = UserSelector()
         self._repository = UserRepo()
+        self._email_confirmation_service =EmailConfirmationTokenService()
 
     def get_short_public_user(self, user_id: int) -> UserShortPublicOutDTO:
         user = self._selector.get_short_public(user_id)
@@ -35,7 +40,9 @@ class UserService:
 
         return _to_dto_short_public_user_out(user)
 
-    def get_many_short_public_user(self, ids: set[int] | None) -> dict[UserShortPublicOutDTO]:
+    def get_many_short_public_user(
+        self, ids: set[int] | None
+    ) -> dict[UserShortPublicOutDTO]:
         users = self._selector.get_many_short_public(ids)
         dto = {user.id: _to_dto_short_public_user_out(user) for user in users.values()}
         return dto
@@ -77,12 +84,19 @@ class UserService:
 
         return dto
 
-    def create(self, dto: CreateUserInDTO) -> bool:
+    def create(self, dto: CreateUserInDTO) -> UserShortPublicOutDTO:
         referral_code = None
 
         # if dto.referral_code:
         # referral_code = self._selector.get_by_code(dto.referral_code)
-        self._repository.create(dto=dto, referral_code=dto.referral_code)
+
+        user_dto = self._repository.create(dto=dto, referral_code=dto.referral_code)
+
+        token = self._email_confirmation_service.create_token_for_user(user_dto.id)
+        send_confirmation_email_task.delay(user_dto.id, token)
+
+        return user_dto
+      
 
     def update_my_profile(
         self, dto: UserPrivateUpdateInDTO, user_id: int
