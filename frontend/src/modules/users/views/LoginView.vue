@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/shared/stores/useUserStore'
+import ForgotPasswordModal from '../components/user/ForgotPasswordModal.vue';
+
+const isForgotPasswordModalOpen = ref(false);
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -77,16 +80,31 @@ const handleSubmit = async () => {
           {{ isLoading ? 'Завантаження...' : 'Увійти' }}
         </button>
 
+
         <!-- посилання на реєстрацію -->
-        <p class="text-center text-sm text-gray-600">
-          Немає акаунту?
-          <RouterLink to="/auth/register" class="text-amber-600 hover:underline">
-            Зареєструватися
-          </RouterLink>
-        </p>
+        <div class="flex justify-around">        
+            <RouterLink to="/auth/register" class="text-amber-600 hover:underline">
+              Зареєструватися
+            </RouterLink>
+             <button
+              type="button"
+              @click="isForgotPasswordModalOpen = true"
+              class="text-amber-600 hover:underline cursor-pointer"
+              >
+                Забули пароль?
+            </button>
+        </div>
 
       </form>
     </div>
+
+
+
+    <!-- МОДАЛЬНЕ ВІКНО ДЛЯ ВІДНОВЛЕННЯ ПАРОЛЯ -->
+        <ForgotPasswordModal
+            v-if="isForgotPasswordModalOpen"
+            @cancel="isForgotPasswordModalOpen = false"
+        />
   </div>
 </template>
 

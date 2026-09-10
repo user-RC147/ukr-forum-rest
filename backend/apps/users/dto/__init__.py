@@ -5,7 +5,7 @@ from .user_dto import (
     UserPrivateUpdateInDTO,
     ConsentOutDTO,
     User_Id_PublicOutDTO,
-    User_Id_PrivateOutDTO,UserShortPublicOutDTO,
+    User_Id_PrivateOutDTO,UserShortPublicOutDTO,PasswordResetTokenOutDTO
 )
 from .referral_out_dto import ReferralCodeOutDTO
 from .login_in_dto import LoginOutDTO
@@ -15,6 +15,7 @@ from ._to_dto_profile import _to_dto_out_profile, _to_dto_id_location_profile
 from ._to_dto_location import _to_dto_out_id_location,_to_dto_out_public_location
 
 __all__ = [
+    'PasswordResetTokenOutDTO',
 
     'User_Id_PublicOutDTO',
     'User_Id_PrivateOutDTO',

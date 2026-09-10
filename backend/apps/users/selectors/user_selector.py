@@ -6,7 +6,7 @@ from apps.users.dto.user_dto import (
     User_Id_PrivateOutDTO,
     User_Id_PublicOutDTO,
     UserShortOutDTO,
-    UserShortPublicOutDTO,
+    UserShortPublicOutDTO,PasswordResetTokenOutDTO
 )
 from apps.users.dto._to_dto_user import _to_dto_short_public_user_out
 
@@ -63,8 +63,22 @@ class UserSelector:
 
         return _to_dto_id_location_profile(user)
     
-    def get_password_reset_token(self, token) -> PasswordResetToken | None:
-        return PasswordResetToken.objects.filter(token=token).first()
+    def get_password_reset_token(self, token) -> PasswordResetTokenOutDTO | None:
+        password_reset = PasswordResetToken.objects.filter(token=token).first()
+
+        if password_reset is None:
+            return None
+    
+        return PasswordResetTokenOutDTO(
+            id=password_reset.id,
+            user_id=password_reset.user_id,
+            token=str(password_reset.token),
+            created_at=password_reset.created_at,
+            expires_at=password_reset.expires_at,
+            is_used=password_reset.is_used,
+        )
+
+
 
     def find_by_email(self, email: str) -> int | None:
         user = CustomUser.objects.filter(email=email).first()

@@ -19,6 +19,8 @@ class CustomUser(AbstractUser, PrivateLocationMixin):
     first_name_public = models.BooleanField(default=False)
     last_name_public = models.BooleanField(default=False)
 
+    email = models.EmailField(unique=True, verbose_name="Email адреса")
+
     email_public = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
 

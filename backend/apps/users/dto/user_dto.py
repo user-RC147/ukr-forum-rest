@@ -1,6 +1,6 @@
 # apps/users/dto/user_dto.py
 
-import datetime
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from datetime import date
@@ -23,6 +23,16 @@ from core.dto.geo.location_dto import (
 
 
 from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class PasswordResetTokenOutDTO:
+    id: int
+    user_id: int
+    token: str
+    created_at:datetime
+    expires_at:datetime
+    is_used:bool
 
 @dataclass(frozen=True)
 class EmailConfirmationTokenOutDTO:
