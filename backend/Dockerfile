@@ -32,8 +32,8 @@ WORKDIR /app
 COPY --from=builder --chown=appuser:appgroup /opt/venv /opt/venv
 COPY --chown=appuser:appgroup . .
 
-RUN mkdir -p /app/staticfiles /app/media && \
-    chown -R appuser:appgroup /app/staticfiles /app/media
+RUN mkdir -p /app/staticfiles /app/media /app/logs && \
+    chown -R appuser:appgroup /app/staticfiles /app/media /app/logs
 
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
