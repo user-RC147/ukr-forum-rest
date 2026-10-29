@@ -72,7 +72,7 @@ flowchart TD
 
 **Frontend:** Vue 3 (SPA), Axios (with refresh-token mutex pattern)
 
-**Infra:** Docker, Docker Compose, nginx(planned), Gunicorn(planned)
+**Infra:** Docker, Docker Compose, nginx, Gunicorn
 
 **Observability:** Grafana, Loki, Promtail, Sentry
 
