@@ -17,7 +17,7 @@ from apps.geo.services.city_service import get_service_city
 
 class CityView(viewsets.ViewSet):
     serializer_class = CitySerializer
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

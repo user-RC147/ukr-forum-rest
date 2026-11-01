@@ -1,4 +1,3 @@
-# search/views.py
 import logging
 
 from rest_framework import viewsets
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class SearchView(viewsets.ViewSet):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
 
     serializer_class = SearchResultItemSerializer
 
@@ -114,7 +113,7 @@ class SearchView(viewsets.ViewSet):
 
 
 class CategoryView(viewsets.ViewSet):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
     serializer_class = CategorySerializer
 
     def __init__(self, **kwargs):
@@ -138,7 +137,7 @@ class CategoryView(viewsets.ViewSet):
 
 
 class TagView(viewsets.ViewSet):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
     serializer_class = TagSerializer
 
     def __init__(self, **kwargs):

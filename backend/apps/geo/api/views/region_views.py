@@ -14,7 +14,7 @@ from apps.geo.services.region_service import get_service_region
 
 class RegionView(viewsets.ViewSet):
     serializer_class = RegionSerializer
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
