@@ -25,11 +25,11 @@ from .serializers import (
 from .service import get_service
 
 
-class RequiresAuthIfUserIdParam(BasePermission):
-    def has_permission(self, request, view):
-        if request.query_params.get("user_id"):
-            return request.user.is_authenticated
-        return True
+# class RequiresAuthIfUserIdParam(BasePermission):
+#     def has_permission(self, request, view):
+#         if request.query_params.get("user_id"):
+#             return request.user.is_authenticated
+#         return True
 
 
 class ProductViewSet(viewsets.ViewSet):
@@ -41,12 +41,12 @@ class ProductViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.service = get_service()
 
-    def get_permissions(self):
-        if self.action in ["create", "destroy", "partial_update"]:
-            return [IsAuthenticated()]
-        elif self.action == "list":
-            return [RequiresAuthIfUserIdParam()]
-        return []
+    # def get_permissions(self):
+    #     if self.action in ["create", "destroy", "partial_update"]:
+    #         return [IsAuthenticated()]
+    #     elif self.action == "list":
+    #         return [RequiresAuthIfUserIdParam()]
+    #     return []
 
     @product_create_schema
     def create(self, request):
