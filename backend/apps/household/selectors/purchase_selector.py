@@ -1,20 +1,19 @@
 from django.db.models import Q
 
+from apps.household.dto.asset_dto import AssetId_Name_OutDTO
+from apps.household.dto.category_dto import CategoryOutDTO
 from apps.household.dto.group_dto import (
     Group_id_user_OutDTO,
+    GroupMember_id_user_OutDTO,
     GroupMemberOutDTO,
     GroupOutDTO,
-    GroupMember_id_user_OutDTO,
 )
-from apps.household.dto.purchase_dto import PurchaseItemOutDTO, Purchase_Id_Name_OutDTO
-from apps.household.dto.asset_dto import AssetId_Name_OutDTO
+from apps.household.dto.location_dto import Location_Id_InDTO
 from apps.household.dto.market_dto import Market_Id_Name_OutDTO
 from apps.household.dto.product_dto import ProductOutDTO
-from apps.household.dto.location_dto import Location_Id_InDTO
+from apps.household.dto.purchase_dto import Purchase_Id_Name_OutDTO, PurchaseItemOutDTO
 from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
-from apps.household.dto.category_dto import CategoryOutDTO
 from apps.household.dto.user_dto import User_Id_OutDTO
-
 from apps.household.models.asset import Asset
 from apps.household.models.category import Category
 from apps.household.models.group import Group, GroupMember
@@ -33,8 +32,7 @@ class PurchaseSelector:
 
         purchase_list = (
             Purchase.objects.filter(
-                Q(asset__group__members__user_id=user_id)
-                | Q(asset__group__created_by_id=user_id)
+                Q(asset__group__members__user_id=user_id) | Q(asset__group__created_by_id=user_id)
             )
             .select_related(
                 "asset",
@@ -154,5 +152,5 @@ def _dto_purchase(data: Purchase) -> Purchase_Id_Name_OutDTO:
         created_by_id=data.created_by_id,
         items=[_to_items_purchaseItem(item) for item in data.items.all()],
         # Фінансовий підсумок чека
-        total_amount=data.total_amount,  #
+        total_amount=data.total_amount,
     )

@@ -1,11 +1,9 @@
 from rest_framework import serializers
 
-from apps.geo.contracts.serializers import CountrySerializer ,RegionSerializer,CitySerializer
+from apps.geo.contracts.serializers import CitySerializer, CountrySerializer, RegionSerializer
 
+# ==========================================================
 
-
-
-#==========================================================
 
 class City_id_region_Serializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -18,18 +16,21 @@ class City_id_region_Serializer(serializers.Serializer):
 
 
 class Location_id_region_OutSerializer(serializers.Serializer):
-    country=CountrySerializer()
-    region=RegionSerializer()
-    city=City_id_region_Serializer()
+    country = CountrySerializer()
+    region = RegionSerializer()
+    city = City_id_region_Serializer()
 
-#==========================================================
+
+# ==========================================================
+
 
 class LocationOutSerializer(serializers.Serializer):
-    country=CountrySerializer()
-    region=RegionSerializer()
-    city=CitySerializer()
+    country = CountrySerializer()
+    region = RegionSerializer()
+    city = CitySerializer()
+
 
 class LocationInSerializer(serializers.Serializer):
-    country_id=serializers.IntegerField()
-    region_id=serializers.IntegerField()
-    city_id=serializers.IntegerField()
+    country_id = serializers.IntegerField()
+    region_id = serializers.IntegerField()
+    city_id = serializers.IntegerField()

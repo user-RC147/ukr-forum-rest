@@ -20,30 +20,32 @@ class AppError(Exception):
 
 
 class NotFoundError(AppError):
-    '''Auto logging in custom_exception_handler.py'''
+    """Auto logging in custom_exception_handler.py"""
+
     default_message = "Resource not found"
     default_code = "not_found"
 
 
 class ValidationError(AppError):
-    '''Auto logging in custom_exception_handler.py'''
+    """Auto logging in custom_exception_handler.py"""
+
     default_message = "Validation failed"
     default_code = "validation_error"
 
-    def __init__(
-        self, message=None, *, errors: dict[str, list[str]] | None = None, **kwargs
-    ):
+    def __init__(self, message=None, *, errors: dict[str, list[str]] | None = None, **kwargs):
         super().__init__(message, **kwargs)
         self.errors = errors or {}
 
 
 class PermissionDeniedError(AppError):
-    '''Auto logging in custom_exception_handler.py'''
+    """Auto logging in custom_exception_handler.py"""
+
     default_message = "Permission denied"
     default_code = "permission_denied"
 
 
 class ConflictError(AppError):
-    '''Auto logging in custom_exception_handler.py'''
+    """Auto logging in custom_exception_handler.py"""
+
     default_message = "Conflict with current state"
     default_code = "conflict"

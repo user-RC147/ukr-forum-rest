@@ -43,6 +43,7 @@ def test_get_many():
     response = client.get(route + f"?user_id={other_user.id}")
     assert response.status_code == 403
 
+
 @pytest.mark.django_db
 def test_get_unauth():
     client = APIClient()

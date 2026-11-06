@@ -1,9 +1,8 @@
-from apps.articles.dto.article_dto import ArticleOutDTO, ArticleIdOutDTO
+from apps.articles.dto.article_dto import ArticleIdOutDTO, ArticleOutDTO
 from apps.articles.models.article_model import Article
 
 
 class AtricleSelector:
-
     def get_all_article(self, user_id: int | None) -> list[ArticleOutDTO]:
 
         articles = Article.objects.all()

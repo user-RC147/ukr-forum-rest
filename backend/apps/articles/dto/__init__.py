@@ -1,8 +1,7 @@
-from .article_dto import ArticleOutDTO,ArticleInDTO,ArticleIdOutDTO
+from .article_dto import ArticleIdOutDTO, ArticleInDTO, ArticleOutDTO
 
-
-__all__=[
-    'ArticleOutDTO',
-    'ArticleInDTO',
-    'ArticleIdOutDTO',
+__all__ = [
+    "ArticleIdOutDTO",
+    "ArticleInDTO",
+    "ArticleOutDTO",
 ]

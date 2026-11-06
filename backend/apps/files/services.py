@@ -1,5 +1,5 @@
-from collections.abc import Mapping, Sequence
 import logging
+from collections.abc import Mapping, Sequence
 
 from django.conf import settings
 
@@ -34,9 +34,7 @@ ALLOWED_NAMESIZE = 300
 
 
 class FileService:
-    def __init__(
-        self, repo: FileRepositoryPort, storage: Storage, uow: UnitOfWork
-    ) -> None:
+    def __init__(self, repo: FileRepositoryPort, storage: Storage, uow: UnitOfWork) -> None:
         self.repo = repo
         self.storage = storage
         self.uow = uow
@@ -45,9 +43,7 @@ class FileService:
         self._validate_file(data)
 
         result = self.repo.create(data.name, data, user_id)
-        logger.info(
-            "File created", extra={"file_id": result.id, "event": "create_file"}
-        )
+        logger.info("File created", extra={"file_id": result.id, "event": "create_file"})
         return _to_dto(result)
 
     def get(self, file_id: int) -> FileDTO:
@@ -72,9 +68,7 @@ class FileService:
             if thumbnail_path:
                 self.uow.on_commit(lambda: delete_files_task.delay(thumbnail_path))
 
-        logger.info(
-            "File was deleted", extra={"file_id": file_id, "event": "delete_file"}
-        )
+        logger.info("File was deleted", extra={"file_id": file_id, "event": "delete_file"})
 
     def delete_many(self, file_ids: list[int]) -> None:
         if not file_ids:
@@ -96,9 +90,7 @@ class FileService:
             },
         )
 
-    def create_many(
-        self, data: Sequence[UploadedFileLike], user_id: int
-    ) -> list[FileDTO]:
+    def create_many(self, data: Sequence[UploadedFileLike], user_id: int) -> list[FileDTO]:
 
         if not data:
             return []
@@ -141,14 +133,15 @@ class FileService:
             with self.uow:
                 result: list[FileDTO] = []
 
-                updated, old_paths_file, old_paths_thumbnails = self._apply_updates(plan, update_files)
+                updated, old_paths_file, old_paths_thumbnails = self._apply_updates(
+                    plan, update_files
+                )
                 new_file_paths.extend(f.file for f in updated)
                 result.extend(_to_dto(f) for f in updated)
                 if old_paths_file:
                     self.uow.on_commit(lambda: delete_files_task.delay(old_paths_file))
                     if old_paths_thumbnails:
                         self.uow.on_commit(lambda: delete_files_task.delay(old_paths_thumbnails))
-
 
                 created = self._apply_creates(user_id, create_files)
                 result.extend(created)
@@ -206,7 +199,9 @@ class FileService:
         if not plan.update_ids:
             return [], [], []
 
-        updated, old_paths_files, old_paths_thumbmnails  = self.repo.update_files_content(update_files)
+        updated, old_paths_files, old_paths_thumbmnails = self.repo.update_files_content(
+            update_files
+        )
 
         self.uow.on_commit(lambda: [process_file_task.delay(u.id) for u in updated])
 
@@ -247,9 +242,7 @@ class FileService:
     @staticmethod
     def _validate_file(data: UploadedFileLike) -> None:
         if "." not in data.name:
-            raise FileExtensionError(
-                "File has no extension", extra={"event": "file_validation"}
-            )
+            raise FileExtensionError("File has no extension", extra={"event": "file_validation"})
 
         ext = data.name.split(".")[-1].lower()
         if ext not in ALLOWED_EXTENSIONS:
@@ -288,6 +281,4 @@ def _to_dto(file: FileRepoDTO) -> FileDTO:
 
 
 def get_file_service() -> FileService:
-    return FileService(
-        repo=get_file_repo(), storage=get_storage(), uow=get_unit_of_work()
-    )
+    return FileService(repo=get_file_repo(), storage=get_storage(), uow=get_unit_of_work())

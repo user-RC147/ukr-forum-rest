@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 # CREATOR = "creator", "Власник"
@@ -7,9 +7,7 @@ from django.conf import settings
 # VIEWER = "viewer", "Глядач"
 class Role(models.Model):
     name = models.CharField(default="viewer", verbose_name="Роль користувача")
-    name_ua = models.CharField(
-        blank=True, default="", verbose_name="Роль користувача українською"
-    )
+    name_ua = models.CharField(blank=True, default="", verbose_name="Роль користувача українською")
     is_bool = models.BooleanField(default=True)
 
     def __str__(self):

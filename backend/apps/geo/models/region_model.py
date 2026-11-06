@@ -14,9 +14,7 @@ class RegionModel(models.Model):
         related_name="regions",
         verbose_name="Країна",
     )
-    api_id = models.PositiveIntegerField(
-        null=True, blank=True, verbose_name="ID в Geo API"
-    )
+    api_id = models.PositiveIntegerField(null=True, blank=True, verbose_name="ID в Geo API")
 
     class Meta:
         db_table = "geo_region"

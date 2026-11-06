@@ -2,7 +2,6 @@ from typing import Any
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -32,9 +31,7 @@ class CountryView(viewsets.ViewSet):
     def list(self, request: Request):
         result = self.service.get_many()
 
-        return Response(
-            self.serializer_class(result, many=True).data, status=status.HTTP_200_OK
-        )
+        return Response(self.serializer_class(result, many=True).data, status=status.HTTP_200_OK)
 
     @country_search_schema
     @action(methods=["get"], detail=False)

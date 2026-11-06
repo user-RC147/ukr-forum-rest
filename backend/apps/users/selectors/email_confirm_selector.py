@@ -1,11 +1,11 @@
 from django.utils import timezone
-from apps.users.models.email_confirmation_token import EmailConfirmationToken
+
 from apps.users.dto.user_dto import EmailConfirmationTokenOutDTO
+from apps.users.models.email_confirmation_token import EmailConfirmationToken
 
 
 class EmailConfirmationTokenSelector:
-
-    def get_valid_token(self,token: str) -> EmailConfirmationTokenOutDTO | None:
+    def get_valid_token(self, token: str) -> EmailConfirmationTokenOutDTO | None:
         try:
             record = EmailConfirmationToken.objects.get(
                 token=token,

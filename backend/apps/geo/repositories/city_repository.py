@@ -20,9 +20,7 @@ class CityRepository:
 
     def _get_model(self, city_id: int) -> CityModel:
         try:
-            result = self.model.objects.select_related("region", "country").get(
-                id=city_id
-            )
+            result = self.model.objects.select_related("region", "country").get(id=city_id)
             return result
         except ObjectDoesNotExist:
             raise CityNotFoundError(extra={"city_id": city_id, "event": "get_city"})
@@ -35,18 +33,14 @@ class CityRepository:
         self,
         city_ids: Iterable[int],
     ) -> list[CityDTO]:
-        qs = self.model.objects.filter(id__in=city_ids).select_related(
-            "region", "country"
-        )
+        qs = self.model.objects.filter(id__in=city_ids).select_related("region", "country")
 
         qs = qs.filter(id__in=city_ids)
 
         return [_to_dto_city(r) for r in qs]
 
     def get_by_region(self, region_id: int) -> list[CityDTO]:
-        qs = self.model.objects.filter(region__id=region_id).select_related(
-            "country", "region"
-        )
+        qs = self.model.objects.filter(region__id=region_id).select_related("country", "region")
 
         return cache.get_or_set(
             city_by_region_cache_key(region_id),
@@ -67,9 +61,7 @@ class CityRepository:
             )
             .filter(country__id=country_id)
             .filter(
-                Q(name__istartswith=query)
-                | Q(name_ua__istartswith=query)
-                | Q(similarity__gt=0.3)
+                Q(name__istartswith=query) | Q(name_ua__istartswith=query) | Q(similarity__gt=0.3)
             )
             .order_by("-similarity", "name")
         )

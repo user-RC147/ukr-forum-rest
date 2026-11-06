@@ -1,7 +1,8 @@
 from collections.abc import Iterable
 
-from apps.shop.contracts.dto import ProductDTO
 from backend.apps.shop.contracts.protocols import ProductContractProtocol
+
+from apps.shop.contracts.dto import ProductDTO
 from core.paginator.dto import PaginatorDTO
 
 from ..service import ProductService, get_service

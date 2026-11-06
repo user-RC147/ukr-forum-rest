@@ -16,9 +16,7 @@ class CategoryModel(models.Model):
 
 class TagModel(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    category = models.ForeignKey(
-        to=CategoryModel, on_delete=models.CASCADE, related_name="tags"
-    )
+    category = models.ForeignKey(to=CategoryModel, on_delete=models.CASCADE, related_name="tags")
 
     class Meta:
         db_table = "tag"

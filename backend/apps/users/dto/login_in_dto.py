@@ -1,11 +1,11 @@
-#login_in_dto.py
+# login_in_dto.py
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
 class LoginOutDTO:
-    access_token:str
-    refresh_token:str
+    access_token: str
+    refresh_token: str
 
 
 def _to_dto_login(data):

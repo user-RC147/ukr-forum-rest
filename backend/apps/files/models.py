@@ -1,5 +1,5 @@
-from pathlib import Path
 import uuid
+from pathlib import Path
 
 from django.db import models
 from django.utils import timezone
@@ -47,9 +47,7 @@ class FileModel(models.Model):
     is_processed = models.BooleanField(default=False)
 
     name = models.CharField(max_length=100, blank=False, verbose_name="Ім'я файлу")
-    owner_id = models.PositiveIntegerField(
-        blank=False, verbose_name="Айді власника(юзера)"
-    )
+    owner_id = models.PositiveIntegerField(blank=False, verbose_name="Айді власника(юзера)")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
     visible = models.BooleanField(default=True, verbose_name="Видимість")
 

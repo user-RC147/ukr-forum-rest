@@ -3,7 +3,6 @@ import re
 
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status, viewsets
-from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -23,7 +22,6 @@ from .serializers import (
     ProductUpdateSerializer,
 )
 from .service import get_service
-
 
 # class RequiresAuthIfUserIdParam(BasePermission):
 #     def has_permission(self, request, view):
@@ -62,9 +60,7 @@ class ProductViewSet(viewsets.ViewSet):
 
         product = self.service.create(user, data)
 
-        return Response(
-            ProductReadSerializer(product).data, status=status.HTTP_201_CREATED
-        )
+        return Response(ProductReadSerializer(product).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk: int):
         product = self.service.get(pk)

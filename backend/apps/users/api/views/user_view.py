@@ -1,30 +1,27 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
-
-from apps.users.dto.user_dto import CreateUserInDTO
-from apps.users.dto._to_dto_user import _to_dto_user_in
-from apps.users.services.user_service import UserService
-from apps.users.api.serializers.user_serializer import (
-    UserPublicOutSerializer,
-    UserPrivatOutSerializer,
-    UserShortOutSerializer,
-)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.users.api.serializers.register_serializer import (
-    RegisterInSerializer,
     ProfileUpdateInSerializer,
+    RegisterInSerializer,
 )
+from apps.users.api.serializers.user_serializer import (
+    UserPrivatOutSerializer,
+    UserPublicOutSerializer,
+    UserShortOutSerializer,
+)
+from apps.users.dto._to_dto_user import _to_dto_user_in
+from apps.users.dto.user_dto import CreateUserInDTO
 from apps.users.services import UserService
-
+from apps.users.services.user_service import UserService
 from core.users.csrf_permission import CsrfPermission
-from drf_spectacular.utils import extend_schema
 
 
 class UserViewSet(ViewSet):
-
     def get_permissions(self):
         if self.action in ["create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
@@ -51,15 +48,13 @@ class UserViewSet(ViewSet):
         serializer = UserShortOutSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     @action(detail=False, methods=["get"], url_path="user_many_short")
     @extend_schema(request=UserShortOutSerializer(), responses=UserShortOutSerializer())
     def get_many_short_user(self, request):
         users = self._service.get_many_short_public_user(ids=None)
         user_list = [user for user in users.values()]
-        serializer = UserShortOutSerializer(user_list,many=True)
+        serializer = UserShortOutSerializer(user_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     def list(self, request):
         all_user = self._service.get_many_public_user(ids=None)

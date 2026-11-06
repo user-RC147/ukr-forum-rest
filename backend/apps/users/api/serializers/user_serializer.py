@@ -1,12 +1,13 @@
 from datetime import date
+
 from rest_framework import serializers
 
 from core.serializers.location_serializer import (
-    CountrySerializer,
-    RegionSerializer,
     CitySerializer,
-    LocationInSerializer,
+    CountrySerializer,
     Location_id_region_OutSerializer,
+    LocationInSerializer,
+    RegionSerializer,
 )
 
 
@@ -25,12 +26,12 @@ class UserShortOutSerializer(serializers.Serializer):
 class UserPublicOutSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     display_name = serializers.CharField(max_length=100)
-    first_name = serializers.CharField(max_length=100,allow_null=True)
-    last_name = serializers.CharField(max_length=100,allow_null=True)
-    email=serializers.EmailField(allow_null=True)
+    first_name = serializers.CharField(max_length=100, allow_null=True)
+    last_name = serializers.CharField(max_length=100, allow_null=True)
+    email = serializers.EmailField(allow_null=True)
     date_of_birth = serializers.DateField(allow_null=True)
-    phone_number = serializers.CharField(max_length=100,allow_null=True)
-    social_network = serializers.CharField(max_length=100,allow_null=True)
+    phone_number = serializers.CharField(max_length=100, allow_null=True)
+    social_network = serializers.CharField(max_length=100, allow_null=True)
     location = Location_id_region_OutSerializer(allow_null=True)
 
 

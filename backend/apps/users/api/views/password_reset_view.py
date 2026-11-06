@@ -1,26 +1,27 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
+from apps.users.api.serializers.password_reset_serializer import (
+    PasswordResetConfirmInSerializer,
+    PasswordResetRequestInSerializer,
+)
+from apps.users.services.password_reset_service import PasswordResetService
 from core.users.csrf_permission import CsrfPermission
-
-from apps.users.api.serializers.password_reset_serializer import PasswordResetConfirmInSerializer,PasswordResetRequestInSerializer
-from apps.users.services.password_reset_service import PasswordResetService 
-
 
 
 class PasswordResetViewSet(viewsets.ViewSet):
-
     permission_classes = [AllowAny, CsrfPermission]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._service = PasswordResetService()
 
-    @extend_schema(request=PasswordResetRequestInSerializer(), responses=PasswordResetRequestInSerializer())
+    @extend_schema(
+        request=PasswordResetRequestInSerializer(), responses=PasswordResetRequestInSerializer()
+    )
     @action(detail=False, methods=["post"], url_path="request")
     def request_reset(self, request):
         serializer = PasswordResetRequestInSerializer(data=request.data)
@@ -32,7 +33,10 @@ class PasswordResetViewSet(viewsets.ViewSet):
             {"detail": "Якщо email зареєстрований, лист надіслано"},
             status=status.HTTP_200_OK,
         )
-    @extend_schema(request=PasswordResetConfirmInSerializer(), responses=PasswordResetConfirmInSerializer())
+
+    @extend_schema(
+        request=PasswordResetConfirmInSerializer(), responses=PasswordResetConfirmInSerializer()
+    )
     @action(detail=False, methods=["post"], url_path="confirm")
     def confirm_reset(self, request):
         serializer = PasswordResetConfirmInSerializer(data=request.data)

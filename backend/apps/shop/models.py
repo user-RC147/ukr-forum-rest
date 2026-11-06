@@ -42,9 +42,7 @@ class ProductModel(models.Model):
                 SearchVector("title", "description", config="simple"),
                 name="shop_product_search_gin",
             ),
-            GinIndex(
-                OpClass("description", name="gin_trgm_ops"), name="description_trgm_idx"
-            ),
+            GinIndex(OpClass("description", name="gin_trgm_ops"), name="description_trgm_idx"),
         ]
 
     def __str__(self):
@@ -69,9 +67,7 @@ class ProductFileModel(models.Model):
         verbose_name = "Файл товару"
         verbose_name_plural = "Файли товарів"
         constraints = [
-            models.UniqueConstraint(
-                fields=["product", "file_id"], name="uniq_product_file"
-            )
+            models.UniqueConstraint(fields=["product", "file_id"], name="uniq_product_file")
         ]
         indexes = [
             models.Index(fields=["file_id"]),

@@ -1,18 +1,18 @@
+from apps.users.dto._to_dto_location import (
+    _to_dto_out_location,
+    _to_dto_out_public_location,
+)
 from core.dto.geo.location_dto import (
     Location_Id_InDTO,
     Location_Id_OutDTO,
     LocationOutDTO,
 )
-from .user_dto import (
-    UserPublicOutDTO,
-    UserPrivateUpdateInDTO,
-    User_Id_PublicOutDTO,
-    UserShortPublicOutDTO,
-)
 
-from apps.users.dto._to_dto_location import (
-    _to_dto_out_location,
-    _to_dto_out_public_location,
+from .user_dto import (
+    User_Id_PublicOutDTO,
+    UserPrivateUpdateInDTO,
+    UserPublicOutDTO,
+    UserShortPublicOutDTO,
 )
 
 
@@ -79,9 +79,7 @@ def _to_dto_public_user_out(data, map_location) -> UserPublicOutDTO:
         date_of_birth=data.date_of_birth if data.date_of_birth_public else None,
         phone_number=data.phone_number if data.phone_public else None,
         social_network=data.social_network if data.social_public else None,
-        location=(
-            _to_dto_out_public_location(data, map_location) if data.location else None
-        ),
+        location=(_to_dto_out_public_location(data, map_location) if data.location else None),
     )
 
     return dto

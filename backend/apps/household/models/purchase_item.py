@@ -39,5 +39,3 @@ class PurchaseItem(models.Model):
     @property
     def total_price(self):
         return self.price_per_unit * self.quantity
-
-    

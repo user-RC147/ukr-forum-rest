@@ -1,14 +1,17 @@
 from apps.geo import repositories
 from apps.household.dto import CreateGroupInDTO, GroupOutDTO
-from apps.household.dto.group_dto import Group_id_user_OutDTO,GroupMemberOutDTO,Group_Id_Name_InDTO
+from apps.household.dto.group_dto import (
+    Group_Id_Name_InDTO,
+    Group_id_user_OutDTO,
+    GroupMemberOutDTO,
+)
 from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories import GroupRepo
 from apps.household.selectors import GroupSelector
-
 from apps.users.contracts.user_contract import get_user_short_contract
-
 from apps.users.exceptions import UserNotFoundException
 from core.func_print import prt
+
 
 class GroupService:
     """
@@ -28,8 +31,7 @@ class GroupService:
             id=users_map[data.created_by_id].id,
             display_name=users_map[data.created_by_id].display_name,
         )
-    
-    
+
     def _to_user_out(self, data, users_map) -> UserOutDTO:
 
         return UserOutDTO(
@@ -37,16 +39,14 @@ class GroupService:
             display_name=users_map[data.user_id].display_name,
         )
 
-    def _to_group_member_out(self,data,users_map)->GroupMemberOutDTO:
+    def _to_group_member_out(self, data, users_map) -> GroupMemberOutDTO:
         return GroupMemberOutDTO(
             id=data.id,
             group_id=data.group_id,
-            user=self._to_user_out(data,users_map),
+            user=self._to_user_out(data, users_map),
             role=data.role,
-            joined_at=data.joined_at
+            joined_at=data.joined_at,
         )
-
-
 
     def _to_group_out(self, data: Group_id_user_OutDTO, users_map) -> GroupOutDTO:
         return GroupOutDTO(
@@ -54,28 +54,29 @@ class GroupService:
             name=data.name,
             created_by=self._to_creator_out(data, users_map),
             created_at=data.created_at,
-            members=[self._to_group_member_out(member,users_map)for member in data.members],
+            members=[self._to_group_member_out(member, users_map) for member in data.members],
         )
 
     # =================================================
 
-    def get_all_group_member_by_user(self, dto:Group_Id_Name_InDTO,user_id:int):
-      
-        
+    def get_all_group_member_by_user(self, dto: Group_Id_Name_InDTO, user_id: int):
+
         if self._get_user_public_contract.get(user_id):
-            group_members = self._selector.get_all_group_by_user(dto,user_id)
-         
+            group_members = self._selector.get_all_group_by_user(dto, user_id)
+
             user_ids = set(
                 {group.created_by_id for group in group_members}
-                |
-                {member.user_id for group in group_members for member in group.members}
+                | {member.user_id for group in group_members for member in group.members}
             )
-            
-            users_map = self._get_user_public_contract.get_many(user_ids)
-            
-            dto = [self._to_group_out(group_member, users_map=users_map)for group_member in group_members]
 
-            #prt(dto)
+            users_map = self._get_user_public_contract.get_many(user_ids)
+
+            dto = [
+                self._to_group_out(group_member, users_map=users_map)
+                for group_member in group_members
+            ]
+
+            # prt(dto)
 
             return dto
 
@@ -83,7 +84,7 @@ class GroupService:
         creator_user = self._get_user_public_contract.get(creator_id)
 
         if self._selector.get_group_by_name(dto):
-            #raise GroupAlreadyExistsException(...)
+            # raise GroupAlreadyExistsException(...)
             return None
 
         if not creator_user:

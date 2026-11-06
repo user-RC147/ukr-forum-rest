@@ -1,12 +1,10 @@
 # login_view.py
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
+from django.conf import settings
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-
-from django.conf import settings
-
-from drf_spectacular.utils import extend_schema
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.users.api.serializers.login_in_serializer import LoginInSerializer
 from apps.users.services.login_in_service import LoginInService
@@ -14,7 +12,6 @@ from core.users.csrf_permission import CsrfPermission
 
 
 class LoginViewSet(ViewSet):
-    
     permission_classes = [AllowAny, CsrfPermission]
 
     def __init__(self, **kwargs):
@@ -23,7 +20,7 @@ class LoginViewSet(ViewSet):
         self._service = LoginInService()
 
     @extend_schema(request=LoginInSerializer, responses=LoginInSerializer)
-    def create(self, request):        
+    def create(self, request):
 
         serializer = LoginInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

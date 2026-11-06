@@ -1,37 +1,31 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny
-
-from drf_spectacular.utils import extend_schema
-from core.users.csrf_permission import CsrfPermission
 
 from apps.articles.api.serializers.article_serializer import ArticleOutSerializer
 from apps.articles.services.article_service import ArticleService
-
+from core.users.csrf_permission import CsrfPermission
 
 
 class ArticleViewSet(ViewSet):
-
     def get_permissions(self):
         if self.action in []:  # "create","list", "retrieve",
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
-
-
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._service = ArticleService()
 
-
-    def list(self, request)->ArticleOutSerializer:
+    def list(self, request) -> ArticleOutSerializer:
         user_id = request.user.id
         get_all_artcle = self._service.get_all_article(user_id=None)
-        results = ArticleOutSerializer(get_all_artcle,many=True).data
+        results = ArticleOutSerializer(get_all_artcle, many=True).data
 
-        return Response({'results':results},status=status.HTTP_200_OK)
+        return Response({"results": results}, status=status.HTTP_200_OK)
 
     # def create(self, request):
     #     pass

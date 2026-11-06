@@ -22,9 +22,7 @@ class CountryRepository:
             result = self.model.objects.get(id=country_id)
             return result
         except ObjectDoesNotExist:
-            raise CountryNotFoundError(
-                extra={"product_id": country_id, "event": "get_country"}
-            )
+            raise CountryNotFoundError(extra={"product_id": country_id, "event": "get_country"})
 
     def get(self, country_id: int) -> CountryDTO:
         result = self._get_model(country_id)
@@ -57,9 +55,7 @@ class CountryRepository:
                 )
             )
             .filter(
-                Q(name__istartswith=query)
-                | Q(name_ua__istartswith=query)
-                | Q(similarity__gt=0.3)
+                Q(name__istartswith=query) | Q(name_ua__istartswith=query) | Q(similarity__gt=0.3)
             )
             .order_by("-similarity", "name")
         )

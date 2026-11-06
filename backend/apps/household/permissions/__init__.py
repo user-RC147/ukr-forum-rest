@@ -1,7 +1,7 @@
-from .group_permissions import IsGroupMember,IsGroupEditor,IsGroupCreator
+from .group_permissions import IsGroupCreator, IsGroupEditor, IsGroupMember
 
-__all__=[
-    'IsGroupMember',
-    'IsGroupEditor',
-    'IsGroupCreator',
+__all__ = [
+    "IsGroupCreator",
+    "IsGroupEditor",
+    "IsGroupMember",
 ]

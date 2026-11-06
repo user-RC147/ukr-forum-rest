@@ -5,7 +5,8 @@ class UserProtocol(Protocol):
     """
     # Контракт для користувача.
     # household не знає про users модуль напряму.
-    # """
+    #"""
+
     # id:int
     # username:str
     # email:str

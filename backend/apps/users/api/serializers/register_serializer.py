@@ -1,14 +1,13 @@
 from rest_framework import serializers
 
-from core.serializers.location_serializer import LocationInSerializer,LocationOutSerializer
+from core.serializers.location_serializer import LocationInSerializer, LocationOutSerializer
+
 
 class RegisterInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)
     display_name = serializers.CharField(max_length=100)
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
-    password_confirm = serializers.CharField(
-        write_only=True, style={"input_type": "password"}
-    )
+    password_confirm = serializers.CharField(write_only=True, style={"input_type": "password"})
     email = serializers.EmailField()
     referral_code = serializers.UUIDField(default=None, required=False, allow_null=True)
     consent_given = serializers.BooleanField(default=False)
@@ -25,13 +24,12 @@ class RegisterInSerializer(serializers.Serializer):
 
 
 class ProfileUpdateInSerializer(serializers.Serializer):
-
     display_name = serializers.CharField(max_length=100)
 
-    first_name=serializers.CharField(allow_blank=True)
+    first_name = serializers.CharField(allow_blank=True)
     first_name_public = serializers.BooleanField()
 
-    last_name=serializers.CharField(allow_blank=True)
+    last_name = serializers.CharField(allow_blank=True)
     last_name_public = serializers.BooleanField()
 
     email = serializers.EmailField()
@@ -46,9 +44,8 @@ class ProfileUpdateInSerializer(serializers.Serializer):
     social_network = serializers.CharField(max_length=50, allow_blank=True)
     social_public = serializers.BooleanField()
 
-    country_public=serializers.BooleanField()
-    region_public=serializers.BooleanField()
-    city_public=serializers.BooleanField()
+    country_public = serializers.BooleanField()
+    region_public = serializers.BooleanField()
+    city_public = serializers.BooleanField()
 
-    location=LocationInSerializer()
-    
+    location = LocationInSerializer()

@@ -3,7 +3,6 @@ import logging
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -49,23 +48,15 @@ class SearchView(viewsets.ViewSet):
         sort_params = self._parse_sort(request)
 
         handler = self.registry.all()[scope] if scope else None
-        extra_filters = (
-            handler.parse_extra_filters(request.query_params) if handler else {}
-        )
+        extra_filters = handler.parse_extra_filters(request.query_params) if handler else {}
 
         page = self._parse_int_param("page", request.query_params.get("page", 1))
 
         pagination = PaginationParams(page=page)
 
-        params = self._build_params(
-            request, query, sort_params, extra_filters, pagination
-        )
+        params = self._build_params(request, query, sort_params, extra_filters, pagination)
 
-        results = (
-            self.service.search(params, scope=scope)
-            if scope
-            else self.service.search(params)
-        )
+        results = self.service.search(params, scope=scope) if scope else self.service.search(params)
 
         return Response({"query": query, "results": PageSerializer(results).data})
 
@@ -78,9 +69,7 @@ class SearchView(viewsets.ViewSet):
                 "Invalid sort param",
                 extra={"value": raw, "event": "search_validation"},
             )
-            raise ValidationError(
-                {"sort": f"Allowed values: {[s.value for s in SortOrder]}"}
-            )
+            raise ValidationError({"sort": f"Allowed values: {[s.value for s in SortOrder]}"})
         return SortParams(order=order)
 
     def _build_params(

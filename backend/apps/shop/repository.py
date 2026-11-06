@@ -1,5 +1,5 @@
-from collections.abc import Iterable
 import logging
+from collections.abc import Iterable
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.manager import BaseManager
@@ -77,9 +77,7 @@ class ProductRepository:
         return _to_dto_product(product)
 
     def _sync_files(self, product: ProductModel, new_file_ids: list[int]) -> None:
-        current_file_ids = set(
-            product.files.values_list("file_id", flat=True)
-        )
+        current_file_ids = set(product.files.values_list("file_id", flat=True))
         new_file_ids = set(new_file_ids)
 
         to_remove = current_file_ids - new_file_ids
@@ -102,9 +100,7 @@ class ProductRepository:
 
     def nullify_geo(self, field_name: str, geo_id: int) -> int:
 
-        return self.model.objects.filter(**{field_name: geo_id}).update(
-            **{field_name: None}
-        )
+        return self.model.objects.filter(**{field_name: geo_id}).update(**{field_name: None})
 
     def searchable_queryset(self) -> BaseManager[ProductModel]:
         return self.model.objects.filter(

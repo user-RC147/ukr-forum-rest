@@ -1,25 +1,23 @@
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ViewSet
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema
-
-from core.users.csrf_permission import CsrfPermission
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.household.api.serializers.market_serializer import (
-    MarketSerializer,
     MarketCreateSerializer,
     MarketFullSerializer,
+    MarketSerializer,
 )
 from apps.household.dto.location_dto import Location_Id_InDTO
-from apps.household.permissions.group_permissions import IsGroupCreator, IsOwner
 from apps.household.dto.market_dto import (
     CreateMarketInDTO,
     ListMarketDTO,
     MarketFullOutDTO,
 )
+from apps.household.permissions.group_permissions import IsGroupCreator, IsOwner
 from apps.household.services.market_service import MarketService
+from core.users.csrf_permission import CsrfPermission
 
 
 class MarketViewSet(ViewSet):
@@ -34,7 +32,7 @@ class MarketViewSet(ViewSet):
     """
 
     def get_permissions(self):
-        if self.action in []: #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 

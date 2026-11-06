@@ -1,5 +1,5 @@
-from collections.abc import Callable
 import logging
+from collections.abc import Callable
 
 from django.contrib import admin
 from django.core.cache import cache
@@ -17,9 +17,7 @@ def invalidate_cache(key: str) -> None:
             extra={"key": key, "event": "cache_invalidation"},
         )
     else:
-        logger.debug(
-            "Cache invalidated", extra={"key": key, "event": "cache_invalidation"}
-        )
+        logger.debug("Cache invalidated", extra={"key": key, "event": "cache_invalidation"})
 
 
 class CacheInvalidationAdminMixin(admin.ModelAdmin):

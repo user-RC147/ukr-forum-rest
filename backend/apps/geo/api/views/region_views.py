@@ -1,7 +1,6 @@
 from typing import Any
 
 from rest_framework import status, viewsets
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -32,6 +31,4 @@ class RegionView(viewsets.ViewSet):
 
         result = self.service.get_by_country(qp.validated_data.get("country_id"))
 
-        return Response(
-            self.serializer_class(result, many=True).data, status=status.HTTP_200_OK
-        )
+        return Response(self.serializer_class(result, many=True).data, status=status.HTTP_200_OK)

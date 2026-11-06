@@ -5,9 +5,7 @@ import uuid
 request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "request_id", default=None
 )
-user_id_var: contextvars.ContextVar[int | None] = contextvars.ContextVar(
-    "user_id", default=None
-)
+user_id_var: contextvars.ContextVar[int | None] = contextvars.ContextVar("user_id", default=None)
 
 
 class RequestIDMiddleware:

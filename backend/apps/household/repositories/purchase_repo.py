@@ -4,8 +4,8 @@ from apps.household.dto.asset_dto import AssetId_Name_OutDTO
 from apps.household.dto.group_dto import (
     Group_Id_Name_OutDTO,
     Group_id_user_OutDTO,
-    GroupOutDTO,
     GroupMemberOutDTO,
+    GroupOutDTO,
 )
 from apps.household.dto.location_dto import (
     CityNameOutDTO,
@@ -13,28 +13,27 @@ from apps.household.dto.location_dto import (
     LocationId_Name_OutDTO,
     RegionNameOutDTO,
 )
-
-from core.dto.geo.location_dto import LocationOutDTO,Location_Id_InDTO,Location_Id_OutDTO,LocationShortOutDTO
-
-
-
-from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
 from apps.household.dto.market_dto import Market_Id_Name_OutDTO
 from apps.household.dto.product_dto import CategoryProductOutDTO, ProductOutDTO
 from apps.household.dto.purchase_dto import (
-    Purchase_Id_OutDTO,
-    PurchaseItemOutDTO,
     CreatePurchaseInDTO,
-    PurchaseOutDTO,
     Purchase_Id_Name_OutDTO,
+    Purchase_Id_OutDTO,
     PurchaseItemInDTO,
+    PurchaseItemOutDTO,
+    PurchaseOutDTO,
 )
-
+from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
+from apps.household.models.product import Product
 from apps.household.models.purchase import Purchase
 from apps.household.models.purchase_item import PurchaseItem
-from apps.household.models.product import Product
-
 from apps.household.repositories.purchase_item_repo import PurchaseItemRepo
+from core.dto.geo.location_dto import (
+    Location_Id_InDTO,
+    Location_Id_OutDTO,
+    LocationOutDTO,
+    LocationShortOutDTO,
+)
 
 
 class PurchaseRepo:
@@ -65,7 +64,7 @@ class PurchaseRepo:
         return location_id_name
 
     def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> Purchase_Id_OutDTO:
-        
+
         with transaction.atomic():
             create_purchase = Purchase.objects.create(
                 asset_id=dto.asset_id,
@@ -78,18 +77,16 @@ class PurchaseRepo:
                 dto=dto.items, purchase_id=create_purchase.id
             )
 
-        purchase_id_obj = Purchase.objects.select_related(
-            "asset",
-            "market"
-            ).prefetch_related(
-                'items__product__unit_of_measure',
-                'items__product__category'
-            ).get(id=create_purchase.id)
-        
+        purchase_id_obj = (
+            Purchase.objects.select_related("asset", "market")
+            .prefetch_related("items__product__unit_of_measure", "items__product__category")
+            .get(id=create_purchase.id)
+        )
+
         dto = _to_dto_new_purchase_out(purchase_id_obj)
-       
 
         return dto
+
 
 def _to_dto_unit_out(data) -> UnitOfMeasureOutDTO:
     return UnitOfMeasureOutDTO(id=data.id, name=data.name, code=data.code)

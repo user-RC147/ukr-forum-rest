@@ -1,6 +1,3 @@
 from .article_selector import AtricleSelector
 
-
-__all__=[
-    'AtricleSelector'
-]
+__all__ = ["AtricleSelector"]

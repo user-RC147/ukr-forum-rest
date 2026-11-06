@@ -1,9 +1,8 @@
-from django.db import models
 from django.conf import settings
-
-from core.mixins.LocationMixin import LocationMixin, PrivateLocationMixin
+from django.db import models
 
 from apps.household.models.group import Group
+from core.mixins.LocationMixin import LocationMixin, PrivateLocationMixin
 
 
 class Asset(LocationMixin, models.Model):
@@ -34,7 +33,10 @@ class Asset(LocationMixin, models.Model):
         verbose_name="Створив",
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення",)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата створення",
+    )
 
     class Meta:
         db_table = "household_asset"

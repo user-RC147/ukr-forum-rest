@@ -11,8 +11,6 @@ from .exceptions import (
     ConflictError,
     NotFoundError,
     PermissionDeniedError,
-)
-from .exceptions import (
     ValidationError as AppValidationError,
 )
 
@@ -65,9 +63,7 @@ def custom_exception_handler(exc, context):
             "method": method,
             "view": view_name,
             "exception_type": type(exc).__name__,
-            **getattr(
-                exc, "extra", {}
-            ),  # <-- context from raise
+            **getattr(exc, "extra", {}),  # <-- context from raise
         }
         if response.status_code >= 500:
             logger.error("Server error handled by DRF", extra=log_extra, exc_info=True)
@@ -124,9 +120,7 @@ def _sanitize_errors(data):
         for key, value in data.items():
             if str(key).lower() in SENSITIVE_FIELD_NAMES:
                 sanitized[key] = (
-                    f"<{len(value)} error(s) redacted>"
-                    if isinstance(value, list)
-                    else "<redacted>"
+                    f"<{len(value)} error(s) redacted>" if isinstance(value, list) else "<redacted>"
                 )
             else:
                 sanitized[key] = _sanitize_errors(value)

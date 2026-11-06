@@ -1,14 +1,15 @@
 import uuid
-from django.utils import timezone
 from datetime import timedelta
-from django.conf import settings
 
+from django.conf import settings
+from django.utils import timezone
+
+from apps.users.dto.user_dto import EmailConfirmationTokenOutDTO
 from apps.users.models.email_confirmation_token import EmailConfirmationToken
 from apps.users.models.user import CustomUser
-from apps.users.dto.user_dto import EmailConfirmationTokenOutDTO
+
 
 class EmailConfirmationTokenRepo:
-
     def create_email_confirmation_token(self, user_id: int) -> EmailConfirmationTokenOutDTO:
         record = EmailConfirmationToken.objects.create(
             user_id=user_id,

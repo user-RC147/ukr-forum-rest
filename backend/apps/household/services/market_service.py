@@ -1,18 +1,22 @@
-
-from apps.household.dto.market_dto import CreateMarketInDTO, MarketExpenseOutDTO, MarketFullOutDTO,Market_Id_OutDTO
+from apps.geo.contracts.city_contract import get_city_contract
+from apps.geo.contracts.country_contract import get_country_contract
+from apps.geo.contracts.region_contract import get_region_contract
+from apps.household.dto.location_dto import (
+    City_id_region_DTO,
+    CityDTO,
+    CountryDTO,
+    LocationOutDTO,
+    RegionDTO,
+)
+from apps.household.dto.market_dto import (
+    CreateMarketInDTO,
+    Market_Id_OutDTO,
+    MarketExpenseOutDTO,
+    MarketFullOutDTO,
+)
 from apps.household.models import market
 from apps.household.repositories.maket_repo import MarketRepo
 from apps.household.selectors.market_select import MarketSelector
-from apps.geo.contracts.country_contract import get_country_contract
-from apps.geo.contracts.region_contract import get_region_contract
-from apps.geo.contracts.city_contract import get_city_contract
-
-from apps.household.dto.location_dto import (
-    LocationOutDTO,
-    CountryDTO,
-    RegionDTO,
-    CityDTO,City_id_region_DTO
-)
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
 
@@ -32,7 +36,7 @@ class MarketService:
 
     # вибирає всі id з обєкту країн,регіонів,міст і створює set
 
-    def get_locations_full_market(self, markets:list[Market_Id_OutDTO]) -> list[MarketFullOutDTO]:
+    def get_locations_full_market(self, markets: list[Market_Id_OutDTO]) -> list[MarketFullOutDTO]:
 
         country_ids = set()
         region_ids = set()
@@ -49,7 +53,7 @@ class MarketService:
 
         locations = {"countries": countries, "regions": regions, "cities": cities}
 
-        return [_to_market_out(item, locations=locations)for item in markets]
+        return [_to_market_out(item, locations=locations) for item in markets]
 
     def location_market_exists(self, dto) -> bool:
         self._country_contract.get(dto.country_id)
@@ -61,45 +65,42 @@ class MarketService:
         dto_markets = self.get_locations_full_market(markets)
         return dto_markets
 
-    #для отримання витрат згрупованих по магазинам
-    def get_market_expenses(self, user_id: int, page: int, page_size: int,date_from:str|None,date_to:str|None)->PaginatorDTO[MarketExpenseOutDTO]:
+    # для отримання витрат згрупованих по магазинам
+    def get_market_expenses(
+        self, user_id: int, page: int, page_size: int, date_from: str | None, date_to: str | None
+    ) -> PaginatorDTO[MarketExpenseOutDTO]:
 
-        
+        market_expenses = self._selector.get_market_expenses(
+            user_id, page, page_size, date_from, date_to
+        )
 
-        market_expenses = self._selector.get_market_expenses(user_id, page, page_size,date_from,date_to)
-
-        country_ids=set()
+        country_ids = set()
         region_ids = set()
-        city_ids=set()
-
+        city_ids = set()
 
         for location in market_expenses.items:
             country_ids.add(location.location.country_id)
             region_ids.add(location.location.region_id)
             city_ids.add(location.location.city_id)
 
-        countries=self._country_contract.get_many(country_ids)
-        regions=self._region_contract.get_many(region_ids)
-        cities=self._city_contract.get_many(city_ids)
+        countries = self._country_contract.get_many(country_ids)
+        regions = self._region_contract.get_many(region_ids)
+        cities = self._city_contract.get_many(city_ids)
 
-        location_ids={'countries':countries,'regions':regions,'cities':cities}
-       
-        dto = [_to_dto_market_expenses_out(item,location_ids)for item in market_expenses.items]
-     
-        paginator_page= paginate(
-            dto,
-            market_expenses.count,
-            market_expenses.page,
-            market_expenses.page_size)
-      
+        location_ids = {"countries": countries, "regions": regions, "cities": cities}
+
+        dto = [_to_dto_market_expenses_out(item, location_ids) for item in market_expenses.items]
+
+        paginator_page = paginate(
+            dto, market_expenses.count, market_expenses.page, market_expenses.page_size
+        )
+
         return paginator_page
-
-
 
     def create(self, dto: CreateMarketInDTO, user: int) -> market:
 
         try:
-            #self.location_market_exists(dto)
+            # self.location_market_exists(dto)
             return self._repository.create(dto, user)
         except Exception:
             raise Exception
@@ -156,11 +157,11 @@ def _to_market_out(data, locations) -> MarketFullOutDTO:
 
 
 # ==================================================================
-def _to_dto_market_expenses_out(data,locations)->MarketExpenseOutDTO:
+def _to_dto_market_expenses_out(data, locations) -> MarketExpenseOutDTO:
     return MarketExpenseOutDTO(
         id=data.id,
         name=data.name,
-        location=_to_location_market(data.location,locations),
+        location=_to_location_market(data.location, locations),
         address_line=data.address_line,
-        total=data.total
+        total=data.total,
     )

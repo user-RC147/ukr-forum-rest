@@ -19,9 +19,7 @@ class RegionRepository:
             result = self.model.objects.select_related("country").get(id=region_id)
             return result
         except ObjectDoesNotExist:
-            raise RegionNotFoundError(
-                extra={"region_id": region_id, "event": "get_region"}
-            )
+            raise RegionNotFoundError(extra={"region_id": region_id, "event": "get_region"})
 
     def get(self, region_id: int) -> RegionDTO:
         result = self._get_model(region_id)
@@ -47,9 +45,7 @@ class RegionRepository:
 
 
 def _to_dto_region(data: RegionModel) -> RegionDTO:
-    return RegionDTO(
-        id=data.id, name=data.name, name_ua=data.name_ua, country_id=data.country.id
-    )
+    return RegionDTO(id=data.id, name=data.name, name_ua=data.name_ua, country_id=data.country.id)
 
 
 def get_repo_region() -> RegionRepositoryPort:

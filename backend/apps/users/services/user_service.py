@@ -1,37 +1,33 @@
+from apps.geo.contracts import (
+    get_city_contract,
+    get_country_contract,
+    get_region_contract,
+)
+from apps.users.dto._to_dto_location import _get_ids_location, _get_locations
+from apps.users.dto._to_dto_profile import _to_dto_out_profile
+from apps.users.dto._to_dto_user import (
+    _to_dto_public_user_out,
+    _to_dto_short_public_user_out,
+)
 from apps.users.dto.user_dto import (
+    CreateUserInDTO,
+    UserPrivateOutDTO,
     UserPrivateUpdateInDTO,
     UserPublicOutDTO,
     UserShortPublicOutDTO,
-    UserPrivateOutDTO,
-    CreateUserInDTO,
 )
 from apps.users.exceptions import UserNotFoundException
+from apps.users.repositories.user_repository import UserRepo
 from apps.users.selectors.user_selector import UserSelector
 from apps.users.services.email_confirm_service import EmailConfirmationTokenService
-from apps.users.repositories.user_repository import UserRepo
-
 from apps.users.tasks.send_confirm_email_task import send_confirmation_email_task
-
-from apps.users.dto._to_dto_profile import _to_dto_out_profile
-from apps.users.dto._to_dto_location import _get_ids_location, _get_locations
-from apps.users.dto._to_dto_user import (
-    _to_dto_short_public_user_out,
-    _to_dto_public_user_out,
-)
-
-from apps.geo.contracts import (
-    get_country_contract,
-    get_region_contract,
-    get_city_contract,
-)
 
 
 class UserService:
-
     def __init__(self):
         self._selector = UserSelector()
         self._repository = UserRepo()
-        self._email_confirmation_service =EmailConfirmationTokenService()
+        self._email_confirmation_service = EmailConfirmationTokenService()
 
     def get_short_public_user(self, user_id: int) -> UserShortPublicOutDTO:
         user = self._selector.get_short_public(user_id)
@@ -40,9 +36,7 @@ class UserService:
 
         return _to_dto_short_public_user_out(user)
 
-    def get_many_short_public_user(
-        self, ids: set[int] | None
-    ) -> dict[UserShortPublicOutDTO]:
+    def get_many_short_public_user(self, ids: set[int] | None) -> dict[UserShortPublicOutDTO]:
         users = self._selector.get_many_short_public(ids)
         dto = {user.id: _to_dto_short_public_user_out(user) for user in users.values()}
         return dto
@@ -96,11 +90,8 @@ class UserService:
         send_confirmation_email_task.delay(user_dto.id, token)
 
         return user_dto
-      
 
-    def update_my_profile(
-        self, dto: UserPrivateUpdateInDTO, user_id: int
-    ) -> UserPrivateOutDTO:
+    def update_my_profile(self, dto: UserPrivateUpdateInDTO, user_id: int) -> UserPrivateOutDTO:
 
         my_profile = self._repository.update_my_profile(dto, user_id)
 

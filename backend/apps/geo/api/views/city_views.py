@@ -2,7 +2,6 @@ from typing import Any
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -35,9 +34,7 @@ class CityView(viewsets.ViewSet):
 
         result = self.service.get_by_region(qp.validated_data.get("region_id"))
 
-        return Response(
-            self.serializer_class(result, many=True).data, status=status.HTTP_200_OK
-        )
+        return Response(self.serializer_class(result, many=True).data, status=status.HTTP_200_OK)
 
     @city_search_schema
     @action(methods=["get"], detail=False)

@@ -30,7 +30,8 @@ class PurchaseItemSelector:
                 "product",
                 "product__unit_of_measure",
             )
-            .distinct().order_by('-purchase__data_purchase')
+            .distinct()
+            .order_by("-purchase__data_purchase")
         )
 
         if date_to and date_from:

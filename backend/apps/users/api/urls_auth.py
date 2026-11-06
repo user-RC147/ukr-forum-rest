@@ -1,15 +1,15 @@
 from rest_framework.routers import DefaultRouter
 
 from apps.users.api.views import (
-    RefreshViewSet,
     CsrfViewSet,
     LoginViewSet,
-    PasswordResetViewSet,LogoutViewSet
+    LogoutViewSet,
+    PasswordResetViewSet,
+    RefreshViewSet,
 )
 from apps.users.api.views.confirm_email_view import ConfirmEmailView
 
 router = DefaultRouter()
-
 
 
 router.register("confirm-email", ConfirmEmailView, basename="confirm-email")
