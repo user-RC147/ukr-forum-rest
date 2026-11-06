@@ -8,7 +8,6 @@ from core.dto.users.user_dto import UserShortOutDTO
 class ArticleInDTO: ...
 
 
-
 @dataclass(frozen=True)
 class ArticleIdOutDTO:
     id: int

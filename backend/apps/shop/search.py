@@ -1,3 +1,4 @@
+import logging
 from math import atan2, cos, radians, sin, sqrt
 
 from django.contrib.postgres.search import (
@@ -9,6 +10,7 @@ from django.contrib.postgres.search import (
 from django.db.models import Q
 from django.http import QueryDict
 
+from apps.geo.contracts.city_contract import get_city_contract
 from apps.search.contracts.dto import (
     ResourceType,
     SearchParams,
@@ -17,14 +19,14 @@ from apps.search.contracts.dto import (
 )
 from apps.shop.contracts.exceptions import ProductValidationError
 from apps.shop.repository import get_repo
-from apps.geo.contracts.city_contract import get_city_contract
 from core.paginator.dto import PaginatorDTO
 from core.paginator.paginator import paginate
-import logging
+
 from .enums import ProductStatus
 from .service import get_service
 
 logger = logging.getLogger(__name__)
+
 
 class ProductSearchHandler:
     STATUS_PARAM = "status"
@@ -41,9 +43,7 @@ class ProductSearchHandler:
                 result[self.STATUS_PARAM] = ProductStatus(status)
             except ValueError:
                 raise ProductValidationError(
-                    {
-                        self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"
-                    },
+                    {self.STATUS_PARAM: f"Allowed values: {[s.value for s in ProductStatus]}"},
                     extra={"invalid_value": status, "event": "search_validaton"},
                 )
 
@@ -110,7 +110,6 @@ class ProductSearchHandler:
 
         products_count, products = products.count, products.items
 
-
         if radius is not None:
             city_contract = get_city_contract()
             user_city = city_contract.get(params.scope_filters.get("city_id"))
@@ -135,10 +134,7 @@ class ProductSearchHandler:
 
     @staticmethod
     def _cities_within_radius(user_lat, user_lon, radius_km, city) -> bool:
-        return (
-            _haversine(user_lat, user_lon, city["latitude"], city["longitude"])
-            <= radius_km
-        )
+        return _haversine(user_lat, user_lon, city["latitude"], city["longitude"]) <= radius_km
 
 
 def _to_dto(obj) -> SearchResultItem:
@@ -179,8 +175,5 @@ def _haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = (
-        sin(dlat / 2) ** 2
-        + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
-    )
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     return R * 2 * atan2(sqrt(a), sqrt(1 - a))

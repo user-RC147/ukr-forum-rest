@@ -1,28 +1,23 @@
 # apps/users/dto/user_dto.py
 
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Optional
 from uuid import UUID
-from datetime import date
-
 
 from apps.geo.contracts.dto.country_dto import CountryDTO
-
-from core.dto.users.user_dto import UserShortOutDTO
 from core.dto.geo.geo_dto import (
-    CountryShortDTO,
-    RegionShortDTO,
     CityShortDTO,
     CityStarShortDTO,
+    CountryShortDTO,
+    RegionShortDTO,
 )
 from core.dto.geo.location_dto import (
+    Location_Id_InDTO,
     Location_Id_OutDTO,
     LocationOutDTO,
-    Location_Id_InDTO,
 )
-
-
-from dataclasses import dataclass
+from core.dto.users.user_dto import UserShortOutDTO
 
 
 @dataclass(frozen=True)
@@ -30,15 +25,17 @@ class PasswordResetTokenOutDTO:
     id: int
     user_id: int
     token: str
-    created_at:datetime
-    expires_at:datetime
-    is_used:bool
+    created_at: datetime
+    expires_at: datetime
+    is_used: bool
+
 
 @dataclass(frozen=True)
 class EmailConfirmationTokenOutDTO:
     id: int
     user_id: int
     token: str
+
 
 @dataclass(frozen=True)
 class ConsentOutDTO:
@@ -71,7 +68,7 @@ class UserPrivateUpdateInDTO:
     email: str
     email_public: bool
 
-    date_of_birth: Optional[date]
+    date_of_birth: date | None
     date_of_birth_public: bool
 
     phone_number: str
@@ -85,6 +82,7 @@ class UserPrivateUpdateInDTO:
     city_public: bool
 
     location: Location_Id_InDTO
+
 
 @dataclass(frozen=True)
 class UserPrivateOutDTO:
@@ -112,13 +110,13 @@ class UserPrivateOutDTO:
 
     consent_given: bool
     consent_date: datetime
-    consent_version: Optional[ConsentOutDTO]
+    consent_version: ConsentOutDTO | None
 
     country_public: bool
     region_public: bool
     city_public: bool
 
-    location: Optional[LocationOutDTO]
+    location: LocationOutDTO | None
 
 
 @dataclass(frozen=True)
@@ -128,7 +126,8 @@ class User_Id_PublicOutDTO:
     Використовується іншими модулями — household, тощо.
     Містить тільки те що безпечно показувати.
     """
-    id:int
+
+    id: int
     display_name: str
     first_name: str
     last_name: str
@@ -136,7 +135,7 @@ class User_Id_PublicOutDTO:
     date_of_birth: date
     phone_number: str
     social_network: str
-    location:Location_Id_OutDTO
+    location: Location_Id_OutDTO
 
 
 @dataclass(frozen=True)
@@ -163,7 +162,6 @@ class User_Id_PrivateOutDTO:
     social_network: str
     social_public: bool
 
-
     consent_given: bool
     consent_date: datetime
     consent_version: ConsentOutDTO | None
@@ -172,7 +170,7 @@ class User_Id_PrivateOutDTO:
     region_public: bool
     city_public: bool
 
-    location: Optional[Location_Id_OutDTO]
+    location: Location_Id_OutDTO | None
 
 
 @dataclass(frozen=True)
@@ -201,6 +199,6 @@ class UserShortPublicOutDTO:
     Використовується іншими модулями — household, тощо.
     Містить тільки те що безпечно показувати.
     """
+
     id: int
     display_name: str
-

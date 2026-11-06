@@ -1,47 +1,42 @@
 from decimal import Decimal
 from typing import Any
-from django.db import models
 
 from django.conf import settings
+from django.db import models
 
-from .market import Market
 from .asset import Asset
+from .market import Market
 
 
 class Purchase(models.Model):
     """Чек / витрата — прив'язана до активу і магазину."""
 
-    asset=models.ForeignKey(
-        'Asset',
+    asset = models.ForeignKey(
+        "Asset",
         on_delete=models.CASCADE,
         related_name="purchases",
     )
 
-    market=models.ForeignKey(
-        'Market',
+    market = models.ForeignKey(
+        "Market",
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,        
+        blank=True,
         verbose_name="Магазин",
     )
 
-    created_by: models.ForeignKey[Any | None]=models.ForeignKey(
+    created_by: models.ForeignKey[Any | None] = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
     )
-    data_purchase=models.DateField(
+    data_purchase = models.DateField(
         verbose_name="Дата покупки",
     )
 
-    note = models.TextField(
-        blank=True,
-        default=""
-    )
+    note = models.TextField(blank=True, default="")
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "household_purchase"
@@ -52,7 +47,4 @@ class Purchase(models.Model):
 
     @property
     def total_amount(self):
-        return sum(
-            (item.total_price for item in self.items.all()),
-            Decimal('0.00')
-        )
+        return sum((item.total_price for item in self.items.all()), Decimal("0.00"))

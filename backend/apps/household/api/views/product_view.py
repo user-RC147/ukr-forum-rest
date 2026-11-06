@@ -1,10 +1,10 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status
-from drf_spectacular.utils import extend_schema
+import logging
 
-from core.users.csrf_permission import CsrfPermission
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.household.api.serializers.product_serializer import (
     CreateProductSerializer,
@@ -12,20 +12,17 @@ from apps.household.api.serializers.product_serializer import (
     ProductOutSerializer,
 )
 from apps.household.dto.product_dto import CreateProductInDTO, ProductOutDTO
-from apps.household.services.product_service import ProductService
-
-from apps.users.exceptions import UserNotFoundException
 from apps.household.exceptions import ProductAlreadyExistsException
-
-import logging
+from apps.household.services.product_service import ProductService
+from apps.users.exceptions import UserNotFoundException
+from core.users.csrf_permission import CsrfPermission
 
 logger = logging.getLogger(__name__)
 
 
 class ProductViewSet(ViewSet):
-
     def get_permissions(self):
-        if self.action in []:  #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
@@ -65,9 +62,7 @@ class ProductViewSet(ViewSet):
                 return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
             except ProductAlreadyExistsException as e:
                 return Response({"error": str(e)}, status=status.HTTP_409_CONFLICT)
-            return Response(
-                ProductOutSerializer(product).data, status=status.HTTP_201_CREATED
-            )
+            return Response(ProductOutSerializer(product).data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

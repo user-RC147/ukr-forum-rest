@@ -1,17 +1,15 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.users.api.serializers.email_confirm_serializer import ConfirmEmailInSerializer
 from apps.users.services.email_confirm_service import EmailConfirmationTokenService
-
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from core.users.csrf_permission import CsrfPermission
-from drf_spectacular.utils import extend_schema
 
 
 class ConfirmEmailView(ViewSet):
-
     def get_permissions(self):
         if self.action in ["create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]

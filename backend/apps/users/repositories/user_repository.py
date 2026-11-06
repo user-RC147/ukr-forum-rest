@@ -1,31 +1,29 @@
 import uuid
-from django.utils import timezone
 from datetime import timedelta
+
 from django.conf import settings
+from django.utils import timezone
 
-
-from apps.users.dto.user_dto import (
-    PasswordResetTokenOutDTO,
-    UserShortPublicOutDTO,
-    CreateUserInDTO,
-    UserPrivateOutDTO,
-    UserShortOutDTO,
-    UserPrivateUpdateInDTO,
-    User_Id_PrivateOutDTO,
-)
+from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
 from apps.users.dto._to_dto_user import (
-    _to_dto_user_in,
     _to_dto_public_id_user_out,
     _to_dto_public_user_out,
+    _to_dto_user_in,
 )
-from apps.users.dto._to_dto_profile import _to_dto_id_location_profile
-
+from apps.users.dto.user_dto import (
+    CreateUserInDTO,
+    PasswordResetTokenOutDTO,
+    User_Id_PrivateOutDTO,
+    UserPrivateOutDTO,
+    UserPrivateUpdateInDTO,
+    UserShortOutDTO,
+    UserShortPublicOutDTO,
+)
 from apps.users.models import CustomUser, ReferralCode, ReferralUsage
 from apps.users.models.password_reset_token import PasswordResetToken
 
 
 class UserRepo:
-
     def create(self, dto: CreateUserInDTO, referral_code) -> UserShortPublicOutDTO:
 
         user = CustomUser.objects.create_user(
@@ -48,9 +46,7 @@ class UserRepo:
             display_name=user.display_name,
         )
 
-    def update_my_profile(
-        self, dto: UserPrivateUpdateInDTO, user_id: int
-    ) -> User_Id_PrivateOutDTO:
+    def update_my_profile(self, dto: UserPrivateUpdateInDTO, user_id: int) -> User_Id_PrivateOutDTO:
 
         user = CustomUser.objects.get(id=user_id)
 

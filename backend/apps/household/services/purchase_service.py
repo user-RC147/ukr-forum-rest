@@ -1,42 +1,39 @@
+from apps.geo.contracts import (
+    get_city_contract,
+    get_country_contract,
+    get_region_contract,
+)
 from apps.household.dto.asset_dto import AssetOutDTO
 from apps.household.dto.group_dto import (
-    GroupOutDTO,
-    GroupMemberOutDTO,
     GroupMember_id_user_OutDTO,
+    GroupMemberOutDTO,
+    GroupOutDTO,
 )
 from apps.household.dto.location_dto import (
-    CityDTO,
     City_id_region_DTO,
+    CityDTO,
     CountryDTO,
     LocationOutDTO,
     RegionDTO,
 )
 from apps.household.dto.market_dto import MarketFullOutDTO
+from apps.household.dto.product_dto import CategoryProductOutDTO, ProductOutDTO
 from apps.household.dto.purchase_dto import (
     CreatePurchaseInDTO,
+    Purchase_Id_Name_OutDTO,
     Purchase_Id_OutDTO,
     PurchaseItemOutDTO,
     PurchaseOutDTO,
-    Purchase_Id_Name_OutDTO,
 )
-
+from apps.household.dto.role_dto import RoleOutDTO
+from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
+from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories.purchase_repo import PurchaseRepo
 from apps.household.selectors.group_selector import GroupSelector
-
-from apps.geo.contracts import (
-    get_city_contract,
-    get_region_contract,
-    get_country_contract,
-)
 from apps.household.selectors.purchase_selector import PurchaseSelector
-from apps.household.dto.user_dto import UserOutDTO
-from apps.household.dto.role_dto import RoleOutDTO
-from apps.household.dto.product_dto import ProductOutDTO, CategoryProductOutDTO
-from apps.household.dto.unit_of_measure_dto import UnitOfMeasureOutDTO
-
 from apps.users.contracts.user_contract import get_user_short_contract
 
-#from apps.users.dto.user_dto import UserShortOutDTO
+# from apps.users.dto.user_dto import UserShortOutDTO
 
 
 class PurchaseService:
@@ -125,9 +122,7 @@ class PurchaseService:
                     locations=locations_asset_and_makret,
                     user_map=user_map,
                 ),
-                market=_dto_market_dto(
-                    purchase.market, locations=locations_asset_and_makret
-                ),
+                market=_dto_market_dto(purchase.market, locations=locations_asset_and_makret),
                 created_at=purchase.created_at,
                 created_by_id=purchase.created_by_id,
                 items=[_to_dto_items(item) for item in purchase.items],
@@ -139,9 +134,7 @@ class PurchaseService:
 
         return dto
 
-    def create(
-        self, dto: CreatePurchaseInDTO, creator_user_id: int
-    ) -> Purchase_Id_OutDTO:
+    def create(self, dto: CreatePurchaseInDTO, creator_user_id: int) -> Purchase_Id_OutDTO:
         """
         Бізнес-процес створення чека з попередньою перевіркою ролей учасника.
         """
@@ -177,15 +170,13 @@ def _to_dto_user_out(data, user_map) -> UserOutDTO:
 
 def _to_dto_creator_by_out(data, user_map) -> UserOutDTO:
     return UserOutDTO(
-        id=user_map[data.created_by_id].id,        
+        id=user_map[data.created_by_id].id,
         display_name=user_map[data.created_by_id].display_name,
     )
 
 
 def _dto_role_out(data) -> RoleOutDTO:
-    return RoleOutDTO(
-        id=data.id, name=data.name, name_ua=data.name_ua, is_bool=data.is_bool
-    )
+    return RoleOutDTO(id=data.id, name=data.name, name_ua=data.name_ua, is_bool=data.is_bool)
 
 
 def _dto_group_members(data, user_map) -> GroupMemberOutDTO:

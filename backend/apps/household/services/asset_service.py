@@ -1,29 +1,28 @@
-from apps.household.dto.user_dto import UserOutDTO
-from apps.household.selectors.asset_selector import AssetSelector
+from apps.geo.contracts import (
+    get_city_contract,
+    get_country_contract,
+    get_region_contract,
+)
 from apps.household.dto.asset_dto import (
+    Asset_Id_Group_OutDTO,
     AssetOutDTO,
     CreateAssetDTO,
     ListAssetDTO,
-    Asset_Id_Group_OutDTO,
 )
 from apps.household.dto.location_dto import (
+    City_id_region_DTO,
+    CityDTO,
     CountryDTO,
     LocationOutDTO,
     RegionDTO,
-    CityDTO,City_id_region_DTO
 )
+from apps.household.dto.user_dto import UserOutDTO
 from apps.household.repositories.asset_repo import AssetRepo
-
+from apps.household.selectors.asset_selector import AssetSelector
 from apps.users.contracts import get_user_short_contract
-from apps.geo.contracts import (
-    get_country_contract,
-    get_region_contract,
-    get_city_contract,
-)
 
 
 class AssetService:
-
     def __init__(self) -> None:
         self._selector = AssetSelector()
         self._repository = AssetRepo()
@@ -37,7 +36,7 @@ class AssetService:
     def get_user_assets(self, user_id: int):
         return self._selector.get_available_assets(user_id)
 
-    def get_list_asset( self, dto: ListAssetDTO, user_id: int) -> list[Asset_Id_Group_OutDTO]|None:
+    def get_list_asset(self, dto: ListAssetDTO, user_id: int) -> list[Asset_Id_Group_OutDTO] | None:
 
         user_obj = self._get_user_contract.get(user_id)
 
@@ -67,9 +66,7 @@ class AssetService:
 
 
 def _dto_user_out(data) -> UserOutDTO:
-    return UserOutDTO(
-        id=data.id, username=data.username, display_name=data.display_name
-    )
+    return UserOutDTO(id=data.id, username=data.username, display_name=data.display_name)
 
 
 def _to_location_contract(data):

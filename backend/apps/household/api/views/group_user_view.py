@@ -1,25 +1,23 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import action
-
-from core.users.csrf_permission import CsrfPermission
 from drf_spectacular.utils import extend_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
 from apps.household.api.serializers import (
+    CreateGroupInSerializer,
     GroupMemberOutSerializer,
     GroupOutSerializer,
+)
+from apps.household.api.serializers.group_serializer import (
     CreateGroupInSerializer,
+    Group_Id_InSerializer,
 )
 from apps.household.dto.group_dto import CreateGroupInDTO, Group_Id_Name_InDTO
 from apps.household.models.group import GroupMember
 from apps.household.services.group_service import GroupService
-from apps.household.api.serializers.group_serializer import (
-    Group_Id_InSerializer,
-    CreateGroupInSerializer,
-)
-
 from apps.shop import serializers
+from core.users.csrf_permission import CsrfPermission
 
 
 class GroupViewSet(viewsets.ViewSet):
@@ -29,7 +27,7 @@ class GroupViewSet(viewsets.ViewSet):
     """
 
     def get_permissions(self):
-        if self.action in []: #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 
@@ -49,9 +47,7 @@ class GroupViewSet(viewsets.ViewSet):
             id=serializer.validated_data.get("group_id"),
             name=serializer.validated_data.get("name"),
         )
-        group_members = self._service.get_all_group_member_by_user(
-            dto_group, user_id=user_id
-        )
+        group_members = self._service.get_all_group_member_by_user(dto_group, user_id=user_id)
         results = GroupOutSerializer(group_members, many=True).data
 
         return Response({"results": results}, status=status.HTTP_200_OK)

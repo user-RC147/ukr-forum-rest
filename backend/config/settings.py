@@ -1,5 +1,5 @@
-from datetime import timedelta
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -27,9 +27,7 @@ if not DEBUG:
         raise ImproperlyConfigured("SECRET_KEY is not set for production")
 
     ALLOWED_HOSTS = [
-        host.strip()
-        for host in os.getenv("ALLOWED_HOSTS", "").split(",")
-        if host.strip()
+        host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
     ]
     if not ALLOWED_HOSTS:
         raise ImproperlyConfigured("ALLOWED_HOSTS is not set for production")
@@ -117,9 +115,7 @@ DATABASES = {
 AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "core.users.authentication.CookieJWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("core.users.authentication.CookieJWTAuthentication",),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
         "core.users.csrf_permission.CsrfPermission",
@@ -144,9 +140,7 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 CORS_ALLOW_CREDENTIALS = True
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -212,7 +206,7 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     if USE_HTTPS:
-        SECURE_SSL_REDIRECT = False #fix 301 from healthcheck
+        SECURE_SSL_REDIRECT = False  # fix 301 from healthcheck
         SECURE_HSTS_SECONDS = 31536000
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

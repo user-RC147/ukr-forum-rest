@@ -1,18 +1,17 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema
-
-from core.users.csrf_permission import CsrfPermission
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
 from apps.household.api.serializers import CreatePurchaseSerializer
 from apps.household.api.serializers.purchase_serializer import (
-    PurchaseOutSerializer,
     Purchase_Id_OutSerializer,
+    PurchaseOutSerializer,
 )
+from apps.household.dto import CreatePurchaseInDTO, PurchaseItemInDTO
 from apps.household.dto.purchase_dto import Purchase_Id_OutDTO
 from apps.household.services.purchase_service import PurchaseService
-from apps.household.dto import CreatePurchaseInDTO, PurchaseItemInDTO
+from core.users.csrf_permission import CsrfPermission
 
 
 class PurchaseViewSet(viewsets.ViewSet):
@@ -23,7 +22,7 @@ class PurchaseViewSet(viewsets.ViewSet):
     """
 
     def get_permissions(self):
-        if self.action in []:  #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 

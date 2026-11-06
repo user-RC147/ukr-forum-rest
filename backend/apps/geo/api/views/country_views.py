@@ -32,9 +32,7 @@ class CountryView(viewsets.ViewSet):
     def list(self, request: Request):
         result = self.service.get_many()
 
-        return Response(
-            self.serializer_class(result, many=True).data, status=status.HTTP_200_OK
-        )
+        return Response(self.serializer_class(result, many=True).data, status=status.HTTP_200_OK)
 
     @country_search_schema
     @action(methods=["get"], detail=False)

@@ -1,5 +1,5 @@
 from .geo import IGeoServiceContract
 
-__all__=[
-    'IGeoServiceContract',
+__all__ = [
+    "IGeoServiceContract",
 ]

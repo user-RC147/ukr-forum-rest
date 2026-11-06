@@ -18,6 +18,7 @@ class RequestIDFilter(logging.Filter):
         record.request_id = request_id_var.get()
         return True
 
+
 class UserIDFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.user_id = user_id_var.get()

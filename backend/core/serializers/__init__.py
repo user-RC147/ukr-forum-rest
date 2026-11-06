@@ -1,14 +1,13 @@
-from .location_serializer import LocationInSerializer,LocationOutSerializer,City_id_region_Serializer,Location_id_region_OutSerializer
+from .location_serializer import (
+    City_id_region_Serializer,
+    Location_id_region_OutSerializer,
+    LocationInSerializer,
+    LocationOutSerializer,
+)
 
-
-__all__=[
-    'LocationInSerializer',
-    'LocationOutSerializer',
-    'Location_id_region_OutSerializer',
-    
-    'City_id_region_Serializer',
-
-
-    
-
+__all__ = [
+    "City_id_region_Serializer",
+    "LocationInSerializer",
+    "LocationOutSerializer",
+    "Location_id_region_OutSerializer",
 ]

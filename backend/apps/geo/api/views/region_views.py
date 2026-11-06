@@ -32,6 +32,4 @@ class RegionView(viewsets.ViewSet):
 
         result = self.service.get_by_country(qp.validated_data.get("country_id"))
 
-        return Response(
-            self.serializer_class(result, many=True).data, status=status.HTTP_200_OK
-        )
+        return Response(self.serializer_class(result, many=True).data, status=status.HTTP_200_OK)

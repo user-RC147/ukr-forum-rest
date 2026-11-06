@@ -1,17 +1,15 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
-from core.users.csrf_permission import CsrfPermission
-
-from apps.household.services.category_service import CategoryService
 from apps.household.api.serializers.category_serializer import CategoryInSerializer
+from apps.household.services.category_service import CategoryService
+from core.users.csrf_permission import CsrfPermission
 
 
 class CategoryViewSet(ViewSet):
-
     def get_permissions(self):
         if self.action in []:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]

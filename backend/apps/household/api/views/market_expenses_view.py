@@ -1,25 +1,23 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from drf_spectacular.utils import extend_schema
 
-from core.users.csrf_permission import CsrfPermission
-
+from apps.household.api.serializers.market_serializer import (
+    MarketExpense_Id_OutSerializer,
+    MarketExpenseOutSerializer,
+)
 from apps.household.api.serializers.paginator_purchase_item_serializer import (
     PaginatorSerializerOut,
 )
 from apps.household.services.market_service import MarketService
-from apps.household.api.serializers.market_serializer import (
-    MarketExpenseOutSerializer,
-    MarketExpense_Id_OutSerializer,
-)
+from core.users.csrf_permission import CsrfPermission
 
 
 class MarketExpenseViewSet(ViewSet):
-
     def get_permissions(self):
-        if self.action in []: #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 

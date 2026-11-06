@@ -3,6 +3,4 @@ from apps.articles.models.article_model import Article
 
 
 class ArticleRepo:
-
-    def create(self, dto: ArticleInDTO, user_id: int) -> ArticleOutDTO:
-        ...
+    def create(self, dto: ArticleInDTO, user_id: int) -> ArticleOutDTO: ...

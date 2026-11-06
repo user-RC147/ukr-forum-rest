@@ -1,5 +1,5 @@
-from collections.abc import Iterable, Mapping, Sequence
 import logging
+from collections.abc import Iterable, Mapping, Sequence
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
@@ -66,9 +66,7 @@ class FileRepository:
 
         return file_paths, thumbnail_paths if thumbnail_paths else None
 
-    def create_many(
-        self, data: Iterable[UploadedFileLike], user_id: int
-    ) -> list[FileRepoDTO]:
+    def create_many(self, data: Iterable[UploadedFileLike], user_id: int) -> list[FileRepoDTO]:
         instances = [self.model(name=d.name, file=d, owner_id=user_id) for d in data]
 
         result = self.model.objects.bulk_create(instances)
@@ -93,7 +91,6 @@ class FileRepository:
         for i in ids:
             old_files.append(files_by_id[i].file.name)
             old_thumbnails.append(files_by_id[i].thumbnail.name)
-
 
         updated = []
         for file_id, upload in updates.items():

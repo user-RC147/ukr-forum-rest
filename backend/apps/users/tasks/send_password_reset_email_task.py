@@ -1,6 +1,6 @@
 from celery import shared_task
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
 
 
 @shared_task(bind=True, name="send_password_reset_email_task")

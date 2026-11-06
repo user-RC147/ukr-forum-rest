@@ -18,8 +18,10 @@ class CountryModel(models.Model):
         ordering = ["name"]
 
         indexes = [
-            GinIndex(fields=['name'], name='country_name_trgm_idx', opclasses=['gin_trgm_ops']),
-            GinIndex(fields=['name_ua'], name='country_name_ua_trgm_idx', opclasses=['gin_trgm_ops']),
+            GinIndex(fields=["name"], name="country_name_trgm_idx", opclasses=["gin_trgm_ops"]),
+            GinIndex(
+                fields=["name_ua"], name="country_name_ua_trgm_idx", opclasses=["gin_trgm_ops"]
+            ),
         ]
 
     def __str__(self):

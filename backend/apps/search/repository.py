@@ -6,9 +6,9 @@ from .contracts.exceptions import CategoryNotFoundError, TagNotFoundError
 from .models import CategoryModel, TagModel
 from .ports import CategoryRepositoryPort, TagRepositoryPort
 
-
 CATEGORY_CACHE_KEY = "category:all"
 TAG_CACHE_KEY = "tag:all"
+
 
 class CategoryRepository:
     def __init__(self) -> None:
@@ -18,9 +18,7 @@ class CategoryRepository:
         try:
             result = self.model.objects.prefetch_related("tags").get(id=id)
         except ObjectDoesNotExist:
-            raise CategoryNotFoundError(
-                extra={"category_id": id, "event": "category_get"}
-            )
+            raise CategoryNotFoundError(extra={"category_id": id, "event": "category_get"})
         return _to_dto_category(result)
 
     def get_many(self, ids: list[int] | None = None) -> list[CategoryDTO]:
@@ -50,9 +48,7 @@ class TagRepository:
     def get_many(self, ids: list[int] | None = None) -> list[TagDTO]:
         result = self.model.objects.all()
         if ids is None:
-            return cache.get_or_set(
-                TAG_CACHE_KEY, lambda: [_to_dto_tag(r) for r in result], 60 * 5
-            )
+            return cache.get_or_set(TAG_CACHE_KEY, lambda: [_to_dto_tag(r) for r in result], 60 * 5)
 
         result = result.filter(id__in=ids)
         return [_to_dto_tag(r) for r in result]

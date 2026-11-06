@@ -1,16 +1,13 @@
 from django.utils import timezone
-from apps.users.selectors.user_selector import UserSelector
-from apps.users.repositories.user_repository import UserRepo
 
+from apps.users.repositories.user_repository import UserRepo
+from apps.users.selectors.user_selector import UserSelector
 
 
 class PasswordResetService:
-    
-
     def __init__(self):
         self._selector = UserSelector()
         self._repository = UserRepo()
-
 
     def confirm_password_reset(self, token: str, new_password: str) -> None:
         token_obj = self._selector.get_password_reset_token(token)
@@ -26,8 +23,6 @@ class PasswordResetService:
 
         self._repository.confirm_password_reset(token_obj.user_id, token_obj.id, new_password)
 
-
-
     def request_password_reset(self, email: str) -> None:
         user_id = self._selector.find_by_email(email)
 
@@ -38,5 +33,3 @@ class PasswordResetService:
 
         token_dto = self._repository.create_password_reset_token(user_id)
         send_password_reset_email_task.delay(user_id, token_dto.token)
-
-        

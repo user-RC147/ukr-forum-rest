@@ -25,12 +25,8 @@ class CityModel(models.Model):
     api_id = models.PositiveIntegerField(
         null=True, blank=True, unique=True, verbose_name="ID в Geo API"
     )
-    latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     class Meta:
         db_table = "geo_city"
@@ -39,9 +35,7 @@ class CityModel(models.Model):
         ordering = ["country__name", "region__name", "name"]
 
         indexes = [
-            GinIndex(
-                fields=["name"], name="city_name_trgm_idx", opclasses=["gin_trgm_ops"]
-            ),
+            GinIndex(fields=["name"], name="city_name_trgm_idx", opclasses=["gin_trgm_ops"]),
             GinIndex(
                 fields=["name_ua"],
                 name="city_name_ua_trgm_idx",

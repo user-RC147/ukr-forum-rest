@@ -3,9 +3,8 @@ from rest_framework import serializers
 from apps.users.api.serializers.user_serializer import UserShortOutSerializer
 
 
-
 class ArticleOutSerializer(serializers.Serializer):
-    id=serializers.IntegerField()
+    id = serializers.IntegerField()
     title = serializers.CharField()
     description = serializers.CharField()
     date_create = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
@@ -13,5 +12,4 @@ class ArticleOutSerializer(serializers.Serializer):
     created_by = UserShortOutSerializer()
 
 
-class ArticleInSerializer(serializers.Serializer):
-    ...
+class ArticleInSerializer(serializers.Serializer): ...

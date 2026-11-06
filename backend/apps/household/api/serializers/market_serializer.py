@@ -1,10 +1,10 @@
-
 from rest_framework import serializers
 
-from apps.household.api.serializers.location_serializer import LocationInSerializer, LocationOutSerializer
+from apps.household.api.serializers.location_serializer import (
+    LocationInSerializer,
+    LocationOutSerializer,
+)
 from core.serializers.location_serializer import Location_id_region_OutSerializer
-
-
 
 
 class CountrySerializer(serializers.Serializer):
@@ -24,13 +24,13 @@ class RegionSerializer(serializers.Serializer):
 
 
 class CitySerializer(serializers.Serializer):
-    id=serializers.IntegerField()
-    name=serializers.CharField()
-    name_ua=serializers.CharField()
-    country_id=serializers.IntegerField()
-    region_id=serializers.IntegerField()
-    latitude=serializers.DecimalField(max_digits=10,decimal_places=8)
-    longitude=serializers.DecimalField(max_digits=10,decimal_places=8)
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    name_ua = serializers.CharField()
+    country_id = serializers.IntegerField()
+    region_id = serializers.IntegerField()
+    latitude = serializers.DecimalField(max_digits=10, decimal_places=8)
+    longitude = serializers.DecimalField(max_digits=10, decimal_places=8)
 
 
 class MarketLocationSerializer(serializers.Serializer):
@@ -41,23 +41,24 @@ class MarketLocationSerializer(serializers.Serializer):
     city = CitySerializer(read_only=True)
 
 
-
 class MarketExpenseInSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
+    id = serializers.IntegerField()
+
 
 class MarketExpense_Id_OutSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
-    name=serializers.CharField()
-    location=Location_id_region_OutSerializer()
-    address_line=serializers.CharField()
-    total = serializers.DecimalField(max_digits=12,decimal_places=3)
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    location = Location_id_region_OutSerializer()
+    address_line = serializers.CharField()
+    total = serializers.DecimalField(max_digits=12, decimal_places=3)
+
 
 class MarketExpenseOutSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
-    name=serializers.CharField()
-    location=LocationOutSerializer()
-    address_line=serializers.CharField()
-    total = serializers.DecimalField(max_digits=12,decimal_places=3)
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    location = LocationOutSerializer()
+    address_line = serializers.CharField()
+    total = serializers.DecimalField(max_digits=12, decimal_places=3)
 
 
 class MarketSerializer(serializers.Serializer):
@@ -70,9 +71,7 @@ class MarketSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(read_only=True)
-    address_line = serializers.CharField(
-        max_length=255, allow_null=True, allow_blank=True
-    )
+    address_line = serializers.CharField(max_length=255, allow_null=True, allow_blank=True)
 
     created_by = serializers.StringRelatedField(read_only=True)
 
@@ -81,9 +80,7 @@ class MarketSerializer(serializers.Serializer):
     city_id = serializers.IntegerField(read_only=True)
 
     # Динамічні текстові поля, які додав сервіс через контракт модулів
-    country_name = serializers.CharField(
-        max_length=100, allow_null=True, required=False
-    )
+    country_name = serializers.CharField(max_length=100, allow_null=True, required=False)
     region_name = serializers.CharField(max_length=100, allow_null=True, required=False)
     city_name = serializers.CharField(max_length=100, allow_null=True, required=False)
 
@@ -91,9 +88,7 @@ class MarketSerializer(serializers.Serializer):
 class MarketFullSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(read_only=True)
-    address_line = serializers.CharField(
-        max_length=255, allow_null=True, allow_blank=True
-    )
+    address_line = serializers.CharField(max_length=255, allow_null=True, allow_blank=True)
 
     created_by = serializers.StringRelatedField(read_only=True)
 
@@ -107,9 +102,7 @@ class MarketCreateSerializer(serializers.Serializer):
     """
 
     name = serializers.CharField(max_length=255, required=True)
-    address_line = serializers.CharField(
-        max_length=255, required=False, allow_blank=True
-    )
+    address_line = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
     # Робимо поля локації необов'язковими (allow_null=True),
     # щоб користувач міг обрати лише країну або країну + регіон.
@@ -137,5 +130,3 @@ class MarketCreateSerializer(serializers.Serializer):
             )
 
         return attrs
-
-

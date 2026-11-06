@@ -1,10 +1,8 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status
-
 from drf_spectacular.utils import extend_schema
-from core.users.csrf_permission import CsrfPermission
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.household.api.serializers.asset_serializer import (
     AssetIdRegionOutSerializer,
@@ -13,12 +11,12 @@ from apps.household.api.serializers.asset_serializer import (
     CreateAssetSerializer,
 )
 from apps.household.dto.asset_dto import CreateAssetDTO, ListAssetDTO
-from apps.household.services.asset_service import AssetService
 from apps.household.dto.location_dto import Location_Id_InDTO
+from apps.household.services.asset_service import AssetService
+from core.users.csrf_permission import CsrfPermission
 
 
 class AssetViewSet(ViewSet):
-
     def get_permissions(self):
         if self.action in ["create"]:  # "list", "retrieve",
             return [AllowAny(), CsrfPermission()]
@@ -64,9 +62,7 @@ class AssetViewSet(ViewSet):
             address_line=serializer.validated_data.get("address_line"),
         )
         self._service.create(dto=dto, creator_user_id=creator_user_id)
-        return Response(
-            status=status.HTTP_201_CREATED
-        )  # {'id':data.id, 'name':data.name},
+        return Response(status=status.HTTP_201_CREATED)  # {'id':data.id, 'name':data.name},
 
     # def retrieve(self, request, pk=None):
     #     pass

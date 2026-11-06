@@ -1,9 +1,8 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class EmailConfirmationToken(models.Model):
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -14,6 +13,4 @@ class EmailConfirmationToken(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Коли створено")
     expires_at = models.DateTimeField(verbose_name="Коли токен стає недійсним")
-    is_used = models.BooleanField(
-        default=False, verbose_name="Використаний/Невикористаний"
-    )
+    is_used = models.BooleanField(default=False, verbose_name="Використаний/Невикористаний")

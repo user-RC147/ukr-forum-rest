@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass(frozen=True)
 class User_Id_OutDTO:
-    id:int
-
+    id: int
 
 
 @dataclass(frozen=True)
 class UserOutDTO:
-    id:int
-    display_name:str
+    id: int
+    display_name: str

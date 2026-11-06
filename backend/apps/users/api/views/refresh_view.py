@@ -1,16 +1,14 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
+from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-
-from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from apps.users.services.refresh_service import RefreshService
 from core.users.csrf_permission import CsrfPermission
 
 
 class RefreshViewSet(ViewSet):
-
     permission_classes = [AllowAny, CsrfPermission]
 
     def __init__(self, **kwargs):
@@ -20,9 +18,9 @@ class RefreshViewSet(ViewSet):
 
     def create(self, request):
         # 1. Дістати refresh_token із cookie (не з тіла запиту!)
-        
-        #x_csrf_token = request.COOKIES.get('X-CSRFToken')
-        #enforce_csrf(request)
+
+        # x_csrf_token = request.COOKIES.get('X-CSRFToken')
+        # enforce_csrf(request)
         refresh_token_str = request.COOKIES.get("refresh_token")
 
         if refresh_token_str is None:
@@ -42,7 +40,6 @@ class RefreshViewSet(ViewSet):
 
         # 3. Сформувати відповідь + перезаписати обидва cookie новими токенами
         response = Response({"detail": "Токен оновлено"}, status=status.HTTP_200_OK)
-
 
         response.set_cookie(
             key="access_token",

@@ -1,23 +1,21 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import status
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from core.users.csrf_permission import CsrfPermission
 
 
-
 class LogoutViewSet(ViewSet):
-
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create"]:
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
-    
+
     @extend_schema()
     def create(self, request):
         refresh_token_str = request.COOKIES.get("refresh_token")

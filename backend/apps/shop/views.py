@@ -24,7 +24,6 @@ from .serializers import (
 )
 from .service import get_service
 
-
 # class RequiresAuthIfUserIdParam(BasePermission):
 #     def has_permission(self, request, view):
 #         if request.query_params.get("user_id"):
@@ -62,9 +61,7 @@ class ProductViewSet(viewsets.ViewSet):
 
         product = self.service.create(user, data)
 
-        return Response(
-            ProductReadSerializer(product).data, status=status.HTTP_201_CREATED
-        )
+        return Response(ProductReadSerializer(product).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk: int):
         product = self.service.get(pk)

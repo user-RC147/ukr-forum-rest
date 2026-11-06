@@ -1,22 +1,21 @@
 from itertools import product
 from xml.dom.minidom import Childless
+
 from rest_framework import serializers
-
-from apps.household.api.serializers.group_serializer import GroupOutSerializer
-
 
 from apps.household.api.serializers import (
     AssetOutSerializer,
     MarketSerializer,
     ProductOutSerializer,
 )
+from apps.household.api.serializers.group_serializer import GroupOutSerializer
 
 
 class PurchaseItemOutSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     product = ProductOutSerializer()
-    quantity = serializers.DecimalField(max_digits=12,decimal_places=3)
-    price_per_unit=serializers.DecimalField(max_digits=12, decimal_places=2)
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=3)
+    price_per_unit = serializers.DecimalField(max_digits=12, decimal_places=2)
 
 
 class Purchase_Id_OutSerializer(serializers.Serializer):
@@ -25,7 +24,7 @@ class Purchase_Id_OutSerializer(serializers.Serializer):
     market_id = serializers.IntegerField()
     data_purchase = serializers.DateField()
     note = serializers.CharField()
-    created_by_id=serializers.IntegerField()
+    created_by_id = serializers.IntegerField()
     created_at = serializers.DateTimeField()
     items = PurchaseItemOutSerializer(many=True)
     total_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
@@ -37,10 +36,11 @@ class PurchaseOutSerializer(serializers.Serializer):
     market = MarketSerializer()
     data_purchase = serializers.DateField()
     note = serializers.CharField()
-    created_by_id=serializers.IntegerField()
+    created_by_id = serializers.IntegerField()
     created_at = serializers.DateTimeField()
     items = PurchaseItemOutSerializer(many=True)
     total_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
 
 class CreatePurchaseItemSerializer(serializers.Serializer):
     """
@@ -63,14 +63,11 @@ class CreatePurchaseSerializer(serializers.Serializer):
     Головний валідатор для всієї форми створення чека.
     """
 
-    asset_id = serializers.IntegerField(
-        help_text="ID об'єкта, до якого прив'язуються витрати"
-    )
+    asset_id = serializers.IntegerField(help_text="ID об'єкта, до якого прив'язуються витрати")
     market_id = serializers.IntegerField(help_text="ID магазину (обов'язкове поле)")
     # group_id = GroupOutSerializer()
 
     data_purchase = serializers.DateTimeField(help_text="Дата здійснення покупки")
- 
 
     # Вкладений серіалізатор для перевірки списку товарів (таблиці)
     items = CreatePurchaseItemSerializer(many=True)

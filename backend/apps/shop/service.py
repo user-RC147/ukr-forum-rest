@@ -1,6 +1,6 @@
-from collections.abc import Iterable
 import dataclasses
 import logging
+from collections.abc import Iterable
 
 from apps.files.contracts.contracts import get_file_contract
 from apps.files.contracts.dtos import FileUpdatePlan
@@ -130,9 +130,7 @@ class ProductService:
 
         if user_id is not None:
             if user is None:
-                raise ProductValidationError(
-                    extra={"user_dto": user, "event": "access_check"}
-                )
+                raise ProductValidationError(extra={"user_dto": user, "event": "access_check"})
             ProductAccessPolicy.can_view_as_owner(user, user_id)
 
         qs = self.repo.get_many(page=page, page_size=page_size, user_id=user_id)
@@ -223,9 +221,7 @@ class ProductService:
 
                 fields["file_ids"] = [
                     file_id for file_id in product_ids if file_id in updated_file_id_set
-                ] + [
-                    file_id for file_id in updated_file_ids if file_id not in product_ids
-                ]
+                ] + [file_id for file_id in updated_file_ids if file_id not in product_ids]
 
             product_id = data.id
             result = dataclasses.asdict(self.repo.update(product_id, fields))
@@ -291,7 +287,7 @@ def get_service() -> ProductService:
         city_contract=get_city_contract(),
         file_contract=get_file_contract(),
         category_contract=get_category_contract(),
-        user_contract=get_user_short_contract(),  #get_user_contract(),
+        user_contract=get_user_short_contract(),  # get_user_contract(),
         uow=get_unit_of_work(),
     )
 

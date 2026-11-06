@@ -1,9 +1,8 @@
-from apps.users.selectors.email_confirm_selector import EmailConfirmationTokenSelector
 from apps.users.repositories.email_confirm_repo import EmailConfirmationTokenRepo
+from apps.users.selectors.email_confirm_selector import EmailConfirmationTokenSelector
 
 
 class EmailConfirmationTokenService:
-
     def __init__(self):
         self._selector = EmailConfirmationTokenSelector()
         self._repository = EmailConfirmationTokenRepo()

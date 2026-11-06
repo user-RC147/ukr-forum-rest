@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 from core.mixins.LocationMixin import LocationMixin
 
@@ -11,7 +11,10 @@ class Market(LocationMixin, models.Model):
     )
 
     address_line = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Адреса(вул.+дім)",
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Адреса(вул.+дім)",
     )
 
     created_by = models.ForeignKey(

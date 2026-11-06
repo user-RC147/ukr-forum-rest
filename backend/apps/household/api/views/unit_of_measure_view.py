@@ -1,22 +1,20 @@
-from rest_framework import status
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
-from core.users.csrf_permission import CsrfPermission
-
-from apps.household.services.unit_of_measure_service import UnitOfMeasureService
 from apps.household.api.serializers.unit_of_measure_serializer import (
     UnitOfMeasureSerializer,
 )
 from apps.household.dto.unit_of_measure_dto import CreateUnitOfMeasureInDTO
+from apps.household.services.unit_of_measure_service import UnitOfMeasureService
+from core.users.csrf_permission import CsrfPermission
 
 
 class UnitOfMeasureViewSet(ViewSet):
-
     def get_permissions(self):
-        if self.action in []:  #"list", "retrieve"
+        if self.action in []:  # "list", "retrieve"
             return [AllowAny(), CsrfPermission()]
         return [IsAuthenticated(), CsrfPermission()]
 

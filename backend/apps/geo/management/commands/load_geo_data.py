@@ -1,7 +1,7 @@
 import csv
-from decimal import Decimal, InvalidOperation
 import gzip
 import os
+from decimal import Decimal, InvalidOperation
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -130,13 +130,9 @@ class Command(BaseCommand):
 
         CountryModel.objects.bulk_create(to_create, batch_size=batch_size)
         if to_update:
-            CountryModel.objects.bulk_update(
-                to_update, ["name_ua"], batch_size=batch_size
-            )
+            CountryModel.objects.bulk_update(to_update, ["name_ua"], batch_size=batch_size)
 
-        self.stdout.write(
-            f"  Країн створено: {len(to_create)}, оновлено name_ua: {len(to_update)}"
-        )
+        self.stdout.write(f"  Країн створено: {len(to_create)}, оновлено name_ua: {len(to_update)}")
         invalidate_cache(country_cache_key())
 
         country_by_code = {c.code: c for c in CountryModel.objects.all()}
@@ -206,14 +202,10 @@ class Command(BaseCommand):
         # region_id (з csv) -> реальний об'єкт RegionModel (можливо, спільний
         # для кількох region_id, якщо вони збігались за назвою+країною)
         return {
-            rid: all_regions[key]
-            for rid, key in region_id_to_key.items()
-            if key in all_regions
+            rid: all_regions[key] for rid, key in region_id_to_key.items() if key in all_regions
         }
 
-    def _load_cities(
-        self, path, country_by_code, id_country_to_code, region_by_api_id, batch_size
-    ):
+    def _load_cities(self, path, country_by_code, id_country_to_code, region_by_api_id, batch_size):
         existing_by_api_id = {
             c.api_id: c for c in CityModel.objects.only("id", "api_id", "name_ua")
         }
@@ -235,9 +227,7 @@ class Command(BaseCommand):
         def flush_update():
             nonlocal updated, update_buffer
             if update_buffer:
-                CityModel.objects.bulk_update(
-                    update_buffer, ["name_ua"], batch_size=batch_size
-                )
+                CityModel.objects.bulk_update(update_buffer, ["name_ua"], batch_size=batch_size)
                 updated += len(update_buffer)
                 all_region_ids.update({u.region.id for u in update_buffer})
                 update_buffer = []
@@ -273,9 +263,7 @@ class Command(BaseCommand):
                     name_ua=name_ua,
                 )
             )
-            existing_by_api_id[api_id] = (
-                None  # заглушка, щоб не задублювати в межах файлу
-            )
+            existing_by_api_id[api_id] = None  # заглушка, щоб не задублювати в межах файлу
 
             if len(create_buffer) >= batch_size:
                 flush_create()

@@ -1,44 +1,45 @@
+from apps.geo.contracts.dto.city_dto import City_id_region_DTO, CityDTO
+from apps.geo.contracts.dto.country_dto import CountryDTO
+from apps.geo.contracts.dto.region_dto import RegionDTO
 from core.dto.geo.location_dto import (
     Location_Id_OutDTO,
     LocationOutDTO,
 )
 
-from apps.geo.contracts.dto.city_dto import CityDTO,City_id_region_DTO
-from apps.geo.contracts.dto.country_dto import CountryDTO
-from apps.geo.contracts.dto.region_dto import RegionDTO
 
 def _to_dto_out_country(data, map_location) -> CountryDTO | None:
-    if not data or not data.country_id or data.country_id not in map_location['countries']:
+    if not data or not data.country_id or data.country_id not in map_location["countries"]:
         return None
     return CountryDTO(
-        id=map_location['countries'][data.country_id].id,
-        name=map_location['countries'][data.country_id].name,
-        name_ua=map_location['countries'][data.country_id].name_ua,
-        code=map_location['countries'][data.country_id].code,
-        flag_emoji=map_location['countries'][data.country_id].flag_emoji,
-        currency=map_location['countries'][data.country_id].currency,
+        id=map_location["countries"][data.country_id].id,
+        name=map_location["countries"][data.country_id].name,
+        name_ua=map_location["countries"][data.country_id].name_ua,
+        code=map_location["countries"][data.country_id].code,
+        flag_emoji=map_location["countries"][data.country_id].flag_emoji,
+        currency=map_location["countries"][data.country_id].currency,
     )
 
 
 def _to_dto_out_region(data, map_location) -> RegionDTO:
     return RegionDTO(
-        id=map_location['regions'][data.region_id].id,
-        name=map_location['regions'][data.region_id].name,
-        name_ua=map_location['regions'][data.region_id].name_ua,
-        country_id=map_location['regions'][data.region_id].country_id,
+        id=map_location["regions"][data.region_id].id,
+        name=map_location["regions"][data.region_id].name,
+        name_ua=map_location["regions"][data.region_id].name_ua,
+        country_id=map_location["regions"][data.region_id].country_id,
     )
 
 
 def _to_dto_out_city(data, map_location) -> City_id_region_DTO:
     return City_id_region_DTO(
-        id=map_location['cities'][data.city_id].id,
-        name=map_location['cities'][data.city_id].name,
-        name_ua=map_location['cities'][data.city_id].name_ua,
-        country_id=map_location['cities'][data.city_id].country_id,
-        region_id=map_location['cities'][data.city_id].region.id,
-        latitude=map_location['cities'][data.city_id].latitude,
-        longitude=map_location['cities'][data.city_id].longitude,
+        id=map_location["cities"][data.city_id].id,
+        name=map_location["cities"][data.city_id].name,
+        name_ua=map_location["cities"][data.city_id].name_ua,
+        country_id=map_location["cities"][data.city_id].country_id,
+        region_id=map_location["cities"][data.city_id].region.id,
+        latitude=map_location["cities"][data.city_id].latitude,
+        longitude=map_location["cities"][data.city_id].longitude,
     )
+
 
 def _to_dto_out_id_location(data) -> Location_Id_OutDTO:
     return Location_Id_OutDTO(
@@ -50,7 +51,7 @@ def _to_dto_out_id_location(data) -> Location_Id_OutDTO:
 
 def _to_dto_out_location(data, map_location) -> LocationOutDTO | None:
     country = _to_dto_out_country(data, map_location)
-    
+
     if country is None:
         return None
 
@@ -60,15 +61,17 @@ def _to_dto_out_location(data, map_location) -> LocationOutDTO | None:
         city=_to_dto_out_city(data, map_location),
     )
 
+
 def _to_dto_out_public_location(data, map_location) -> LocationOutDTO | None:
     if not data or not data.location:
         return None
-  
+
     return LocationOutDTO(
         country=_to_dto_out_country(data.location, map_location) if data.country_public else None,
-        region=_to_dto_out_region(data.location, map_location)if data.region_public else None,
-        city=_to_dto_out_city(data.location, map_location)if data.city_public else None,
-    ) 
+        region=_to_dto_out_region(data.location, map_location) if data.region_public else None,
+        city=_to_dto_out_city(data.location, map_location) if data.city_public else None,
+    )
+
 
 def _get_ids_location(data) -> dict:
 
@@ -98,5 +101,3 @@ def _get_locations(ids: list[dict], countries, regions, cities):
     locations = {"countries": countries, "regions": regions, "cities": cities}
 
     return locations
-
-

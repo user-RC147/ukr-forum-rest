@@ -61,9 +61,7 @@ else:
         ),
         path(
             "api/docs/",
-            SpectacularSwaggerView.as_view(
-                url_name="schema", permission_classes=[IsAdminUser]
-            ),
+            SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[IsAdminUser]),
             name="swagger-ui",
         ),
     ]
