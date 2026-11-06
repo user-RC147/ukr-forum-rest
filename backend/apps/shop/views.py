@@ -3,7 +3,6 @@ import re
 
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status, viewsets
-from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 

@@ -120,7 +120,7 @@ ignore = [
     "S101",      # assert (for tests)
 ]
 
-unfixable = ["F401"]
+# unfixable = ["F401"]
 
 allowed-confusables = ["×"]
 
